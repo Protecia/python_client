@@ -1,0 +1,3 @@
+"""
+log for the camera
+"""

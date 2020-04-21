@@ -1,0 +1,36 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Dec  3 15:06:16 2019
+
+@author: julien
+"""
+import logging
+
+LOG = logging.ERROR
+VIDEO_LOG = logging.INFO
+UPLOAD_LOG = logging.INFO
+SCAN_LOG = logging.INFO
+
+#Darknet conf
+CFG = 'cfg/yolov3-spp.cfg'
+WEIGHTS = '../weights/yolov3-spp.weights'
+DATA = '/NNvision/coco_docker.data'
+DARKNET_PATH='/NNvision/darknet_pjreddie_201906'
+
+# hardware conf
+INSTALL_PATH = '/NNvision'
+HARDWARE = 'x64' # Nano or x64
+FFMPEG = '/usr/local/bin/'
+
+# python conf
+PYTHON = 'python3'
+THREATED_REQUESTS=True
+SERVER = 'http://client.protecia.com:8080/'
+VIDEO_REC_TIME = 10
+VIDEO_SPACE = 30 #Go
+QUEUE_SIZE = 100 # number of images to queue at max
+
+# client conf
+KEY = '1e2e0df0c8616c1bcd5e90721ac2393a70240814100b26b568c75e46972e82a0'
+TUNNEL_PORT = 39000
+
