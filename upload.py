@@ -98,7 +98,7 @@ def getState(E, camera_state):
                 set_token(data['token1'],data['token2'])
             for pk, state in on_camera.items():
                 [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for index, i in enumerate(state)]
-        except (requests.exceptions.ConnectionError, requests.Timeout, KeyError) :
-            logger.warning('getState Can not find the remote server')
+        except (requests.exceptions.ConnectionError, requests.Timeout, KeyError, json.decoder.JSONDecodeError ) as ex :
+            logger.warning('getState Can not find the remote server : except --> {}'.format(ex))
             time.sleep(5)
             pass
