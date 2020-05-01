@@ -270,7 +270,7 @@ def detect_image(net, meta, im, thresh=.5, hier_thresh=.5, nms=.45, debug= False
     num = pnum[0]
     if debug: print("got zeroth index of pnum")
     if nms:
-        do_nms_sort(dets, num, meta.classes, nms)
+        do_nms_obj(dets, num, meta.classes, nms)
     if debug: print("did sort")
     res = []
     if debug: print("about to range")

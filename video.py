@@ -99,7 +99,7 @@ def rec_all_cam():
             if i > 3 :
                 break
     for k,v in cameras.items():
-        cmd = '/usr/local/bin/ffmpeg  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/secu/{}.mp4'.format(v['rtsp'], 'backup_'+datetime.now().strftime("%H")+'_cam'+str(k))
+        cmd = '{}  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/secu/{}.mp4'.format(settings.FFMPEG, v['rtsp'], 'backup_'+datetime.now().strftime("%H")+'_cam'+str(k))
         Popen(shlex.split(cmd))
         logger.warning('ffmpeg rec on  {}'.format(cmd))
 
@@ -232,7 +232,6 @@ def http_serve(port):
     cherrypy.quickstart(Root(), '/', config=conf)  # ..and LAUNCH ! :)
 
 def main():
-    print(logger)
     kill_ffmpeg_process()
     rec_all_cam()
 

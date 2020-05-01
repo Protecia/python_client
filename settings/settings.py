@@ -6,18 +6,11 @@ Created on Tue Dec  3 15:06:16 2019
 """
 import logging
 
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Dec  3 15:06:16 2019
-
-@author: julien
-"""
-import logging
-
 LOG = logging.ERROR
 VIDEO_LOG = logging.ERROR
 UPLOAD_LOG = logging.ERROR
 SCAN_LOG = logging.ERROR
+PROCESS_CAMERA_LOG = logging.ERROR
 
 #Darknet conf
 CFG = 'cfg/yolov3.cfg'

@@ -20,7 +20,7 @@ else:
 from log import Logger
 import secrets
 
-logger = Logger('process_camera_thread').run()
+logger = Logger('process_camera_thread', level=settings.PROCESS_CAMERA_LOG).run()
 
 threated_requests = settings.THREATED_REQUESTS
 path = settings.DARKNET_PATH
@@ -104,7 +104,7 @@ class ProcessCamera(Thread):
         #self.threated_requests = threated_requests
         self.request_OK = False
         self.lock = Lock()
-        self.black_list=(b'pottedplant',b'cell phone')
+        self.black_list=(b'pottedplant',b'cell phone',b'oven',b'bowl')
         self.logger = logger
         #self.net = net
         #self.meta = meta
@@ -292,6 +292,6 @@ class ProcessCamera(Thread):
             self.logger.debug('objects from last detection now under treshold :{} '
             .format(diff_objects))
             rp+=diff_objects
-        self.logger.debug('the filtered list of detected objects is {}'.format(rp))
+        self.logger.info('the filtered list of detected objects is {}'.format(rp))
         return rp
 
