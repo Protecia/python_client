@@ -63,7 +63,7 @@ def wsDiscovery(repeat, wait):
                              socket.inet_aton(mul_ip) + socket.inet_aton(ip))
                 s.setblocking(False)
                 s.sendto(soap_xml.encode(), (mul_ip, mul_port))
-                time.sleep(2)
+                time.sleep(3)
                 while True:
                     try:
                         data, address = s.recvfrom(65535)
@@ -77,10 +77,12 @@ def wsDiscovery(repeat, wait):
                 s.close()
             for rep in ret:
                 xml = ET.fromstring(rep)
-                url = [ i.text for i in xml.iter('{http://schemas.xmlsoap.org/ws/2005/04/discovery}XAddrs') ][0]
-                ip = re.search('http://(.*):',url).group(1)
-                port = re.search('[0-9]+:([0-9]+)/', url).group(1)
-                dcam[ip]=port
+                url = [ i.text for i in xml.iter('{http://schemas.xmlsoap.org/ws/2005/04/discovery}XAddrs') ]
+                if url :
+                    url = url[0]
+                    ip = re.search('http://(.*):',url).group(1)
+                    port = re.search('[0-9]+:([0-9]+)/', url).group(1)
+                    dcam[ip]=port
             if not i+1==repeat:
                 time.sleep(wait)
     except (KeyError, OSError) :
