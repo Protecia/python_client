@@ -140,12 +140,14 @@ def compareCam(ws, lock, force):
     with lock:
         with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
             cameras = json.loads(out.read())
-    cameras_ip =  [ c['ip'] for c in cameras if c['from_client'] is True]
+    cameras_ip =  [ [c['ip'],c['active']] for c in cameras if c['from_client'] is True]
     ws_copy = ws.copy()
     for c in ws_copy :
-        if c in cameras_ip:
-            del ws[c]
-            cameras_ip.remove(c)
+        for cam_server in cameras_ip:
+            if c in cam_server[0]:
+                del ws[c]
+                cam_server[1]=False
+    cameras_ip = [i[0] for i in cameras_ip if i[1]]
     #test if camera is answering or not
     cameras_ip_copy = cameras_ip.copy()
     for ip in cameras_ip_copy:
