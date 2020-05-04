@@ -26,7 +26,7 @@ FFMPEG = '/usr/local/bin/'
 # python conf
 PYTHON = 'python3'
 THREATED_REQUESTS=True
-SERVER = 'http://client.protecia.com:8080/'
+SERVER = 'https://client.protecia.com/'
 VIDEO_REC_TIME = 10
 VIDEO_SPACE = 30 #Go
 QUEUE_SIZE = 100 # number of images to queue at max
