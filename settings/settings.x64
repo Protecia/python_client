@@ -10,6 +10,7 @@ LOG = logging.ERROR
 VIDEO_LOG = logging.INFO
 UPLOAD_LOG = logging.INFO
 SCAN_LOG = logging.INFO
+PROCESS_CAMERA_LOG = logging.ERROR
 
 #Darknet conf
 CFG = 'cfg/yolov3-spp.cfg'
