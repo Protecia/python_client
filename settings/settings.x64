@@ -21,7 +21,7 @@ DARKNET_PATH='/NNvision/darknet_pjreddie_201906'
 # hardware conf
 INSTALL_PATH = '/NNvision'
 HARDWARE = 'x64' # Nano or x64
-FFMPEG = '/usr/local/bin/'
+FFMPEG = '/usr/local/bin/ffmpeg'
 
 # python conf
 PYTHON = 'python3'

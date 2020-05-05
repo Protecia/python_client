@@ -21,7 +21,7 @@ DARKNET_PATH='/home/protecia/darknet'
 # hardware conf
 INSTALL_PATH = '/home/protecia/NNvision/python_client'
 HARDWARE = 'Nano' # Nano or x64
-FFMPEG = '/usr/local/bin/'
+FFMPEG = '/usr/local/bin/ffmpeg'
 
 # python conf
 PYTHON = 'python3'
