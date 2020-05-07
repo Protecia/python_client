@@ -195,7 +195,7 @@ def compareCam(ws, lock, force):
                             new_cam['active'] = True
                             new_cam['wait_for_set'] = False
                             new_cam['rtsp'] = rtsp.split('//')[0]+'//'+user+':'+passwd+'@'+rtsp.split('//')[1]
-                    except requests.exceptions.ConnectionError :
+                    except (requests.exceptions.ConnectionError, requests.Timeout) :
                         pass
         list_cam.append(new_cam)
     # cameras could have wait_for_set camera :
@@ -226,7 +226,7 @@ def compareCam(ws, lock, force):
                                 cam['wait_for_set'] = False
                                 cam['rtsp'] = rtsp.split('//')[0]+'//'+user+':'+passwd+'@'+rtsp.split('//')[1]
                                 list_cam.append(cam)
-                        except requests.exceptions.ConnectionError :
+                        except (requests.exceptions.ConnectionError, requests.Timeout) :
                             pass
     # cameras_ip contains cam now unreachable
     logger.info('compare camera, list : {} / remove : {}'.format(list_cam,cameras_ip))

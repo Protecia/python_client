@@ -174,7 +174,7 @@ class ProcessCamera(Thread):
 
             # Special stop point for dahua nvcr which can not answer multiple fast http requests
             if not threated_requests :
-                self.event[self.num].wait()
+                #self.event[self.num].wait()
                 self.logger.debug('cam {} alive - not threated request'.format(self.cam.id))
             #-----------------------------------------------------------------------------------
 
