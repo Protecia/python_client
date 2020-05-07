@@ -222,7 +222,6 @@ def compareCam(ws, lock, force):
                                 cam['auth_type']= t
                                 cam['username'] = user
                                 cam['password'] = passwd
-                                cam['active'] = True
                                 cam['wait_for_set'] = False
                                 cam['rtsp'] = rtsp.split('//')[0]+'//'+user+':'+passwd+'@'+rtsp.split('//')[1]
                                 list_cam.append(cam)
