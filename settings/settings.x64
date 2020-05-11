@@ -13,14 +13,13 @@ SCAN_LOG = logging.INFO
 PROCESS_CAMERA_LOG = logging.ERROR
 
 #Darknet conf
-CFG = 'cfg/yolov3-spp.cfg'
-WEIGHTS = '../weights/yolov3-spp.weights'
+CFG = 'cfg/yolov4.cfg'
+WEIGHTS = '../weights/yolov4.weights'
 DATA = '/NNvision/coco_docker.data'
-DARKNET_PATH='/NNvision/darknet_pjreddie_201906'
+DARKNET_PATH='/NNvision/darknet'
 
 # hardware conf
 INSTALL_PATH = '/NNvision'
-HARDWARE = 'x64' # Nano or x64
 FFMPEG = '/usr/local/bin/ffmpeg'
 
 # python conf

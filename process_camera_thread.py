@@ -13,10 +13,7 @@ import numpy as np
 from threading import Thread, Lock
 import settings.settings as settings
 import os
-if settings.HARDWARE == 'Nano':
-    import darknet as dn
-else:
-    import darknet_old as dn
+import darknet as dn
 from log import Logger
 import secrets
 
@@ -27,10 +24,7 @@ path = settings.DARKNET_PATH
 cfg = os.path.join(path,settings.CFG).encode()
 weights = os.path.join(path,settings.WEIGHTS).encode()
 data = os.path.join(path,settings.DATA).encode()
-if settings.HARDWARE == 'Nano':
-    net = dn.load_net_custom(cfg,weights, 0, 1)
-else :
-    net = dn.load_net(cfg, weights, 0)
+net = dn.load_net_custom(cfg,weights, 0, 1)
 meta = dn.load_meta(data)
 
 def EtoB(E):
