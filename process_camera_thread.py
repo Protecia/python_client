@@ -38,14 +38,16 @@ def EtoB(E):
 def get_list_same (l_old,l_under,thresh):
     l_old_w = l_old[:]
     new_element = []
+    new_element2 = []
     for e_under in l_under :
         for e_old in l_old_w:
             if e_under[0]==e_old[0] :
-                diff_pos = (sum([abs(i-j) for i,j in zip(e_under[2],e_old[2])]))
+                diff_pos = (sum([abs(i-j) for i,j in zip(e_under[2],e_old[2])]))/(e_old[2][2]+e_old[2][3])*100
                 if diff_pos < thresh :
                     new_element.append(e_old)
+                    new_element2.append(e_under)
                     l_old_w.remove(e_old)
-    return new_element
+    return new_element, new_element2
 
 def get_list_diff(l_new,l_old,thresh):
     new_copy = l_new[:]
@@ -55,7 +57,7 @@ def get_list_diff(l_new,l_old,thresh):
         limit_pos = thresh
         for e_old in l_old:
             if e_new[0]==e_old[0] :
-                diff_pos = (sum([abs(i-j) for i,j in zip(e_new[2],e_old[2])]))
+                diff_pos = (sum([abs(i-j) for i,j in zip(e_new[2],e_old[2])]))/(e_old[2][2]+e_old[2][3])*100
                 if diff_pos < thresh :
                     flag = True
                     if diff_pos < limit_pos:
@@ -224,7 +226,9 @@ class ProcessCamera(Thread):
 
                 # get only result above trheshlod or previously valid
                 t=time.time()
-                result_filtered = self.check_thresh(result_darknet)
+                result_filtered0 = self.check_thresh(result_darknet)
+                result_filtered = result_filtered0[0]
+                result_filtered_true = result_filtered0[1]
                 # process image
                 if self.cam.reso:
                     if arr.shape[0]!=self.cam.height or arr.shape[1]!=self.cam.width:
@@ -235,13 +239,13 @@ class ProcessCamera(Thread):
                     # if on page camera HD
                     if EtoB(self.camera_state[1]):
                         resize_factor = self.cam.max_width_rtime_HD/arr.shape[1]
-                        self.Q_img_real.put((self.cam.id, result_filtered, cv2.imencode('.jpg', arr)[1].tobytes(),resize_factor))
+                        self.Q_img_real.put((self.cam.id, result_filtered_true, cv2.imencode('.jpg', arr)[1].tobytes(),resize_factor))
                         self.logger.warning('Q_img_real HD   on {} : size {}'.format(self.cam.name, self.Q_img_real.qsize()))         
                     # if on page camera LD    
                     elif EtoB(self.camera_state[0]):
                         resize_factor = self.cam.max_width_rtime/arr.shape[1]
                         arr = cv2.resize(arr,(self.cam.max_width_rtime, int(arr.shape[0]*resize_factor)), interpolation = cv2.INTER_CUBIC)
-                        self.Q_img_real.put((self.cam.id, result_filtered, cv2.imencode('.jpg', arr)[1].tobytes(),resize_factor))
+                        self.Q_img_real.put((self.cam.id, result_filtered_true, cv2.imencode('.jpg', arr)[1].tobytes(),resize_factor))
                         self.logger.warning('Q_img_real LD size on {} : size {}'.format(self.cam.name, self.Q_img_real.qsize()))
                 # compare with last result to check if different
                 self.logger.debug('E_rec :{}'.format(EtoB(self.E_state)))
@@ -249,9 +253,9 @@ class ProcessCamera(Thread):
                     self.logger.debug('>>> Result have changed <<< ')
                     date = time.strftime("%Y-%m-%d-%H-%M-%S")
                     token = secrets.token_urlsafe(6)
-                    self.Q_img.put((self.cam.id, date+'_'+token,result_filtered, img_bytes))
+                    self.Q_img.put((self.cam.id, date+'_'+token,result_filtered_true, img_bytes))
                     self.logger.warning('Q_img size : {}'.format(self.Q_img.qsize()))
-                    self.Q_result.put((date+'_'+token+'.jpg', self.cam.id , result_filtered, result_darknet))
+                    self.Q_result.put((date+'_'+token+'.jpg', self.cam.id , result_filtered_true, result_darknet))
                     self.logger.warning('Q_result size : {}'.format(self.Q_result.qsize()))
                     self.logger.warning('>>>>>>>>>>>>>>>--------- Result change send to queue '
                     '-------------<<<<<<<<<<<<<<<<<<<<<\n')
@@ -285,7 +289,8 @@ class ProcessCamera(Thread):
             diff_objects = get_list_same(ro,rm,self.pos_sensivity)
             self.logger.debug('objects from last detection now under treshold :{} '
             .format(diff_objects))
-            rp+=diff_objects
+            rp+=diff_objects[0]
+            rp2 = rp + diff_objects[1]
         self.logger.info('the filtered list of detected objects is {}'.format(rp))
-        return rp
+        return rp, rp2
 
