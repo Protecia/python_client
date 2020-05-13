@@ -282,6 +282,7 @@ class ProcessCamera(Thread):
         #result = [(e1,e2,e3) if e1 not in self.clone else (self.clone[e1],e2,e3)
         #for (e1,e2,e3) in result]
         rp = [r for r in result if r[1]>=self.cam.threshold]
+        rp2 = rp.copy()
         rm = [r for r in result if r[1]<self.cam.threshold]
         if len(rm)>0:
             rs = get_list_same(self.result_DB,rp,self.pos_sensivity)
@@ -290,7 +291,7 @@ class ProcessCamera(Thread):
             self.logger.debug('objects from last detection now under treshold :{} '
             .format(diff_objects))
             rp+=diff_objects[0]
-            rp2 = rp + diff_objects[1]
+            rp2 += diff_objects[1]
         self.logger.info('the filtered list of detected objects is {}'.format(rp))
         return rp, rp2
 
