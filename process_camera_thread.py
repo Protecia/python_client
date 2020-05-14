@@ -309,6 +309,7 @@ class ProcessCamera(Thread):
                 else:
                     self.force_remove[find[0]] =0
                 result.remove(find)
+                self.logger.info('find an object {} at same position than {}'.format(find,obj_lost))
                 find[0]=obj_lost[0]
                 obj_new.append(find)
                 obj_last.append(obj_lost)
