@@ -34,6 +34,7 @@ def EtoB(E):
         return False
 
 
+
 # function to extract same objects in 2 lists
 def get_list_same (l_old,l_under,thresh):
     l_old_w = l_old[:]
@@ -113,6 +114,7 @@ class ProcessCamera(Thread):
         self.E_state = E_state
         self.camera_state = camera_state
         self.Q_img_real = Q_img_real
+        self.force_remove={}
 
         if cam.auth_type == 'B':
             self.auth = requests.auth.HTTPBasicAuth(cam.username,cam.password)
@@ -226,9 +228,7 @@ class ProcessCamera(Thread):
 
                 # get only result above trheshlod or previously valid
                 t=time.time()
-                result_filtered0 = self.check_thresh(result_darknet)
-                result_filtered = result_filtered0[0]
-                result_filtered_true = result_filtered0[1]
+                result_filtered, result_filtered_true  = self.check_thresh(result_darknet)
                 # process image
                 if self.cam.reso:
                     if arr.shape[0]!=self.cam.height or arr.shape[1]!=self.cam.width:
@@ -240,8 +240,8 @@ class ProcessCamera(Thread):
                     if EtoB(self.camera_state[1]):
                         resize_factor = self.cam.max_width_rtime_HD/arr.shape[1]
                         self.Q_img_real.put((self.cam.id, result_filtered_true, cv2.imencode('.jpg', arr)[1].tobytes(),resize_factor))
-                        self.logger.warning('Q_img_real HD   on {} : size {}'.format(self.cam.name, self.Q_img_real.qsize()))         
-                    # if on page camera LD    
+                        self.logger.warning('Q_img_real HD   on {} : size {}'.format(self.cam.name, self.Q_img_real.qsize()))
+                    # if on page camera LD
                     elif EtoB(self.camera_state[0]):
                         resize_factor = self.cam.max_width_rtime/arr.shape[1]
                         arr = cv2.resize(arr,(self.cam.max_width_rtime, int(arr.shape[0]*resize_factor)), interpolation = cv2.INTER_CUBIC)
@@ -282,16 +282,42 @@ class ProcessCamera(Thread):
         #result = [(e1,e2,e3) if e1 not in self.clone else (self.clone[e1],e2,e3)
         #for (e1,e2,e3) in result]
         rp = [r for r in result if r[1]>=self.cam.threshold]
-        rp2 = rp.copy()
-        rm = [r for r in result if r[1]<self.cam.threshold]
-        if len(rm)>0:
-            rs = get_list_same(self.result_DB,rp,self.pos_sensivity)
-            ro = [item for item in self.result_DB if item not in rs]
-            diff_objects = get_list_same(ro,rm,self.pos_sensivity)
-            self.logger.debug('objects from last detection now under treshold :{} '
-            .format(diff_objects))
-            rp+=diff_objects[0]
-            rp2 += diff_objects[1]
-        self.logger.info('the filtered list of detected objects is {}'.format(rp))
-        return rp, rp2
+        last = self.result_DB.copy()
+        self.get_lost(rp, last )
+        obj_last, obj_new = self.search_result(last,result,rp)
+        self.logger.info('recovery objects from last detection :{} '.format(obj_last))
+        rp_last = rp + obj_last
+        rp_new = rp + obj_new
+        self.logger.info('the filtered list of detected objects is {}'.format(rp_last))
+        return rp_last, rp_new
+
+    def search_result(self,lost,result,rp):
+        obj_last = []
+        obj_new = []
+        diff_pos_sav = 10000
+        for obj_lost in lost:
+            find = None
+            for obj_result in result:
+                diff_pos = (sum([abs(i-j) for i,j in zip(obj_lost[2],obj_result[2])]))/(obj_lost[2][2]+obj_lost[2][3])*100
+                if diff_pos < self.pos_sensivity and diff_pos < diff_pos_sav:
+                    find = obj_result
+            if find :
+                if find[1]>=self.cam.threshold:  
+                    if self.force_remove[find[0]] < 10:
+                        self.force_remove[find[0]] +=1
+                        rp.remove(find)
+                else:
+                    self.force_remove[find[0]] =0
+                result.remove(find)
+                find[0]=obj_lost[0]
+                obj_new.append(find)
+                obj_last.append(obj_lost)
+        return obj_last, obj_new
+
+    def get_lost(self, new, last):
+        for obj_new in new:
+            for obj_last in last:
+                if obj_last[0]==obj_new[0] and (sum([abs(i-j) for i,j in zip(obj_new[2],obj_last[2])]))/(obj_last[2][2]+obj_last[2][3])*100 < self.pos_sensivity :
+                    last.remove(obj_last)
+                    break
 
