@@ -33,23 +33,6 @@ def EtoB(E):
     else :
         return False
 
-
-
-# function to extract same objects in 2 lists
-def get_list_same (l_old,l_under,thresh):
-    l_old_w = l_old[:]
-    new_element = []
-    new_element2 = []
-    for e_under in l_under :
-        for e_old in l_old_w:
-            if e_under[0]==e_old[0] :
-                diff_pos = (sum([abs(i-j) for i,j in zip(e_under[2],e_old[2])]))/(e_old[2][2]+e_old[2][3])*100
-                if diff_pos < thresh :
-                    new_element.append(e_old)
-                    new_element2.append(e_under)
-                    l_old_w.remove(e_old)
-    return new_element, new_element2
-
 def get_list_diff(l_new,l_old,thresh):
     new_copy = l_new[:]
     old_copy = l_old[:]
@@ -115,6 +98,7 @@ class ProcessCamera(Thread):
         self.camera_state = camera_state
         self.Q_img_real = Q_img_real
         self.force_remove={}
+        self.image_correction = False
 
         if cam.auth_type == 'B':
             self.auth = requests.auth.HTTPBasicAuth(cam.username,cam.password)
@@ -285,6 +269,8 @@ class ProcessCamera(Thread):
         last = self.result_DB.copy()
         self.get_lost(rp, last )
         obj_last, obj_new = self.search_result(last,result,rp)
+        if obj_last : 
+            self.image_correction = True
         self.logger.info('recovery objects from last detection :{} '.format(obj_last))
         rp_last = rp + obj_last
         rp_new = rp + obj_new
