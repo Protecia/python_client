@@ -287,13 +287,16 @@ class ProcessCamera(Thread):
                 diff_pos = (sum([abs(i-j) for i,j in zip(obj_lost[2],obj_result[2])]))/(obj_lost[2][2]+obj_lost[2][3])*100
                 if diff_pos < self.pos_sensivity and diff_pos < diff_pos_sav:
                     find = obj_result
+                    self.logger.debbug('find object {} same as {}'.format(obj_result,obj_lost))
+                    if find[1] > self.cam.threshold :
+                        if find[0] not in self.force_remove:
+                            self.force_remove[find[0]] =0
+                        if self.force_remove[find[0]] < 5:
+                            self.force_remove[find[0]] +=1
+                            rp.remove(find)   
+                    else:
+                        self.force_remove[find[0]] =0        
             if find :
-                if find[1]>=self.cam.threshold:  
-                    if self.force_remove[find[0]] < 10:
-                        self.force_remove[find[0]] +=1
-                        rp.remove(find)
-                else:
-                    self.force_remove[find[0]] =0
                 result.remove(find)
                 self.logger.info('find an object {} at same position than {}'.format(find,obj_lost))
                 obj_new.append((obj_lost[0],)+find[1:])
