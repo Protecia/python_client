@@ -59,13 +59,13 @@ def uploadResult(Q, E_video):
     logger.warning('starting upload result')
     while True:
         if server :
-            result = Q.get()
-            logger.info('get result from queue : {}'.format(result))
-            img, cam,  result_filtered, result_darknet = result[0], result[1], [(r[0].decode(),r[1],r[2]) for r in result[2] ], [(r[0].decode(),r[1],r[2]) for r in result[3] ]
+            img, cam, result_filtered, result_darknet, correction = Q.get()
+            logger.info('get result from queue : {}'.format((img, cam, result_filtered, result_darknet, correction)))
+            result_filtered, result_darknet = [(r[0].decode(),r[1],r[2]) for r in result_filtered ], [(r[0].decode(),r[1],r[2]) for r in result_darknet ]
             # set video record for this result
             video = recCamera.rec_cam(cam)
             logger.info('get video token : {}'.format(video))
-            resultJson = {'key': settings.KEY, 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet, 'video' : video }
+            resultJson = {'key': settings.KEY, 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet, 'video' : video, 'correction' : correction }
         try :
             r = requests.post(settings.SERVER+"uploadresult", json=resultJson,  timeout= 40)
             server = True

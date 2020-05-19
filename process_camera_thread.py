@@ -84,7 +84,7 @@ class ProcessCamera(Thread):
         #self.threated_requests = threated_requests
         self.request_OK = False
         self.lock = Lock()
-        self.black_list=(b'pottedplant',b'cell phone',b'oven',b'bowl')
+        self.black_list=(b'pottedplant',b'oven',b'bowl')
         self.logger = logger
         #self.net = net
         #self.meta = meta
@@ -239,7 +239,7 @@ class ProcessCamera(Thread):
                     token = secrets.token_urlsafe(6)
                     self.Q_img.put((self.cam.id, date+'_'+token,result_filtered_true, img_bytes))
                     self.logger.warning('Q_img size : {}'.format(self.Q_img.qsize()))
-                    self.Q_result.put((date+'_'+token+'.jpg', self.cam.id , result_filtered_true, result_darknet))
+                    self.Q_result.put((date+'_'+token+'.jpg', self.cam.id , result_filtered_true, result_darknet, self.image_correction))
                     self.logger.warning('Q_result size : {}'.format(self.Q_result.qsize()))
                     self.logger.warning('>>>>>>>>>>>>>>>--------- Result change send to queue '
                     '-------------<<<<<<<<<<<<<<<<<<<<<\n')
@@ -254,7 +254,9 @@ class ProcessCamera(Thread):
 
     def base_condition(self,new):
         compare = get_list_diff(new,self.result_DB,self.pos_sensivity)
-        if len(compare[0])==0 and len(compare[1])==0 :
+        if self.image_correction:
+            return True
+        elif len(compare[0])==0 and len(compare[1])==0 :
             return False
         else:
             self.logger.info('Change in objects detected : new={} lost={}'
@@ -269,7 +271,7 @@ class ProcessCamera(Thread):
         last = self.result_DB.copy()
         self.get_lost(rp, last )
         obj_last, obj_new = self.search_result(last,result,rp)
-        if obj_last : 
+        if obj_last and not self.image_correction : 
             self.image_correction = True
         self.logger.info('recovery objects from last detection :{} '.format(obj_last))
         rp_last = rp + obj_last
