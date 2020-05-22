@@ -297,7 +297,10 @@ class ProcessCamera(Thread):
                             self.force_remove[find[0]] =0
                         if self.force_remove[find[0]] < 5:
                             self.force_remove[find[0]] +=1
-                            rp.remove(find)   
+                            try :
+                                rp.remove(find)
+                            except ValueError:
+                                pass
                     else:
                         self.force_remove[find[0]] =0        
             if find :
