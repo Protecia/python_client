@@ -98,7 +98,7 @@ class ProcessCamera(Thread):
         self.camera_state = camera_state
         self.Q_img_real = Q_img_real
         self.force_remove={}
-        self.image_correction = False
+        self.image_correction = [False,0]
 
         if cam.auth_type == 'B':
             self.auth = requests.auth.HTTPBasicAuth(cam.username,cam.password)
@@ -239,7 +239,7 @@ class ProcessCamera(Thread):
                     token = secrets.token_urlsafe(6)
                     self.Q_img.put((self.cam.id, date+'_'+token,result_filtered_true, img_bytes))
                     self.logger.warning('Q_img size : {}'.format(self.Q_img.qsize()))
-                    self.Q_result.put((date+'_'+token+'.jpg', self.cam.id , result_filtered_true, result_darknet, self.image_correction))
+                    self.Q_result.put((date+'_'+token+'.jpg', self.cam.id , result_filtered_true, result_darknet, self.image_correction[0]))
                     self.logger.warning('Q_result size : {}'.format(self.Q_result.qsize()))
                     self.logger.warning('>>>>>>>>>>>>>>>--------- Result change send to queue '
                     '-------------<<<<<<<<<<<<<<<<<<<<<\n')
@@ -254,7 +254,7 @@ class ProcessCamera(Thread):
 
     def base_condition(self,new):
         compare = get_list_diff(new,self.result_DB,self.pos_sensivity)
-        if self.image_correction:
+        if self.image_correction[0]:
             return True
         elif len(compare[0])==0 and len(compare[1])==0 :
             return False
@@ -271,8 +271,10 @@ class ProcessCamera(Thread):
         last = self.result_DB.copy()
         self.get_lost(rp, last )
         obj_last, obj_new = self.search_result(last,result,rp)
-        if obj_last and not self.image_correction : 
-            self.image_correction = True
+        if obj_last and time.time()-self.image_correction[1] > 60*10 : 
+            self.image_correction = [True, time.time()]
+        else : 
+            self.image_correction = [False, 0] 
         self.logger.info('recovery objects from last detection :{} '.format(obj_last))
         rp_last = rp + obj_last
         rp_new = rp + obj_new
