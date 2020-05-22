@@ -254,9 +254,9 @@ class ProcessCamera(Thread):
 
     def base_condition(self,new):
         compare = get_list_diff(new,self.result_DB,self.pos_sensivity)
-        if self.image_correction[0]:
-            return True
-        elif len(compare[0])==0 and len(compare[1])==0 :
+        if len(compare[0])==0 and len(compare[1])==0 :
+            if self.image_correction[0] and time.time()-self.image_correction[1] > 60*10:
+                return True
             return False
         else:
             self.logger.info('Change in objects detected : new={} lost={}'
