@@ -192,7 +192,7 @@ class ProcessCamera(Thread):
             t=time.time()
             # Normal stop point for ip camera-------------------------------
             if threated_requests :
-                self.event[self.num].wait()
+                #self.event[self.num].wait()
                 self.logger.debug('cam {} alive'.format(self.cam.id))
             #---------------------------------------------------------------
             if self.request_OK and self.Q_img.qsize() < settings.QUEUE_SIZE:
@@ -256,6 +256,7 @@ class ProcessCamera(Thread):
         compare = get_list_diff(new,self.result_DB,self.pos_sensivity)
         if len(compare[0])==0 and len(compare[1])==0 :
             if self.image_correction[0] and time.time()-self.image_correction[1] > 60*10:
+                self.image_correction[1]= time.time()
                 return True
             return False
         else:
@@ -271,9 +272,9 @@ class ProcessCamera(Thread):
         last = self.result_DB.copy()
         self.get_lost(rp, last )
         obj_last, obj_new = self.search_result(last,result,rp)
-        if obj_last and time.time()-self.image_correction[1] > 60*10 : 
-            self.image_correction = [True, time.time()]
-        else : 
+        if obj_last and not self.image_correction[0] : 
+            self.image_correction = [True, 0]
+        elif  not obj_last : 
             self.image_correction = [False, 0] 
         self.logger.info('recovery objects from last detection :{} '.format(obj_last))
         rp_last = rp + obj_last
@@ -305,7 +306,7 @@ class ProcessCamera(Thread):
                         self.force_remove[find[0]] =0        
             if find :
                 result.remove(find)
-                self.logger.warning('find an object {} at same position than {}'.format(find,obj_lost))
+                self.logger.info('find an object {} at same position than {}'.format(find,obj_lost))
                 obj_new.append((obj_lost[0],)+find[1:])
                 obj_last.append(obj_lost)
         return obj_last, obj_new
