@@ -6,7 +6,7 @@ Created on Sat Jun  1 07:34:04 2019
 """
 
 import process_camera_thread as pc
-from threading import Event
+from threading import Event, Lock as tLock
 from multiprocessing import Process, Queue, Lock, Event as pEvent
 import json
 from collections import namedtuple
@@ -28,6 +28,7 @@ E_state = pEvent()
 E_video = pEvent()
 #E_state_real = pEvent()
 lock = Lock()
+tlock = tLock()
 onLine = True
 
 
@@ -65,7 +66,7 @@ def main():
                 cameras_state[c.id]=[pEvent(),pEvent()]
                 p = pc.ProcessCamera(c, n, Q_result,
                                    list_event,
-                                   len(cameras), Q_img, E_state, Q_img_real, cameras_state[c.id] )
+                                   len(cameras), Q_img, E_state, Q_img_real, cameras_state[c.id], tlock )
                 list_thread.append(p)
                 p.start()
             pState = Process(target=up.getState, args=(E_state,cameras_state))
