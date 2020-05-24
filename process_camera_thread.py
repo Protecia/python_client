@@ -192,7 +192,7 @@ class ProcessCamera(Thread):
             t=time.time()
             # Normal stop point for ip camera-------------------------------
             if threated_requests :
-                #self.event[self.num].wait()
+                self.event[self.num].wait()
                 self.logger.debug('cam {} alive'.format(self.cam.id))
             #---------------------------------------------------------------
             if self.request_OK and self.Q_img.qsize() < settings.QUEUE_SIZE:
