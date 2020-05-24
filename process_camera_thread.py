@@ -262,6 +262,7 @@ class ProcessCamera(Thread):
                 return True
             return False
         else:
+            self.image_correction = [False, 0]
             self.logger.info('Change in objects detected : new={} lost={}'
             .format(compare[0], compare[1]))
             return True
