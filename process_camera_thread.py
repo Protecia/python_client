@@ -202,7 +202,8 @@ class ProcessCamera(Thread):
                 self.logger.debug('thresh set to {}'.format(th))
                 frame_rgb = cv2.cvtColor(arr, cv2.COLOR_BGR2RGB)
                 im, arrd = dn.array_to_image(frame_rgb)
-                result_darknet = dn.detect_image(net, meta, im, thresh=th)
+                with self.lock:
+                    result_darknet = dn.detect_image(net, meta, im, thresh=th)
                 self.logger.info('get brut result from darknet in {}s : {} \n'.format(
                 time.time()-t,result_darknet))
                 self.event[self.num].clear()
