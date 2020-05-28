@@ -276,9 +276,9 @@ class ProcessCamera(Thread):
         self.get_lost(rp, last )
         obj_last, obj_new = self.search_result(last,result,rp)
         if obj_last and not self.image_correction[0] : 
-            self.image_correction = [True, 0]
+            self.image_correction = [True, self.image_correction[1]]
         elif  not obj_last : 
-            self.image_correction = [False, 0] 
+            self.image_correction = [False, self.image_correction[1]] 
         self.logger.info('recovery objects from last detection :{} '.format(obj_last))
         rp_last = rp + obj_last
         rp_new = rp + obj_new
