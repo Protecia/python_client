@@ -1,4 +1,4 @@
-FROM nnvision_client_base
+FROM nnvision_client_base2
 
 WORKDIR /NNvision
 COPY . /NNvision
