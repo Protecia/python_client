@@ -164,7 +164,7 @@ def compareCam(ws, lock, force):
                     if r.ok :
                         cameras_ip.remove(ip)
                         logger.error('ip {} not in ws but answer correct: so ignore'.format(ip))
-                except requests.exceptions.ConnectionError :
+                except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout) :
                     pass
     cameras_users = list(set([(c['username'],c['password']) for c in cameras]))
     # ws contains new cam or cam not set
