@@ -140,15 +140,17 @@ def compareCam(ws, lock, force):
     with lock:
         with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
             cameras = json.loads(out.read())
-    cameras_ip =  [ [c['ip'],c['active']] for c in cameras if c['from_client'] is True]
+    cameras_ip =  [ [c['ip'],False] for c in cameras if c['from_client'] is True]
     ws_copy = ws.copy()
     for c in ws_copy :
         for cam_server in cameras_ip:
             if c in cam_server[0]:
                 del ws[c]
-                cam_server[1]=False
-    cameras_ip = [i[0] for i in cameras_ip if i[1]]
+                cam_server[1]=True
+    # take only ip for camera which are not scan
+    cameras_ip = [i[0] for i in cameras_ip if not i[1]]
     #test if camera is answering or not
+    list_cam = []
     cameras_ip_copy = cameras_ip.copy()
     for ip in cameras_ip_copy:
         for cam in cameras:
@@ -156,20 +158,25 @@ def compareCam(ws, lock, force):
                 user = cam['username']
                 passwd = cam['password']
                 auth = {'B':requests.auth.HTTPBasicAuth(user,passwd), 'D':requests.auth.HTTPDigestAuth(user,passwd)}
-                try:
-                    r = requests.get(
-                            cam['url'],
-                            auth = auth[cam['auth_type']] ,
-                            stream=False, timeout=1)
-                    if r.ok :
-                        cameras_ip.remove(ip)
-                        logger.error('ip {} not in ws but answer correct: so ignore'.format(ip))
-                except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout) :
-                    pass
+                for i in range(2):
+                    try:
+                        r = requests.get(
+                                cam['url'],
+                                auth = auth[cam['auth_type']] ,
+                                stream=False, timeout=1)
+                        if r.ok :
+                            cameras_ip.remove(ip)
+                            if not cam['active_automatic']:
+                                cam['active_automatic']=True
+                                list_cam.append(cam)            
+                            logger.error('ip {} not in ws but answer correct: so ignore'.format(ip))
+                            break
+                    except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout) :
+                        pass
+                    time.sleep(1)
     cameras_users = list(set([(c['username'],c['password']) for c in cameras]))
     # ws contains new cam or cam not set
     # test connection
-    list_cam = []
     for ip,port in ws.items() :
         new_cam = {}
         new_cam['name']= 'unknow'
@@ -221,6 +228,7 @@ def compareCam(ws, lock, force):
                                 cam['url']= http
                                 cam['auth_type']= t
                                 cam['username'] = user
+                                cam['active_automatic'] = True
                                 cam['password'] = passwd
                                 cam['wait_for_set'] = False
                                 cam['rtsp'] = rtsp.split('//')[0]+'//'+user+':'+passwd+'@'+rtsp.split('//')[1]

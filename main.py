@@ -58,7 +58,7 @@ def main():
                 with open('camera/camera.json', 'r') as json_file:
                     cameras = json.load(json_file, object_hook=lambda d: namedtuple('camera', d.keys())(*d.values()))
             E_video.set()        
-            cameras = [c for c in cameras if c.active==True]
+            cameras = [c for c in cameras if (c.active==True and c.active_automatic==True)]
             list_thread=[]
             list_event=[Event() for i in range(len(cameras))]
             cameras_state={}
