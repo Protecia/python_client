@@ -14,7 +14,7 @@ from log import Logger
 import scan_camera as sc
 import upload as up
 from video import http_serve
-from install_cron import install_rec_backup_cron
+from install_cron import install_rec_backup_cron, install_check_tunnel_cron
 
 
 logger = Logger(__name__).run()
@@ -36,6 +36,7 @@ onLine = True
 def main():
     try:
         install_rec_backup_cron()
+        install_check_tunnel_cron()
         pCameraDownload = Process(target=sc.run, args=(60,lock, E_cam_start, E_cam_stop))
         pCameraDownload.start()
         pImageUpload = Process(target=up.uploadImage, args=(Q_img,))
