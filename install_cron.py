@@ -24,7 +24,7 @@ def install_rec_backup_cron():
 def install_check_tunnel_cron():
     cron = CronTab(user=True)
     if any(cron.find_command('check_tunnel'))==False:
-        cmd = "cd "+settings.INSTALL_PATH+" && "
+        cmd = "sleep 200 && cd "+settings.INSTALL_PATH+" && "
         cmd += settings.PYTHON+' '+os.path.join(settings.INSTALL_PATH,'check_tunnel.py')
         cmd += " > "+settings.INSTALL_PATH+"/camera/cron.log 2>&1&"
         job  = cron.new(command=cmd)
