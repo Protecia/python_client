@@ -13,18 +13,14 @@ SCAN_LOG = logging.ERROR
 PROCESS_CAMERA_LOG = logging.ERROR
 
 #Darknet conf
+CFG = 'cfg/yolov4.cfg'
+WEIGHTS = 'yolov4.weight'
+DATA = '/home/protecia/NNvision/python_client/coco_nano.data'
 DARKNET_PATH='/home/protecia/darknet'
-
-DARKNET_CONF={
-        'all':{'CFG' :'cfg/yolov4.cfg', 'WEIGHTS' : 'yolov4.weight', 'DATA' :'/home/protecia/NNvision/python_client/coco_nano.data'},
-        'car':{'CFG' :'cfg/yolov4.cfg', 'WEIGHTS' : 'yolov4.weight', 'DATA' :'/home/protecia/NNvision/python_client/coco_nano.data'},
-        'person':{'CFG' :'cfg/yolov4.cfg', 'WEIGHTS' : 'yolov4.weight', 'DATA' :'/home/protecia/NNvision/python_client/coco_nano.data'},
-        }
 
 # hardware conf
 INSTALL_PATH = '/home/protecia/NNvision/python_client'
 FFMPEG = '/usr/local/bin/ffmpeg'
-HARDWARE = 'nano' # nano or x64
 
 # python conf
 PYTHON = 'python3'
