@@ -16,9 +16,9 @@ PROCESS_CAMERA_LOG = logging.ERROR
 DARKNET_PATH='/NNvision/darknet'
 
 DARKNET_CONF={
-        'all':{'CFG' :'cfg/yolov4.cfg', 'WEIGHTS' : 'yolov4.weight', 'DATA' :'/home/protecia/NNvision/python_client/coco_nano.data'},
-        'car':{'CFG' :'cfg/protecia_car.cfg', 'WEIGHTS' : 'protecai_car.weight', 'DATA' :'/home/protecia/NNvision/python_client/car_nano.data'},
-        'person':{'CFG' :'cfg/yolov4.cfg', 'WEIGHTS' : 'yolov4.weight', 'DATA' :'/home/protecia/NNvision/python_client/coco_nano.data'},
+        'all':{'CFG' :'cfg/yolov4.cfg', 'WEIGHTS' : '../weights/yolov4.weights', 'DATA' :'/NNvision/coco_docker.data'},
+        'car':{'CFG' :'../weights/protecia.cfg', 'WEIGHTS' : '../weights/car.weight', 'DATA' :'/NNvision/weights/car_docker.data'},
+        'person':{'CFG' :'../weights/protecia.cfg', 'WEIGHTS' : '../weights/person.weight', 'DATA' :'/NNvision/weights/person_docker.data'},
         }
 
 # hardware conf
@@ -31,7 +31,7 @@ THREATED_REQUESTS=True
 SERVER = 'https://client.protecia.com/'
 VIDEO_REC_TIME = 10
 VIDEO_SPACE = 30 #Go
-QUEUE_SIZE = 100 # number of images to queue at max
+QUEUE_SIZE = 10 # number of images to queue at max
 
 # client conf
 KEY = '1e2e0df0c8616c1bcd5e90721ac2393a70240814100b26b568c75e46972e82a0'

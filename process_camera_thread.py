@@ -21,11 +21,13 @@ logger = Logger('process_camera_thread', level=settings.PROCESS_CAMERA_LOG).run(
 
 threated_requests = settings.THREATED_REQUESTS
 path = settings.DARKNET_PATH
-cfg = os.path.join(path,settings.CFG).encode()
-weights = os.path.join(path,settings.WEIGHTS).encode()
-data = os.path.join(path,settings.DATA).encode()
-net = dn.load_net_custom(cfg,weights, 0, 1)
-meta = dn.load_meta(data)
+
+for key, values in settings.DARKNET_CONF:
+    cfg = os.path.join(path,key['CFG']).encode()
+    weights = os.path.join(path,key['WEIGHTS']).encode()
+    data = os.path.join(path,key['DATA']).encode()
+    net+'_'+key = dn.load_net_custom(cfg,weights, 0, 1)
+    meta+'_'+key = dn.load_meta(data)
 
 def EtoB(E):
     if E.is_set() :
