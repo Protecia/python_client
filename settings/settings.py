@@ -33,4 +33,3 @@ QUEUE_SIZE = 100 # number of images to queue at max
 # client conf
 KEY = 'e40872239e1c0f4a56dc2636cd98d2b668d4260c10f4a9718433369333a2c54f'
 TUNNEL_PORT = 40002
-
