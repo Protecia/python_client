@@ -140,72 +140,10 @@ def compareCam(ws, lock, force):
     with lock:
         with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
             cameras = json.loads(out.read())
-    cameras_ip =  [ [c['ip'],False] for c in cameras if c['from_client'] is True]
-    ws_copy = ws.copy()
-    for c in ws_copy :
-        for cam_server in cameras_ip:
-            if c in cam_server[0]:
-                del ws[c]
-                cam_server[1]=True
-    # take only ip for camera which are not scan
-    cameras_ip = [i[0] for i in cameras_ip if not i[1]]
-    #test if camera is answering or not
-    list_cam = []
-    cameras_ip_copy = cameras_ip.copy()
-    for ip in cameras_ip_copy:
-        for cam in cameras:
-            if cam['ip']== ip:
-                user = cam['username']
-                passwd = cam['password']
-                auth = {'B':requests.auth.HTTPBasicAuth(user,passwd), 'D':requests.auth.HTTPDigestAuth(user,passwd)}
-                for i in range(2):
-                    try:
-                        r = requests.get(
-                                cam['url'],
-                                auth = auth[cam['auth_type']] ,
-                                stream=False, timeout=1)
-                        if r.ok :
-                            cameras_ip.remove(ip)
-                            if not cam['active_automatic']:
-                                cam['active_automatic']=True
-                                list_cam.append(cam)            
-                            logger.error('ip {} not in ws but answer correct: so ignore'.format(ip))
-                            break
-                    except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout) :
-                        pass
-                    time.sleep(1)
     cameras_users = list(set([(c['username'],c['password']) for c in cameras]))
-    # ws contains new cam or cam not set
-    # test connection
-    for ip,port in ws.items() :
-        new_cam = {}
-        new_cam['name']= 'unknow'
-        new_cam['ip'] = ip
-        new_cam['port_onvif'] = port
-        new_cam['wait_for_set'] = True
-        new_cam['from_client'] = True
-        for user , passwd in cameras_users:
-            onvif = getOnvifUri(ip,port,user,passwd)
-            if onvif :
-                info, rtsp , http = onvif
-                auth = {'B':requests.auth.HTTPBasicAuth(user,passwd), 'D':requests.auth.HTTPDigestAuth(user,passwd)}
-                for t, a in auth.items() :
-                    try:
-                        r = requests.get(http, auth = a , stream=False, timeout=1)
-                        if r.ok:
-                            new_cam['brand']=info['Manufacturer']
-                            new_cam['model']=info['Model']
-                            new_cam['url']= http
-                            new_cam['auth_type']= t
-                            new_cam['username'] = user
-                            new_cam['password'] = passwd
-                            new_cam['active'] = True
-                            new_cam['wait_for_set'] = False
-                            new_cam['rtsp'] = rtsp.split('//')[0]+'//'+user+':'+passwd+'@'+rtsp.split('//')[1]
-                    except (requests.exceptions.ConnectionError, requests.Timeout) :
-                        pass
-        list_cam.append(new_cam)
     # cameras could have wait_for_set camera :
+    # test connection for wait for set cam
+    list_cam = []
     for cam in cameras :
         logger.info('cam {} in state / wait_for_set {} / from_client {} / force {}'.format(
                 cam['ip'],cam['wait_for_set'],cam['from_client'], force))
@@ -235,9 +173,68 @@ def compareCam(ws, lock, force):
                                 list_cam.append(cam)
                         except (requests.exceptions.ConnectionError, requests.Timeout) :
                             pass
-    # cameras_ip contains cam now unreachable
-    logger.info('compare camera, list : {} / remove : {}'.format(list_cam,cameras_ip))
-    return list_cam, cameras_ip
+    for ips in ws.copy() :
+        for c in cameras:
+            if c['ip'] == ips :
+                if c['active_automatic']:
+                    del ws[ips]
+                cameras[:] = [d for d in cameras if d['ip']!=ips]
+    # take only ip for camera which are not scan and from client
+    cameras[:] = [d for d in cameras if d['from_client'] is True]
+    #test if camera is answering or not
+    for cam in cameras.copy():
+        user = cam['username']
+        passwd = cam['password']
+        auth = {'B':requests.auth.HTTPBasicAuth(user,passwd), 'D':requests.auth.HTTPDigestAuth(user,passwd)}
+        for i in range(2):
+            try:
+                r = requests.get(
+                        cam['url'],
+                        auth = auth[cam['auth_type']] ,
+                        stream=False, timeout=1)
+                if r.ok :
+                    cameras[:] = [d for d in cameras if d['id']!=cam['id']]
+                    if not cam['active_automatic']:
+                        cam['active_automatic']=True
+                        list_cam.append(cam)
+                    logger.error('ip {} not in ws but answer correct: so ignore'.format(cam['ip']))
+                    break
+            except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout) :
+                pass
+            time.sleep(1)
+    # ws contains new cam
+    # test connection for new cam
+    for ip,port in ws.items() :
+        new_cam = {}
+        new_cam['name']= 'unknow'
+        new_cam['ip'] = ip
+        new_cam['port_onvif'] = port
+        new_cam['wait_for_set'] = True
+        new_cam['from_client'] = True
+        for user , passwd in cameras_users:
+            onvif = getOnvifUri(ip,port,user,passwd)
+            if onvif :
+                info, rtsp , http = onvif
+                auth = {'B':requests.auth.HTTPBasicAuth(user,passwd), 'D':requests.auth.HTTPDigestAuth(user,passwd)}
+                for t, a in auth.items() :
+                    try:
+                        r = requests.get(http, auth = a , stream=False, timeout=1)
+                        if r.ok:
+                            new_cam['brand']=info['Manufacturer']
+                            new_cam['model']=info['Model']
+                            new_cam['url']= http
+                            new_cam['auth_type']= t
+                            new_cam['username'] = user
+                            new_cam['password'] = passwd
+                            new_cam['active'] = True
+                            new_cam['wait_for_set'] = False
+                            new_cam['rtsp'] = rtsp.split('//')[0]+'//'+user+':'+passwd+'@'+rtsp.split('//')[1]
+                    except (requests.exceptions.ConnectionError, requests.Timeout) :
+                        pass
+        list_cam.append(new_cam)
+    # cameras contains cam now unreachable
+    logger.info('compare camera, new or set or force : {} / remove : {}'.format(list_cam,[c['ip'] for c in cameras]))
+    return list_cam, [c['ip'] for c in cameras]
 
 def getCam(lock, force= 0):
     try :
@@ -257,6 +254,7 @@ def getCam(lock, force= 0):
         pass
 
 def run(period, lock, E_cam_start, E_cam_stop):
+    remove_nb = {}
     # reboot
     cam = getCam(lock, 2)
     ws = wsDiscovery(2,20)
@@ -287,14 +285,19 @@ def run(period, lock, E_cam_start, E_cam_stop):
             # push the cam to the server
             if list_cam : setCam(list_cam)
             # inactive the cam on the server
-            if remove_cam : removeCam(remove_cam)
+            if remove_cam :
+                if remove_cam not in remove_nb :
+                    remove_nb[remove_cam] = 0
+                else :
+                    remove_nb[remove_cam] +=1
+                if remove_nb[remove_cam]>2:
+                    removeCam(remove_cam)
+                    remove_nb.pop(remove_cam, None)
             # wait for the loop
             if force==0:
                 time.sleep(period)
         else :
             time.sleep(30)
 
-
-# camera_ip contains cam to inactive
 
 
