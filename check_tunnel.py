@@ -49,7 +49,7 @@ if not checkHost(ip, port):
                 proc.kill()
         subprocess.call("./sshtunnel.sh")
     else:
-        os.system("systemctl reboot -i")
+        os.system("sudo reboot")
         
         
     # on docker restart autossh
