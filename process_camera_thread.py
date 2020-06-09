@@ -93,7 +93,7 @@ class ProcessCamera(Thread):
         self.request_OK = False
         self.lock = Lock()
         self.tlock = lock
-        self.black_list=(b'pottedplant',b'oven',b'bowl')
+        self.black_list=[i.encode() for i in settings.DARKNET_CONF['all']['restrict']]
         self.logger = logger
         #self.net = net
         #self.meta = meta
@@ -216,7 +216,8 @@ class ProcessCamera(Thread):
                         result1 = executor.submit(detect_thread, net['all'], meta['all'], im, th)
                         result2 = executor.submit(detect_thread, net['car'], meta['car'], im, th)
                         result3 = executor.submit(detect_thread, net['person'], meta['person'], im, th)
-                        result_darknet = result1.result()
+                result_darknet = [r for r in result1.result() if r[0] not in self.black_list]
+                result_darknet += result2.result() + result3.result()
                 self.logger.info('get brut result from darknet in {}s : {} \n'.format(
                 time.time()-t,result_darknet))
                 self.event[self.num].clear()
@@ -280,13 +281,12 @@ class ProcessCamera(Thread):
             return True
 
     def check_thresh(self,resultb):
-        result = [r for r in resultb if r[0] not in self.black_list]
         #result = [(e1,e2,e3) if e1 not in self.clone else (self.clone[e1],e2,e3)
         #for (e1,e2,e3) in result]
-        rp = [r for r in result if r[1]>=self.cam.threshold]
+        rp = [r for r in resultb if r[1]>=self.cam.threshold]
         last = self.result_DB.copy()
         self.get_lost(rp, last )
-        obj_last, obj_new = self.search_result(last,result,rp)
+        obj_last, obj_new = self.search_result(last,resultb,rp)
         if obj_last and not self.image_correction[0] : 
             self.image_correction = [True, self.image_correction[1]]
         elif  not obj_last : 
