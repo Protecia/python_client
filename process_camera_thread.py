@@ -218,7 +218,7 @@ class ProcessCamera(Thread):
                         result3 = executor.submit(detect_thread, net['person'], meta['person'], im, th)
                 result_darknet = [r for r in result1.result() if r[0] not in self.black_list]
                 result_darknet +=  result2.result() + result3.result()
-                result_treated = result_darknet + [ [i[0], 0.9, i[2]] for i in result2.result() if i[1]>0.2 ] + [ [i[0], 0.9, i[2]] for i in result3.result() if i[1]>0.2 ]
+                result_treated = result_darknet + [ (i[0], 0.9, i[2]) for i in result2.result() if i[1]>0.2 ] + [ (i[0], 0.9, i[2]) for i in result3.result() if i[1]>0.2 ]
                 self.logger.info('get brut result from darknet in {}s : {} \n'.format(
                 time.time()-t,result_darknet))
                 self.event[self.num].clear()
