@@ -16,18 +16,24 @@ import os
 import darknet as dn
 from log import Logger
 import secrets
+import concurrent.futures
 
 logger = Logger('process_camera_thread', level=settings.PROCESS_CAMERA_LOG).run()
 
 threated_requests = settings.THREATED_REQUESTS
 path = settings.DARKNET_PATH
+net = {}
+meta = {}
 
-for key, values in settings.DARKNET_CONF:
-    cfg = os.path.join(path,key['CFG']).encode()
-    weights = os.path.join(path,key['WEIGHTS']).encode()
-    data = os.path.join(path,key['DATA']).encode()
-    net+'_'+key = dn.load_net_custom(cfg,weights, 0, 1)
-    meta+'_'+key = dn.load_meta(data)
+for key, values in settings.DARKNET_CONF.items():
+    cfg = os.path.join(path,values['CFG']).encode()
+    weights = os.path.join(path,values['WEIGHTS']).encode()
+    data = os.path.join(path,values['DATA']).encode()
+    net[key] = dn.load_net_custom(cfg,weights, 0, 1)
+    meta[key] = dn.load_meta(data)
+
+def detect_thread(net, meta, im, thresh):
+    return dn.detect_image(net, meta, im, thresh)
 
 def EtoB(E):
     if E.is_set() :
@@ -206,7 +212,11 @@ class ProcessCamera(Thread):
                 frame_rgb = cv2.cvtColor(arr, cv2.COLOR_BGR2RGB)
                 with self.tlock :
                     im, arrd = dn.array_to_image(frame_rgb)
-                    result_darknet = dn.detect_image(net, meta, im, thresh=th)
+                    with concurrent.futures.ThreadPoolExecutor() as executor:
+                        result1 = executor.submit(detect_thread, net['all'], meta['all'], im, th)
+                        result2 = executor.submit(detect_thread, net['car'], meta['car'], im, th)
+                        result3 = executor.submit(detect_thread, net['person'], meta['person'], im, th)
+                        result_darknet = result1.result()
                 self.logger.info('get brut result from darknet in {}s : {} \n'.format(
                 time.time()-t,result_darknet))
                 self.event[self.num].clear()

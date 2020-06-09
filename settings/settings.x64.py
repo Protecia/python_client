@@ -17,13 +17,14 @@ DARKNET_PATH='/NNvision/darknet'
 
 DARKNET_CONF={
         'all':{'CFG' :'cfg/yolov4.cfg', 'WEIGHTS' : '../weights/yolov4.weights', 'DATA' :'/NNvision/coco_docker.data'},
-        'car':{'CFG' :'../weights/protecia.cfg', 'WEIGHTS' : '../weights/car.weight', 'DATA' :'/NNvision/weights/car_docker.data'},
-        'person':{'CFG' :'../weights/protecia.cfg', 'WEIGHTS' : '../weights/person.weight', 'DATA' :'/NNvision/weights/person_docker.data'},
+        'car':{'CFG' :'../weights/protecia.cfg', 'WEIGHTS' : '../weights/car.weights', 'DATA' :'/NNvision/weights/car_docker.data'},
+        'person':{'CFG' :'../weights/protecia.cfg', 'WEIGHTS' : '../weights/person.weights', 'DATA' :'/NNvision/weights/person_docker.data'},
         }
 
 # hardware conf
 INSTALL_PATH = '/NNvision'
 FFMPEG = '/usr/local/bin/ffmpeg'
+HARDWARE = 'x64'
 
 # python conf
 PYTHON = 'python3'

@@ -286,6 +286,7 @@ def run(period, lock, E_cam_start, E_cam_stop):
             if list_cam : setCam(list_cam)
             # inactive the cam on the server
             if remove_cam :
+                logger.error('ip {} not in remove cam'.format(remove_cam))
                 if remove_cam not in remove_nb :
                     remove_nb[remove_cam] = 0
                 else :
@@ -293,6 +294,7 @@ def run(period, lock, E_cam_start, E_cam_stop):
                 if remove_nb[remove_cam]>2:
                     removeCam(remove_cam)
                     remove_nb.pop(remove_cam, None)
+                    logger.error('ip {} send to server to inactive'.format(remove_cam))
             # wait for the loop
             if force==0:
                 time.sleep(period)
