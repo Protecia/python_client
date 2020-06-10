@@ -213,12 +213,16 @@ class ProcessCamera(Thread):
                 with self.tlock :
                     im, arrd = dn.array_to_image(frame_rgb)
                     with concurrent.futures.ThreadPoolExecutor() as executor:
-                        result1 = executor.submit(detect_thread, net['all'], meta['all'], im, th)
-                        result2 = executor.submit(detect_thread, net['car'], meta['car'], im, th)
-                        result3 = executor.submit(detect_thread, net['person'], meta['person'], im, th)
-                result_darknet = [r for r in result1.result() if r[0] not in self.black_list]
-                result_darknet +=  result2.result() + result3.result()
-                result_treated = result_darknet + [ (i[0], 0.9, i[2]) for i in result2.result() if i[1]>0.2 ] + [ (i[0], 0.9, i[2]) for i in result3.result() if i[1]>0.2 ]
+                        result_dict={}
+                        for key, network in net.items():
+                            result_dict[key] = executor.submit(detect_thread, network, meta[key], im, th)
+                if 'all' in result_dict:
+                    result_darknet = [r for r in result_dict['all'].result() if r[0] not in self.black_list]
+                    result_dict.pop('all')
+                else :
+                    result_darknet=[]
+                for key, partial_result in result_dict.items():
+                    result_darknet += partial_result.result()                        
                 self.logger.info('get brut result from darknet in {}s : {} \n'.format(
                 time.time()-t,result_darknet))
                 self.event[self.num].clear()
@@ -228,7 +232,7 @@ class ProcessCamera(Thread):
 
                 # get only result above trheshlod or previously valid
                 t=time.time()
-                result_filtered, result_filtered_true  = self.check_thresh(result_treated)
+                result_filtered, result_filtered_true  = self.check_thresh(result_darknet)
                 # process image
                 if self.cam.reso:
                     if arr.shape[0]!=self.cam.height or arr.shape[1]!=self.cam.width:
@@ -299,14 +303,16 @@ class ProcessCamera(Thread):
         return rp_last, rp_new
 
     def search_result(self,lost,result,rp):
+        # find if there is lost object in result
         obj_last = []
         obj_new = []
-        diff_pos_sav = 10000
         for obj_lost in lost:
             find = None
+            diff_pos_sav = 10000
             for obj_result in result:
                 diff_pos = (sum([abs(i-j) for i,j in zip(obj_lost[2],obj_result[2])]))/(obj_lost[2][2]+obj_lost[2][3])*100
                 if diff_pos < self.pos_sensivity and diff_pos < diff_pos_sav:
+                    diff_pos_sav = diff_pos
                     find = obj_result
                     self.logger.debug('find object {} same as {}'.format(obj_result,obj_lost))
                     if find[1] > self.cam.threshold :
@@ -328,6 +334,7 @@ class ProcessCamera(Thread):
         return obj_last, obj_new
 
     def get_lost(self, new, last):
+        # remove similar object so only lost are in last
         for obj_new in new:
             for obj_last in last:
                 if obj_last[0]==obj_new[0] and (sum([abs(i-j) for i,j in zip(obj_new[2],obj_last[2])]))/(obj_last[2][2]+obj_last[2][3])*100 < self.pos_sensivity :
