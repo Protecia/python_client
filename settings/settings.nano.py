@@ -13,7 +13,7 @@ SCAN_LOG = logging.ERROR
 PROCESS_CAMERA_LOG = logging.ERROR
 
 #Darknet conf
-DARKNET_PATH='/NNvision/darknet'
+DARKNET_PATH='/home/protecia/darknet'
 
 DARKNET_CONF={
         'all':{
@@ -32,9 +32,9 @@ DARKNET_CONF={
         }
 
 # hardware conf
-INSTALL_PATH = '/NNvision'
+INSTALL_PATH = '/home/protecia/NNvision/python_client'
 FFMPEG = '/usr/local/bin/ffmpeg'
-HARDWARE = 'x64'
+HARDWARE = 'nano'
 
 # python conf
 PYTHON = 'python3'
