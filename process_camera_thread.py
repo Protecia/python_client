@@ -291,7 +291,7 @@ class ProcessCamera(Thread):
         rp = [r for r in resultb if r[1]>=self.cam.threshold]
         last = self.result_DB.copy()
         self.get_lost(rp, last )
-        obj_last, obj_new = self.search_result(last,resultb,rp)
+        obj_last, obj_new = self.search_result(last,resultb.copy(),rp)
         if obj_last and not self.image_correction[0] : 
             self.image_correction = [True, self.image_correction[1]]
         elif  not obj_last : 
