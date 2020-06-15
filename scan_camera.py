@@ -233,8 +233,8 @@ def compareCam(ws, lock, force):
                         pass
         list_cam.append(new_cam)
     # cameras contains cam now unreachable
-    logger.info('compare camera, new or set or force : {} / remove : {}'.format(list_cam,[c['ip'] for c in cameras]))
-    return list_cam, [c['ip'] for c in cameras]
+    logger.info('compare camera, new or set or force : {} / remove : {}'.format(list_cam,[c['ip'] for c in cameras if c['active_automatic']]))
+    return list_cam, [c['ip'] for c in cameras  if c['active_automatic'] ]
 
 def getCam(lock, force= 0):
     try :
@@ -295,7 +295,7 @@ def run(period, lock, E_cam_start, E_cam_stop):
                     if remove_nb[rcam]>2:
                         removeCam([rcam,])
                         remove_nb.pop(rcam, None)
-                        logger.error('ip {} send to server to inactive'.format(remove_cam))
+                        logger.error('ip {} send to server to inactive'.format(rcam))
             # wait for the loop
             if force==0:
                 time.sleep(period)
