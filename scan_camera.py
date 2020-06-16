@@ -171,7 +171,7 @@ def compareCam(ws, lock, force):
                                 cam['wait_for_set'] = False
                                 cam['rtsp'] = rtsp.split('//')[0]+'//'+user+':'+passwd+'@'+rtsp.split('//')[1]
                                 list_cam.append(cam)
-                        except (requests.exceptions.ConnectionError, requests.Timeout) :
+                        except (requests.exceptions.ConnectionError, requests.Timeout, requests.exceptions.MissingSchema) :
                             pass
     for ips in ws.copy() :
         for c in cameras:
