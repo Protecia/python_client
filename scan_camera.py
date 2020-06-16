@@ -18,6 +18,7 @@ import psutil
 import netifaces as ni
 import xml.etree.ElementTree as ET
 import re
+from urllib3.exceptions import HeaderParsingError
 
 logger = Logger('scan_camera', level=settings.SCAN_LOG).run()
 
@@ -108,7 +109,7 @@ def getOnvifUri(ip,port,user,passwd):
         obj = media_service.create_type('GetSnapshotUri')
         obj.ProfileToken = profiles[0].token
         http = media_service.GetSnapshotUri(obj)['Uri']#.split('?')[0]
-    except ONVIFError :
+    except (ONVIFError, HeaderParsingError) :
         return None
     return info, rtsp, http
 
