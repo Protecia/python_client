@@ -199,7 +199,7 @@ def compareCam(ws, lock, force):
                         list_cam.append(cam)
                     logger.error('ip {} not in ws but answer correct: so ignore'.format(cam['ip']))
                     break
-            except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout) :
+            except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout, requests.exceptions.MissingSchema) :
                 pass
             time.sleep(1)
     # ws contains new cam
