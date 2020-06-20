@@ -16,7 +16,7 @@ def install_rec_backup_cron():
     if any(cron.find_command('video.py'))==False:
         cmd = "cd "+settings.INSTALL_PATH+" && "
         cmd += settings.PYTHON+' '+os.path.join(settings.INSTALL_PATH,'video.py')
-        cmd += " > "+settings.INSTALL_PATH+"/camera/cron.log 2>&1&"
+        cmd += " > "+settings.INSTALL_PATH+"/camera/cron_video.log 2>&1&"
         job  = cron.new(command=cmd)
         job.every().hour()
         cron.write()
@@ -26,7 +26,7 @@ def install_check_tunnel_cron():
     if any(cron.find_command('check_tunnel'))==False:
         cmd = "sleep 200 && cd "+settings.INSTALL_PATH+" && "
         cmd += settings.PYTHON+' '+os.path.join(settings.INSTALL_PATH,'check_tunnel.py')
-        cmd += " > "+settings.INSTALL_PATH+"/camera/cron.log 2>&1&"
+        cmd += " > "+settings.INSTALL_PATH+"/camera/cron_tunnel.log 2>&1&"
         job  = cron.new(command=cmd)
         job.minute.every(10)
         cron.write()

@@ -12,8 +12,7 @@ import json
 import os
 
 
-logger = Logger(__name__).run()
-logger.setLevel(settings.UPLOAD_LOG)
+logger = Logger(__name__, level=settings.UPLOAD_LOG).run()
 
 def uploadImageRealTime(Q):
     logger.warning('starting upload real time image')
