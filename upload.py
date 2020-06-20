@@ -9,6 +9,7 @@ import settings.settings as settings
 from log import Logger
 import time
 import json
+import os
 
 
 logger = Logger(__name__).run()
@@ -89,6 +90,8 @@ def getState(E, camera_state):
             r = requests.post(settings.SERVER+"getState", data = {'key': settings.KEY, }, timeout= 40 )
             data = json.loads(r.text)
             logger.warning('getState answer : {}'.format(data))
+            if data['reboot'] and settings.HARDWARE=='nano':
+                os.system("sudo reboot")     
             if data['rec'] :
                 E.set()
             else :
