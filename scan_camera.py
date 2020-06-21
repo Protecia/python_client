@@ -177,9 +177,9 @@ def compareCam(ws, lock, force):
     for ips in ws.copy() :
         for c in cameras:
             if c['ip'] == ips :
+                del ws[ips]
                 if c['active_automatic']:
-                    del ws[ips]
-                cameras[:] = [d for d in cameras if d['ip']!=ips]
+                    cameras[:] = [d for d in cameras if d['ip']!=ips]
     # take only ip for camera which are not scan and from client
     cameras[:] = [d for d in cameras if d['from_client'] is True]
     #test if camera is answering or not
