@@ -277,11 +277,11 @@ def run(period, lock, E_cam_start, E_cam_stop):
             # check if changes
             if cam==False :
                 E_cam_start.set()
-                logger.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
+                logger.warning('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
                 force= 0
             else :
                 E_cam_stop.set()
-                logger.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
+                logger.warning(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
                 force =  1
             # push the cam to the server
             if list_cam : setCam(list_cam)
