@@ -43,7 +43,7 @@ if not checkHost(ip, port):
     print(ip,'is DOWN')
     for proc in psutil.process_iter():
         # check whether the process name matches
-        if 'ssh' in proc.name():
+        if 'ssh' in proc.name() and 'sshd' not in proc.name():
             proc.kill()
     subprocess.call("./sshtunnel.sh")
 
