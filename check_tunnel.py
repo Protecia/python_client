@@ -8,7 +8,6 @@ Created on Fri Jun  5 19:31:50 2020
 import socket
 import time
 import settings.settings as settings
-import os
 import psutil
 import subprocess
 
@@ -42,15 +41,12 @@ def checkHost(ip, port):
 
 if not checkHost(ip, port):
     print(ip,'is DOWN')
-    if settings.HARDWARE == 'x64':
-        for proc in psutil.process_iter():
-            # check whether the process name matches
-            if 'ssh' in proc.name():
-                proc.kill()
-        subprocess.call("./sshtunnel.sh")
-    else:
-        os.system("sudo reboot")
-        
+    for proc in psutil.process_iter():
+        # check whether the process name matches
+        if 'ssh' in proc.name():
+            proc.kill()
+    subprocess.call("./sshtunnel.sh")
+
         
     # on docker restart autossh
     # on nano reboot
