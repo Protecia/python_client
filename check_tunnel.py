@@ -47,7 +47,6 @@ if not checkHost(ip, port):
             proc.kill()
     subprocess.call("./sshtunnel.sh")
 
-        
+
     # on docker restart autossh
     # on nano reboot
-    
