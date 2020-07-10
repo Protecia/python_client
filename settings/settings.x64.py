@@ -17,17 +17,17 @@ DARKNET_PATH='/NNvision/darknet'
 
 DARKNET_CONF={
         'all':{
-                'CFG' :'cfg/yolov4.cfg', 
-                'WEIGHTS' : '../weights/yolov4.weights', 
+                'CFG' :'cfg/yolov4.cfg',
+                'WEIGHTS' : '../weights/yolov4.weights',
                 'DATA' :'/NNvision/coco_docker.data',
                 'RESTRICT':('pottedplant','oven','bowl','car','person')},
         'car':{
-                'CFG' :'../weights/protecia.cfg', 
-                'WEIGHTS' : '../weights/car.weights', 
+                'CFG' :'../weights/protecia.cfg',
+                'WEIGHTS' : '../weights/car.weights',
                 'DATA' :'/NNvision/weights/car_docker.data'},
         'person':{
-                'CFG' :'../weights/protecia.cfg', 
-                'WEIGHTS' : '../weights/person.weights', 
+                'CFG' :'../weights/protecia.cfg',
+                'WEIGHTS' : '../weights/person.weights',
                 'DATA' :'/NNvision/weights/person_docker.data'},
         }
 
