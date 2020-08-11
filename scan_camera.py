@@ -187,7 +187,7 @@ def compareCam(ws, lock, force):
         user = cam['username']
         passwd = cam['password']
         auth = {'B':requests.auth.HTTPBasicAuth(user,passwd), 'D':requests.auth.HTTPDigestAuth(user,passwd)}
-        for i in range(2):
+        for i in range(4):
             try:
                 r = requests.get(
                         cam['url'],
