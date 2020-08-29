@@ -44,7 +44,10 @@ if not checkHost(ip, port):
     for proc in psutil.process_iter():
         # check whether the process name matches
         if 'ssh' in proc.name() and 'sshd' not in proc.name():
-            proc.kill()
+            try:
+                proc.kill()
+            except psutil.AccessDenied:
+                pass
     subprocess.call("./sshtunnel.sh")
 
 
