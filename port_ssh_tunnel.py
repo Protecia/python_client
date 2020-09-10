@@ -7,4 +7,5 @@ elif 'ip' in sys.argv:
     print(settings.TUNNEL_IP)
 elif 'user' in sys.argv:
     print(settings.TUNNEL_USER)
-    
+elif 'ssh_server' in sys.argv:
+    print(settings.SSH_SERVER)

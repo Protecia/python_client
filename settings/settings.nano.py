@@ -49,4 +49,5 @@ KEY = ''
 TUNNEL_PORT = 39000
 TUNNEL_IP = 'my.protecia.com'
 TUNNEL_USER = 'cez542de@client.protecia.com'
+SSH_SERVER = 2222
 
