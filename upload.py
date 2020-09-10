@@ -104,3 +104,5 @@ def getState(E, camera_state):
             logger.warning('getState Can not find the remote server : except --> {}'.format(ex))
             time.sleep(5)
             pass
+        except Exception as e:
+            logger.error('exception in getState, type : {} --> {}'.format(e.__class__.__name__,e))
