@@ -47,4 +47,5 @@ QUEUE_SIZE = 10 # number of images to queue at max
 # client conf
 KEY = ''
 TUNNEL_PORT = 39000
-
+TUNNEL_IP = 'my.protecia.com'
+TUNNEL_USER = 'cez542de@client.protecia.com'

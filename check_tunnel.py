@@ -11,7 +11,7 @@ import settings.settings as settings
 import psutil
 import subprocess
 
-ip = "client.protecia.com"
+ip = settings.TUNNEL_IP
 port = settings.TUNNEL_PORT
 retry = 3
 delay = 2
