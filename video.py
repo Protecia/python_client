@@ -86,6 +86,10 @@ class RecCamera(object):
 
 def rec_all_cam():
     repeat = True
+    path = os.path.join(settings.INSTALL_PATH,'camera/secu')
+    files = [os.path.join(path,f) for f in os.listdir(path) if (time.time()-os.path.getmtime(os.path.join(path, f)))/3600/24 > 2 ]
+    for f in files:
+        os.remove(f)
     while repeat :
         i = 0
         try :
