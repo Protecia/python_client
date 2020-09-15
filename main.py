@@ -15,7 +15,7 @@ import scan_camera as sc
 import upload as up
 from video import http_serve
 from install_cron import install_rec_backup_cron, install_check_tunnel_cron
-
+import ping as pg
 
 logger = Logger(__name__).run()
 
@@ -70,7 +70,7 @@ def main():
                                    len(cameras), Q_img, E_state, Q_img_real, cameras_state[c.id], tlock )
                 list_thread.append(p)
                 p.start()
-            pState = Process(target=up.getState, args=(E_state,cameras_state))
+            pState = Process(target=pg.getState, args=(E_state,cameras_state))
             pState.start()
             print('darknet is running...')
             # Just run4ever (until Ctrl-c...)
