@@ -16,6 +16,9 @@ import upload as up
 from video import http_serve
 from install_cron import install_rec_backup_cron, install_check_tunnel_cron
 import ping as pg
+import settings.settings as settings
+import requests
+import subprocess
 
 logger = Logger(__name__).run()
 
@@ -31,7 +34,19 @@ lock = Lock()
 tlock = tLock()
 onLine = True
 
-
+def conf():
+    try :
+       if settings.KEY is None:
+           machine_id = subprocess.check_output(['cat', '/sys/class/dmi/id/product_uuid']).decode().strip()
+           r = requests.post(settings.SERVER+"conf", data = {'machine': machine_id, }, timeout= 40 )
+       else:    
+           r = requests.post(settings.SERVER+"conf", data = {'key': settings.KEY, }, timeout= 40 )
+           data = json.loads(r.text)
+           with open(settings.INSTALL_PATH+'/settings/conf.json', 'w') as conf_json:
+               json.dump(data['conf'],conf_json)
+    except (requests.exceptions.ConnectionError, requests.Timeout, KeyError, json.decoder.JSONDecodeError ) as ex :
+            logger.warning('conf Can not find the remote server : except --> {}'.format(ex))
+            pass
 
 def main():
     try:

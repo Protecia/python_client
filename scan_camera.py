@@ -103,12 +103,15 @@ def getOnvifUri(ip,port,user,passwd):
         media_service = cam.create_media_service()
         profiles = media_service.GetProfiles()
         obj = media_service.create_type('GetStreamUri')
-        obj.ProfileToken = profiles[0].token
-        obj.StreamSetup = {'Stream': 'RTP-Unicast', 'Transport': {'Protocol': 'RTSP'}}
-        rtsp = media_service.GetStreamUri(obj)['Uri']
-        obj = media_service.create_type('GetSnapshotUri')
-        obj.ProfileToken = profiles[0].token
-        http = media_service.GetSnapshotUri(obj)['Uri']#.split('?')[0]
+        rtsp = []
+        http = []
+        for canal in profiles :
+            obj.ProfileToken = canal.token
+            obj.StreamSetup = {'Stream': 'RTP-Unicast', 'Transport': {'Protocol': 'RTSP'}}
+            rtsp.append = media_service.GetStreamUri(obj)['Uri']
+            obj = media_service.create_type('GetSnapshotUri')
+            obj.ProfileToken = canal.token
+            http.append = media_service.GetSnapshotUri(obj)['Uri']#.split('?')[0]
     except (ONVIFError, HeaderParsingError) :
         return None
     return info, rtsp, http
@@ -170,7 +173,7 @@ def compareCam(ws, lock, force):
                                 cam['active_automatic'] = True
                                 cam['password'] = passwd
                                 cam['wait_for_set'] = False
-                                cam['rtsp'] = rtsp.split('//')[0]+'//'+user+':'+passwd+'@'+rtsp.split('//')[1]
+                                cam['rtsp'] = [i.split('//')[0]+'//'+user+':'+passwd+'@'+i.split('//')[1] for i in rtsp]
                                 list_cam.append(cam)
                         except (requests.exceptions.ConnectionError, requests.Timeout, requests.exceptions.MissingSchema) :
                             pass
@@ -229,7 +232,7 @@ def compareCam(ws, lock, force):
                             new_cam['password'] = passwd
                             new_cam['active'] = True
                             new_cam['wait_for_set'] = False
-                            new_cam['rtsp'] = rtsp.split('//')[0]+'//'+user+':'+passwd+'@'+rtsp.split('//')[1]
+                            new_cam['rtsp'] = [i.split('//')[0]+'//'+user+':'+passwd+'@'+i.split('//')[1] for i in rtsp]
                     except (requests.exceptions.ConnectionError, requests.Timeout) :
                         pass
         list_cam.append(new_cam)

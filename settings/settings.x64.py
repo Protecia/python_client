@@ -5,6 +5,7 @@ Created on Tue Dec  3 15:06:16 2019
 @author: julien
 """
 import logging
+import json
 
 LOG = logging.ERROR
 VIDEO_LOG = logging.ERROR
@@ -51,3 +52,17 @@ TUNNEL_PORT = 39000
 TUNNEL_IP = 'my.protecia.com'
 TUNNEL_USER = 'cez542de@client.protecia.com'
 SSH_SERVER = 2222
+
+class Conf(object):
+    def __init__(self, value):
+        try :
+            with open('conf.json','r') as conf:
+                conf_json = json.load(conf)
+            self.value = conf_json[value]
+        except:
+            self.value = None
+    def __repr__(self):
+        return  str(self.value)
+
+    
+KEY = Conf('KEY')
