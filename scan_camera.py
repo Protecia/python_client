@@ -22,24 +22,6 @@ from urllib3.exceptions import HeaderParsingError
 
 logger = Logger('scan_camera', level=settings.SCAN_LOG).run()
 
-'''
-def wsDiscovery():
-    """Discover cameras on network using onvif discovery.
-    Returns:
-        List: List of ips found in network.
-    """
-    wsd = wsdiscovery.WSDiscovery()
-    wsd.start()
-    ret = wsd.searchServices()
-    dcam = {}
-    for service in ret:
-        scheme = service.getXAddrs()[0]
-        if 'onvif' in scheme :
-            dcam[scheme.split('/')[2].split(':')[0]] = scheme.split('/')[2].split(':')[1]
-    wsd.stop()
-    return dcam
-'''
-
 def wsDiscovery(repeat, wait):
     """Discover cameras on network using ws discovery.
     Returns:
