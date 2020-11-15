@@ -13,6 +13,7 @@ UPLOAD_LOG = logging.ERROR
 SCAN_LOG = logging.ERROR
 PROCESS_CAMERA_LOG = logging.ERROR
 PING_LOG = logging.ERROR
+CAMERA_LOG = logging.ERROR
 
 #Darknet conf
 DARKNET_PATH='/NNvision/darknet'
@@ -42,6 +43,7 @@ HARDWARE = 'x64'
 PYTHON = 'python3'
 THREATED_REQUESTS=True
 SERVER = 'https://client.protecia.com/'
+SERVER_WS = 'wss://client.protecia.com'
 VIDEO_REC_TIME = 10
 VIDEO_SPACE = 30 #Go
 QUEUE_SIZE = 10 # number of images to queue at max
@@ -52,6 +54,7 @@ TUNNEL_PORT = 39000
 TUNNEL_IP = 'my.protecia.com'
 TUNNEL_USER = 'cez542de@client.protecia.com'
 SSH_SERVER = 2222
+INIT_PASS = 'jznsjoa3z54d'
 
 class Conf(object):
     def __init__(self, value):

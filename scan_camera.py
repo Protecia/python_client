@@ -78,7 +78,7 @@ def getOnvifUri(ip,port,user,passwd):
     Returns:
         List: List of uri found for the camera.
     """
-    wsdir =  '/usr/local/lib/python3.6/site-packages/wsdl/'
+    wsdir = '/usr/local/lib/python3.6/site-packages/wsdl/'
     try :
         cam = ONVIFCamera(ip, port, user, passwd, wsdir)
         info = cam.devicemgmt.GetDeviceInformation()
@@ -87,15 +87,21 @@ def getOnvifUri(ip,port,user,passwd):
         obj = media_service.create_type('GetStreamUri')
         rtsp = []
         http = []
-        for canal in profiles :
+    except (ONVIFError, HeaderParsingError):
+        return None
+    for canal in profiles:
+        try:
             obj.ProfileToken = canal.token
             obj.StreamSetup = {'Stream': 'RTP-Unicast', 'Transport': {'Protocol': 'RTSP'}}
-            rtsp.append = media_service.GetStreamUri(obj)['Uri']
+            rtsp.append(media_service.GetStreamUri(obj)['Uri'])
+        except (ONVIFError, HeaderParsingError):
+            pass
+        try:
             obj = media_service.create_type('GetSnapshotUri')
             obj.ProfileToken = canal.token
-            http.append = media_service.GetSnapshotUri(obj)['Uri']#.split('?')[0]
-    except (ONVIFError, HeaderParsingError) :
-        return None
+            http.append(media_service.GetSnapshotUri(obj)['Uri'])#.split('?')[0]
+        except (ONVIFError, HeaderParsingError):
+            pass
     return info, rtsp, http
 
 def setCam(cam):
