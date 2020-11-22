@@ -18,6 +18,7 @@ import subprocess
 import web_camera
 import signal
 import time
+from urllib3.exceptions import ProtocolError
 
 # globals var
 logger = Logger(__name__, level=settings.MAIN_LOG).run()
@@ -41,7 +42,7 @@ def conf():
         logger.warning(f'Probably first connection from box : except-->{ex} / name-->{type(ex).__name__}')
         return False
     except (ConnectionResetError, requests.exceptions.ConnectionError, requests.Timeout, KeyError,
-            json.decoder.JSONDecodeError) as ex:
+            json.decoder.JSONDecodeError, ProtocolError) as ex:
         logger.warning(f'exception in configuration : except-->{ex} / name-->{type(ex).__name__}')
         return False
 
