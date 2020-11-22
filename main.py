@@ -38,9 +38,10 @@ def conf():
     except FileNotFoundError as ex:
         machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip()
         requests.post(settings.SERVER+"conf", data={'machine': machine_id, 'pass': settings.INIT_PASS}, timeout=40)
-        logger.warning(f'Probably first : except-->{ex} / name-->{type(ex).__name__}')
+        logger.warning(f'Probably first connection from box : except-->{ex} / name-->{type(ex).__name__}')
         return False
-    except (requests.exceptions.ConnectionError, requests.Timeout, KeyError, json.decoder.JSONDecodeError) as ex:
+    except (ConnectionResetError, requests.exceptions.ConnectionError, requests.Timeout, KeyError,
+            json.decoder.JSONDecodeError) as ex:
         logger.warning(f'exception in configuration : except-->{ex} / name-->{type(ex).__name__}')
         return False
 
