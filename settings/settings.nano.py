@@ -41,12 +41,13 @@ HARDWARE = 'nano'
 PYTHON = 'python3'
 THREATED_REQUESTS=True
 SERVER = 'https://client.protecia.com/'
+SERVER_WS = 'ws://client.protecia.com/'
 VIDEO_REC_TIME = 10
 VIDEO_SPACE = 30 #Go
 QUEUE_SIZE = 10 # number of images to queue at max
 
 # client conf
-KEY = ''
+KEY = None
 TUNNEL_PORT = 39000
 TUNNEL_IP = 'my.protecia.com'
 TUNNEL_USER = 'cez542de@client.protecia.com'

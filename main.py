@@ -28,17 +28,15 @@ Q_result = Queue()
 
 def conf():
     try:
-        if settings.KEY is None:
-            machine_id = subprocess.check_output(['cat', '/sys/class/dmi/id/product_uuid']).decode().strip()
-            requests.post(settings.SERVER+"conf", data={'machine': machine_id, 'pass': settings.INIT_PASS}, timeout=40)
-        else:
+        with open(settings.INSTALL_PATH + '/settings/conf.json', 'w') as conf_json:
             r = requests.post(settings.SERVER+"conf", data={'key': settings.KEY, }, timeout=40)
             data = json.loads(r.text)
-            with open(settings.INSTALL_PATH+'/settings/conf.json', 'w') as conf_json:
-                json.dump(data['conf'], conf_json)
+            json.dump(data['conf'], conf_json)
+    except FileNotFoundError:
+        machine_id = subprocess.check_output(['cat', '/sys/class/dmi/id/product_uuid']).decode().strip()
+        requests.post(settings.SERVER+"conf", data={'machine': machine_id, 'pass': settings.INIT_PASS}, timeout=40)
     except (requests.exceptions.ConnectionError, requests.Timeout, KeyError, json.decoder.JSONDecodeError) as ex:
         logger.warning('conf Can not find the remote server : except --> {}'.format(ex))
-        pass
 
 
 def end(signum, frame):

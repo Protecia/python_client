@@ -245,10 +245,9 @@ def getCam(lock, force= 0):
         return False
         pass
 
-def run(period, lock, E_cam_start, E_cam_stop):
+def run(period):
     remove_nb = {}
     # reboot
-    cam = getCam(lock, 2)
     ws = wsDiscovery(2,20)
     if not ws==False:
         list_cam, remove_cam = compareCam(ws, lock, 2)
