@@ -36,7 +36,7 @@ def conf():
         machine_id = subprocess.check_output(['cat', '/sys/class/dmi/id/product_uuid']).decode().strip()
         requests.post(settings.SERVER+"conf", data={'machine': machine_id, 'pass': settings.INIT_PASS}, timeout=40)
     except (requests.exceptions.ConnectionError, requests.Timeout, KeyError, json.decoder.JSONDecodeError) as ex:
-        logger.warning('conf Can not find the remote server : except --> {}'.format(ex))
+        logger.warning(f'exception in configuration : except --> {ex} / name -->{type(ex).__name__} / args-->{ex.args}')
 
 
 def end(signum, frame):
