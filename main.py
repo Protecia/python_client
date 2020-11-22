@@ -17,6 +17,7 @@ import requests
 import subprocess
 import web_camera
 import signal
+import time
 
 # globals var
 logger = Logger(__name__, level=settings.MAIN_LOG).run()
@@ -33,12 +34,15 @@ def conf():
             r = requests.post(settings.SERVER+"conf", data={'key': data['KEY'], }, timeout=40)
             data = json.loads(r.text)
             json.dump(data['conf'], conf_json)
+            return True
     except FileNotFoundError as ex:
         machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip()
         requests.post(settings.SERVER+"conf", data={'machine': machine_id, 'pass': settings.INIT_PASS}, timeout=40)
         logger.warning(f'Probably first : except-->{ex} / name-->{type(ex).__name__}')
     except (requests.exceptions.ConnectionError, requests.Timeout, KeyError, json.decoder.JSONDecodeError) as ex:
         logger.warning(f'exception in configuration : except-->{ex} / name-->{type(ex).__name__}')
+        pass
+        return False
 
 
 def end(signum, frame):
@@ -58,10 +62,11 @@ def stop(list_thread):
 
 def main():
     signal.signal(signal.SIGTERM, end)
-    conf()
-    list_thread = []
-    process = {}
     try:
+        while not conf():
+            time.sleep(10)
+        list_thread = []
+        process = {}
         # install some cron job
         install_rec_backup_cron()
         install_check_tunnel_cron()
