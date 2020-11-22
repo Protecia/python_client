@@ -35,7 +35,7 @@ def conf():
             r = requests.post(settings.SERVER+"conf", data={'key': data['KEY'], }, timeout=40)
             data = json.loads(r.text)
             json.dump(data['conf'], conf_json)
-            return True
+        return True
     except FileNotFoundError as ex:
         machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip()
         try:
