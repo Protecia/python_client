@@ -44,6 +44,7 @@ def conf():
     except (ConnectionResetError, requests.exceptions.ConnectionError, requests.Timeout, KeyError,
             json.decoder.JSONDecodeError, ProtocolError) as ex:
         logger.warning(f'exception in configuration : except-->{ex} / name-->{type(ex).__name__}')
+        pass
         return False
 
 
