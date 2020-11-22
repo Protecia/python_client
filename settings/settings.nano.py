@@ -7,6 +7,7 @@ Created on Tue Dec  3 15:06:16 2019
 import logging
 
 LOG = logging.ERROR
+MAIN_LOG = logging.ERROR
 VIDEO_LOG = logging.ERROR
 UPLOAD_LOG = logging.ERROR
 SCAN_LOG = logging.ERROR

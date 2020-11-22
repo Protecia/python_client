@@ -19,7 +19,7 @@ import web_camera
 import signal
 
 # globals var
-logger = Logger(__name__).run()
+logger = Logger(__name__, level=settings.MAIN_LOG).run()
 
 Q_img = Queue()
 Q_img_real = Queue()

@@ -8,6 +8,7 @@ import logging
 import json
 
 LOG = logging.ERROR
+MAIN_LOG = logging.ERROR
 VIDEO_LOG = logging.ERROR
 UPLOAD_LOG = logging.ERROR
 SCAN_LOG = logging.ERROR
