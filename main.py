@@ -58,6 +58,7 @@ def stop(list_thread):
 
 def main():
     signal.signal(signal.SIGTERM, end)
+    conf()
     list_thread = []
     process = {}
     try:
