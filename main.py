@@ -28,15 +28,17 @@ Q_result = Queue()
 
 def conf():
     try:
-        with open(settings.INSTALL_PATH + '/settings/conf.json', 'w') as conf_json:
-            r = requests.post(settings.SERVER+"conf", data={'key': settings.KEY, }, timeout=40)
+        with open(settings.INSTALL_PATH + '/settings/conf.json', 'r+') as conf_json:
+            data = json.load(conf_json)
+            r = requests.post(settings.SERVER+"conf", data={'key': data['KEY'], }, timeout=40)
             data = json.loads(r.text)
             json.dump(data['conf'], conf_json)
     except FileNotFoundError:
         machine_id = subprocess.check_output(['cat', '/sys/class/dmi/id/product_uuid']).decode().strip()
         requests.post(settings.SERVER+"conf", data={'machine': machine_id, 'pass': settings.INIT_PASS}, timeout=40)
+        logger.warning(f'Probably first : except-->{ex} / name-->{type(ex).__name__}')
     except (requests.exceptions.ConnectionError, requests.Timeout, KeyError, json.decoder.JSONDecodeError) as ex:
-        logger.warning(f'exception in configuration : except --> {ex} / name -->{type(ex).__name__} / args-->{ex.args}')
+        logger.warning(f'exception in configuration : except-->{ex} / name-->{type(ex).__name__}')
 
 
 def end(signum, frame):
