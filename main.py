@@ -34,7 +34,7 @@ def conf():
             data = json.loads(r.text)
             json.dump(data['conf'], conf_json)
     except FileNotFoundError:
-        machine_id = subprocess.check_output(['cat', '/sys/class/dmi/id/product_uuid']).decode().strip()
+        machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip()
         requests.post(settings.SERVER+"conf", data={'machine': machine_id, 'pass': settings.INIT_PASS}, timeout=40)
         logger.warning(f'Probably first : except-->{ex} / name-->{type(ex).__name__}')
     except (requests.exceptions.ConnectionError, requests.Timeout, KeyError, json.decoder.JSONDecodeError) as ex:

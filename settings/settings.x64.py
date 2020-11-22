@@ -39,6 +39,7 @@ DARKNET_CONF={
 INSTALL_PATH = '/NNvision'
 FFMPEG = '/usr/local/bin/ffmpeg'
 HARDWARE = 'x64'
+UUID = '/sys/class/dmi/id/product_uuid'
 
 # python conf
 PYTHON = 'python3'
