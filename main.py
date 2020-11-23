@@ -37,7 +37,7 @@ def conf():
             json.dump(data['conf'], conf_json)
         return True
     except FileNotFoundError as ex:
-        machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip()
+        machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip('\x00')
         try:
             requests.post(settings.SERVER+"conf", data={'machine': machine_id, 'pass': settings.INIT_PASS}, timeout=40)
             logger.warning(f'Probably first connection from box : except-->{ex} / name-->{type(ex).__name__}')
