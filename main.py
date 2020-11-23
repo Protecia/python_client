@@ -5,7 +5,7 @@ Created on Sat Jun  1 07:34:04 2019
 @author: julien
 """
 import process_camera_thread as pc
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Lock
 import json
 from log import Logger
 import scan_camera as sc
@@ -26,7 +26,7 @@ logger = Logger(__name__, level=settings.MAIN_LOG).run()
 Q_img = Queue()
 Q_img_real = Queue()
 Q_result = Queue()
-
+lock = Lock()
 
 def conf():
     try:
@@ -76,7 +76,7 @@ def main():
 
         # launch child processes
         process = {
-            'scan_camera': Process(target=sc.run, args=(60,)),
+            'scan_camera': Process(target=sc.run, args=(60, lock )),
             'image_upload': Process(target=up.uploadImage, args=(Q_img,)),
             'image_upload_real_time': Process(target=up.uploadImageRealTime, args=(Q_img_real,)),
             'result_upload': Process(target=up.uploadResult, args=(Q_result,)),
@@ -90,12 +90,17 @@ def main():
                      f'upload real time image->{process["image_upload_real_time"].pid} / '
                      f'upload result->{process["result_upload"].pid} / serve cherrypy->{process["serve_http"].pid}')
 
-        # retrieve the camera from the server :
-        get_camera = web_camera.Cameras()
-        cameras = get_camera.get_cam()
+        # Instanciate get_camera :
+        get_camera = web_camera.Cameras(lock)
+
         while True:
+            # retrieve cam
+            get_camera.get_cam()
+            # write the file for backup video
+            get_camera.write()
+
             list_thread = []
-            for c in cameras:
+            for c in get_camera.camera:
                 p = pc.ProcessCamera(c, Q_result, Q_img, Q_img_real)
                 list_thread.append(p)
                 p.start()

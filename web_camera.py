@@ -6,13 +6,19 @@ import asyncio
 
 
 class Cameras(object):
-    def __init__(self):
+    def __init__(self, lock):
         self.loop = asyncio.get_event_loop()
         self.running = True
         self.camera = None
+        self.lock = lock
         with open(settings.INSTALL_PATH + '/settings/conf.json', 'r') as conf_json:
             data = json.load(conf_json)
         self.key = data["key"]
+
+    def write(self):
+        with self.lock:
+            with open(settings.INSTALL_PATH + '/camera/camera.json', 'w') as cam:
+                json.dump(cam)
 
     def get_cam(self):
         return self.loop.run_until_complete(self.__async__get_cam())
