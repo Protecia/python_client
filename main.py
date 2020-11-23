@@ -37,7 +37,7 @@ def conf():
         with open(settings.INSTALL_PATH + '/settings/conf.json', 'w') as conf_json:
             if data.get('key', False):
                 json.dump(data, conf_json)
-                logger.warning(f'Receiveing  json conf :  {r.text}')
+                logger.warning(f'Receiving  json conf :  {r.text}')
                 return True
             else:
                 logger.warning(f'No client affected.')
@@ -74,6 +74,14 @@ def main():
         install_rec_backup_cron()
         install_check_tunnel_cron()
 
+        # Instanciate get_camera :
+        get_camera = web_camera.Cameras(lock)
+
+        # retrieve cam
+        get_camera.get_cam()
+        # write the file for backup video
+        get_camera.write()
+
         # launch child processes
         process = {
             'scan_camera': Process(target=sc.run, args=(60, lock )),
@@ -90,25 +98,19 @@ def main():
                      f'upload real time image->{process["image_upload_real_time"].pid} / '
                      f'upload result->{process["result_upload"].pid} / serve cherrypy->{process["serve_http"].pid}')
 
-        # Instanciate get_camera :
-        get_camera = web_camera.Cameras(lock)
-
         while True:
-            # retrieve cam
-            get_camera.get_cam()
-            # write the file for backup video
-            get_camera.write()
-
             list_thread = []
             for c in get_camera.camera:
                 p = pc.ProcessCamera(c, Q_result, Q_img, Q_img_real)
                 list_thread.append(p)
                 p.start()
             # wait until a camera change
-            cameras = get_camera.wait_cam()
+            get_camera.wait_cam()
             # If camera change (websocket answer)
             stop(list_thread)
             logger.warning('Camera change restart !')
+            # write the file for backup video
+            get_camera.write()
     except KeyboardInterrupt:
         stop(list_thread)
         for p in process.values():
