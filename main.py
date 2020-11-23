@@ -30,28 +30,26 @@ Q_result = Queue()
 
 def conf():
     try:
-        with open(settings.INSTALL_PATH + '/settings/conf.json', 'r+') as conf_json:
+        with open(settings.INSTALL_PATH + '/settings/conf.json', 'w+') as conf_json:
             data = json.load(conf_json)
-            r = requests.post(settings.SERVER+"conf", data={'key': data['KEY'], }, timeout=40)
-            logger.warning(f'Receiveing  json conf :  {r.text}')
-            data = json.loads(r.text)
-            json.dump(data, conf_json)
-        return True
-    except FileNotFoundError as ex:
-        machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip('\x00')
-        try:
-            r = requests.post(settings.SERVER+"conf", data={'machine': machine_id, 'pass': settings.INIT_PASS}, timeout=40)
-            logger.warning(f'Probably first connection from box : except-->{ex} / name-->{type(ex).__name__}')
-            data = json.loads(r.text)
-            if data['KEY']:
-                with open(settings.INSTALL_PATH + '/settings/conf.json', 'w') as conf_json:
+            if len(data) > 0:
+                r = requests.post(settings.SERVER + "conf", data={'key': data['KEY'], }, timeout=40)
+                logger.warning(f'Receiveing  json conf :  {r.text}')
+                data = json.loads(r.text)
+                json.dump(data, conf_json)
+                return True
+            else:
+                machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip('\x00')
+                r = requests.post(settings.SERVER + "conf",
+                                  data={'machine': machine_id, 'pass': settings.INIT_PASS}, timeout=40)
+                logger.warning(f'Probably first connection from box, machine ID {machine_id} save on server')
+                data = json.loads(r.text)
+                if data['KEY']:
                     json.dump(data, conf_json)
                     logger.warning(f'Writing first json conf on box :  {data}')
-            else:
-                logger.warning(f'Machine ID {machine_id} save on server but no client affected.')
-        except ConnectionResetError:
-            pass
-        return False
+                else:
+                    logger.warning(f'No client affected.')
+                return False
     except (ConnectionResetError, requests.exceptions.ConnectionError, requests.Timeout, KeyError,
             json.decoder.JSONDecodeError, ProtocolError) as ex:
         logger.warning(f'exception in configuration : except-->{ex} / name-->{type(ex).__name__}')
@@ -75,6 +73,8 @@ def stop(list_thread):
 
 def main():
     signal.signal(signal.SIGTERM, end)
+    list_thread = []
+    process = {}
     try:
         while not conf():
             time.sleep(10)
