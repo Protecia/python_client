@@ -35,7 +35,7 @@ def conf():
                           timeout=40)
         data = json.loads(r.text)
         with open(settings.INSTALL_PATH + '/settings/conf.json', 'w') as conf_json:
-            if data['KEY']:
+            if data.get('key', False):
                 json.dump(data, conf_json)
                 logger.warning(f'Receiveing  json conf :  {r.text}')
                 return True
