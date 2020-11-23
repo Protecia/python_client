@@ -34,7 +34,7 @@ def conf():
         r = requests.post(settings.SERVER + "conf", data={'machine': machine_id, 'pass': settings.INIT_PASS},
                           timeout=40)
         data = json.loads(r.text)
-        with open(settings.INSTALL_PATH + '/settings/conf.json', 'w+') as conf_json:
+        with open(settings.INSTALL_PATH + '/settings/conf.json', 'w') as conf_json:
             if data['KEY']:
                 json.dump(data, conf_json)
                 logger.warning(f'Receiveing  json conf :  {r.text}')
