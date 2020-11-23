@@ -43,11 +43,11 @@ def conf():
             logger.warning(f'Probably first connection from box : except-->{ex} / name-->{type(ex).__name__}')
             data = json.loads(r.text)
             if data['KEY']:
-                logger.warning(f'Machine ID {machine_id} save on server.')
-            else:
                 with open(settings.INSTALL_PATH + '/settings/conf.json', 'w') as conf_json:
                     json.dump(data, conf_json)
                     logger.warning(f'Writing first json conf on box :  {data}')
+            else:
+                logger.warning(f'Machine ID {machine_id} save on server but no client affected.')
         except ConnectionResetError:
             pass
         return False
