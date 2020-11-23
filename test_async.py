@@ -31,3 +31,12 @@ async def main():
 
 asyncio.run(main())
 
+camera = None
+
+async def get_cam():
+    async with websockets.connect(settings.SERVER_WS + 'ws') as ws:
+        await ws.send(json.dumps({'key': settings.KEY, 'force': True}))
+        camera = await ws.recv()
+
+
+await get_cam()

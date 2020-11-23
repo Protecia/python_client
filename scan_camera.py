@@ -228,22 +228,6 @@ def compareCam(ws, lock, force):
     logger.info('compare camera, new or set or force : {} / remove : {}'.format(list_cam,[c['ip'] for c in cameras if c['active_automatic']]))
     return list_cam, [c['ip'] for c in cameras  if c['active_automatic'] ]
 
-def getCam(lock, force= 0):
-    try :
-        logger.info('get camera, force state : {}'.format(force))
-        r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force}, timeout = 40 )
-        c = json.loads(r.text)
-        logger.info('get camera : {}'.format(c))
-        if not c==False :
-            with lock:
-                with open(settings.INSTALL_PATH+'/camera/camera.json', 'w') as out:
-                    json.dump(c,out)
-            r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
-        return c
-    except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError, requests.Timeout) as ex :
-        logger.error('exception in getCam: {}'.format(ex))
-        return False
-        pass
 
 def run(period):
     remove_nb = {}

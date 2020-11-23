@@ -70,15 +70,13 @@ def main():
     try:
         while not conf():
             time.sleep(10)
-        list_thread = []
-        process = {}
         # install some cron job
         install_rec_backup_cron()
         install_check_tunnel_cron()
 
         # launch child processes
         process = {
-            'camera_download': Process(target=sc.run, args=(60,)),
+            'scan_camera': Process(target=sc.run, args=(60,)),
             'image_upload': Process(target=up.uploadImage, args=(Q_img,)),
             'image_upload_real_time': Process(target=up.uploadImageRealTime, args=(Q_img_real,)),
             'result_upload': Process(target=up.uploadResult, args=(Q_result,)),
@@ -87,7 +85,7 @@ def main():
             p.start()
 
         # log the id of the process
-        logger.error(f'PID of different processes : scan camera->{process["camera_download"].pid} /'
+        logger.error(f'PID of different processes : scan camera->{process["scan_camera"].pid} /'
                      f' upload image->{process["image_upload"].pid} / '
                      f'upload real time image->{process["image_upload_real_time"].pid} / '
                      f'upload result->{process["result_upload"].pid} / serve cherrypy->{process["serve_http"].pid}')
