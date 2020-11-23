@@ -30,25 +30,17 @@ Q_result = Queue()
 
 def conf():
     try:
+        machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip('\x00')
+        r = requests.post(settings.SERVER + "conf", data={'machine': machine_id, 'pass': settings.INIT_PASS},
+                          timeout=40)
+        data = json.loads(r.text)
         with open(settings.INSTALL_PATH + '/settings/conf.json', 'w+') as conf_json:
-            data = json.load(conf_json)
-            if len(data) > 0:
-                r = requests.post(settings.SERVER + "conf", data={'key': data['KEY'], }, timeout=40)
-                logger.warning(f'Receiveing  json conf :  {r.text}')
-                data = json.loads(r.text)
+            if data['KEY']:
                 json.dump(data, conf_json)
+                logger.warning(f'Receiveing  json conf :  {r.text}')
                 return True
             else:
-                machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip('\x00')
-                r = requests.post(settings.SERVER + "conf",
-                                  data={'machine': machine_id, 'pass': settings.INIT_PASS}, timeout=40)
-                logger.warning(f'Probably first connection from box, machine ID {machine_id} save on server')
-                data = json.loads(r.text)
-                if data['KEY']:
-                    json.dump(data, conf_json)
-                    logger.warning(f'Writing first json conf on box :  {data}')
-                else:
-                    logger.warning(f'No client affected.')
+                logger.warning(f'No client affected.')
                 return False
     except (ConnectionResetError, requests.exceptions.ConnectionError, requests.Timeout, KeyError,
             json.decoder.JSONDecodeError, ProtocolError) as ex:
