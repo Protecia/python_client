@@ -34,13 +34,20 @@ def conf():
             data = json.load(conf_json)
             r = requests.post(settings.SERVER+"conf", data={'key': data['KEY'], }, timeout=40)
             data = json.loads(r.text)
-            json.dump(data['conf'], conf_json)
+            json.dump(data, conf_json)
         return True
     except FileNotFoundError as ex:
         machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip('\x00')
         try:
-            requests.post(settings.SERVER+"conf", data={'machine': machine_id, 'pass': settings.INIT_PASS}, timeout=40)
+            r = requests.post(settings.SERVER+"conf", data={'machine': machine_id, 'pass': settings.INIT_PASS}, timeout=40)
             logger.warning(f'Probably first connection from box : except-->{ex} / name-->{type(ex).__name__}')
+            data = json.loads(r.text)
+            if data['KEY']:
+                logger.warning(f'Machine ID {machine_id} save on server.')
+            else:
+                with open(settings.INSTALL_PATH + '/settings/conf.json', 'w') as conf_json:
+                    json.dump(data, conf_json)
+                    logger.warning(f'Writing first json conf on box :  {data}')
         except ConnectionResetError:
             pass
         return False
