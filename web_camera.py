@@ -21,7 +21,7 @@ class Cameras(object):
                 json.dump(self.camera, cam)
 
     def get_cam(self):
-        return self.loop.run_until_complete(self.__async__get_cam())
+        return asyncio.run(self.__async__get_cam())
 
     async def __async__get_cam(self):
         async with websockets.connect(settings.SERVER_WS+'ws') as ws:

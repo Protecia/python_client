@@ -164,7 +164,7 @@ def run(period, lock):
             with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
                 cameras = json.load(out)
         users_dict = dict(set([(c['username'], c['password']) for c in cameras]))
-        cam_ip_dict = dict([(c['ip'], c['port_on_vif']) for c in cameras]) + ws_discovery(2, 20)
+        cam_ip_dict = dict([(c['ip'], c['port_onvif']) for c in cameras]) + ws_discovery(2, 20)
         dict_cam = check_cam(cam_ip_dict, users_dict)
         set_cam(dict_cam)
         time.sleep(period)
