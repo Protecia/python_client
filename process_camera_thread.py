@@ -154,8 +154,8 @@ class ProcessCamera(Thread):
             # ******************************Grab images in http ********************************
             if not self.cam['stream']:
                 self.request_OK = True
-                try :
-                    r = requests.get(self.cam ['url'], auth=self.auth, stream=False, timeout=4)
+                try:
+                    r = requests.get(self.cam['url'], auth=self.auth, stream=False, timeout=4)
                     if r.status_code == 200 and len(r.content) > 1000:
                         self.frame = cv2.imdecode(np.asarray(bytearray(r.content), dtype="uint8"), 1)
                     else:
