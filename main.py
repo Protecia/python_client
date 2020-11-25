@@ -31,6 +31,7 @@ lock = Lock()
 E_video = pEvent()
 tlock = tLock()
 
+
 def conf():
     try:
         machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip('\x00')

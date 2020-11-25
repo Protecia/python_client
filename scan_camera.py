@@ -106,6 +106,24 @@ def get_onvif_uri(ip, port, user, passwd):
     return info, rtsp, http
 
 
+def check_auth(http, user, passwd):
+    auth = {'B': requests.auth.HTTPBasicAuth(user, passwd), 'D': requests.auth.HTTPDigestAuth(user, passwd)}
+    for t, a in auth.items():
+        for i in range(4):
+            for url in http:
+                try:
+                    r = requests.get(url, auth=a, stream=False, timeout=1)
+                    logger.info(f'request on {url}')
+                    if r.ok:
+                        logger.info(f'request  on camera OK for {http} / {user} / {passwd} / {t}')
+                        return t
+                except (requests.exceptions.ConnectionError, requests.Timeout,
+                        requests.exceptions.MissingSchema):
+                    time.sleep(0.5)
+                    pass
+    return False
+
+
 def check_cam(cam_ip_dict, users_dict):
     """Test connection for all ip/port.
         Returns:
@@ -119,29 +137,19 @@ def check_cam(cam_ip_dict, users_dict):
             onvif = get_onvif_uri(ip, port, user, passwd)
             if onvif:
                 info, rtsp, http = onvif
-                auth = {'B': requests.auth.HTTPBasicAuth(user, passwd), 'D': requests.auth.HTTPDigestAuth(user, passwd)}
-                for t, a in auth.items():
-                    for i in range(4):
-                        try:
-                            r = requests.get(http.split('?')[0], auth=a, stream=False, timeout=1)
-                            logger.info('request on {}'.format(http.split('?')[0]))
-                            if r.ok:
-                                logger.info(f'request  on camera OK for {ip} / {user} / {passwd} / {t}')
-                                dict_cam[ip]['brand'] = info['Manufacturer']
-                                dict_cam[ip]['model'] = info['Model']
-                                dict_cam[ip]['url'] = http
-                                dict_cam[ip]['auth_type'] = t
-                                dict_cam[ip]['username'] = user
-                                dict_cam[ip]['active_automatic'] = True
-                                dict_cam[ip]['password'] = passwd
-                                dict_cam[ip]['wait_for_set'] = False
-                                dict_cam[ip]['rtsp'] = [i.split('//')[0]+'//'+user+':'+passwd+'@'+i.split('//')[1]
-                                                        for i in rtsp]
-                                break
-                        except (requests.exceptions.ConnectionError, requests.Timeout,
-                                requests.exceptions.MissingSchema):
-                            time.sleep(0.5)
-                            pass
+                logger.info(f'onvif OK for {ip} / {port} / {user} / {passwd} ')
+                dict_cam[ip]['brand'] = info['Manufacturer']
+                dict_cam[ip]['model'] = info['Model']
+                dict_cam[ip]['url'] = http
+                dict_cam[ip]['username'] = user
+                dict_cam[ip]['active_automatic'] = True
+                dict_cam[ip]['password'] = passwd
+                dict_cam[ip]['wait_for_set'] = False
+                dict_cam[ip]['rtsp'] = [i.split('//')[0] + '//' + user + ':' + passwd + '@' + i.split('//')[1]
+                                        for i in rtsp]
+                auth = check_auth(http, user, passwd)
+                if auth:
+                    dict_cam[ip]['auth_type'] = auth
     return dict_cam
 
 
