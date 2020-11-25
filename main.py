@@ -20,6 +20,7 @@ import web_camera
 import signal
 import time
 from urllib3.exceptions import ProtocolError
+import asyncio
 
 # globals var
 logger = Logger(__name__, level=settings.MAIN_LOG).run()
@@ -79,12 +80,14 @@ def main():
         install_check_tunnel_cron()
 
         # Instanciate get_camera :
-        get_camera = web_camera.Cameras(lock)
+        cameras = web_camera.Cameras(lock)
 
         # retrieve cam
-        get_camera.get_cam()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(cameras.test_get_cam())
+
         # write the file for backup video
-        get_camera.write()
+        cameras.write()
 
         # launch child processes
         process = {
@@ -104,17 +107,17 @@ def main():
 
         while True:
             list_thread = []
-            for c in get_camera.camera:
+            for c in cameras.list:
                 p = pc.ProcessCamera(c, Q_result, Q_img, Q_img_real, tlock)
                 list_thread.append(p)
                 p.start()
             # wait until a camera change
-            get_camera.wait_cam()
+            cameras.wait_cam()
             # If camera change (websocket answer)
             stop(list_thread)
             logger.warning('Camera change restart !')
             # write the file for backup video
-            get_camera.write()
+            cameras.write()
     except KeyboardInterrupt:
         stop(list_thread)
         for p in process.values():

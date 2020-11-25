@@ -8,7 +8,7 @@ class Cameras(object):
     def __init__(self, lock):
         self.loop = asyncio.get_event_loop()
         self.running = True
-        self.camera = None
+        self.list = None
         self.lock = lock
         with open(settings.INSTALL_PATH + '/settings/conf.json', 'r') as conf_json:
             data = json.load(conf_json)
@@ -23,6 +23,12 @@ class Cameras(object):
         return self.loop.run_until_complete(self.__async__get_cam())
 
     async def __async__get_cam(self):
+        async with websockets.connect(settings.SERVER_WS+'ws') as ws:
+            await ws.send(json.dumps({'key': self.key, 'force': True}))
+            cam = await ws.recv()
+            self.camera = json.loads(cam)
+
+    async def test_get_cam(self):
         async with websockets.connect(settings.SERVER_WS+'ws') as ws:
             await ws.send(json.dumps({'key': self.key, 'force': True}))
             cam = await ws.recv()
