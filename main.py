@@ -5,6 +5,7 @@ Created on Sat Jun  1 07:34:04 2019
 @author: julien
 """
 import process_camera_thread as pc
+from threading import Lock as tLock
 from multiprocessing import Process, Queue, Lock, Event as pEvent
 import json
 from log import Logger
@@ -28,6 +29,7 @@ Q_img_real = Queue()
 Q_result = Queue()
 lock = Lock()
 E_video = pEvent()
+tlock = tLock()
 
 def conf():
     try:
@@ -102,7 +104,7 @@ def main():
         while True:
             list_thread = []
             for c in get_camera.camera:
-                p = pc.ProcessCamera(c, Q_result, Q_img, Q_img_real)
+                p = pc.ProcessCamera(c, Q_result, Q_img, Q_img_real, tlock)
                 list_thread.append(p)
                 p.start()
             # wait until a camera change
