@@ -26,7 +26,7 @@ class Cameras(object):
         async with websockets.connect(settings.SERVER_WS+'ws') as ws:
             await ws.send(json.dumps({'key': self.key, 'force': True}))
             cam = await ws.recv()
-            self.camera = json.loads(cam)
+            self.list = json.loads(cam)
 
     def wait_cam(self):
         return self.loop.run_until_complete(self.__async__wait_cam())
@@ -35,7 +35,7 @@ class Cameras(object):
         async with websockets.connect(settings.SERVER_WS + 'ws') as ws:
             await ws.send(json.dumps({'key': self.key, 'force': False}))
             cam = await ws.recv()
-            self.camera = json.loads(cam)
+            self.list = json.loads(cam)
             await ws.send(json.dumps({'answer': True}))
 
     async def wait_cam_loop(self):
@@ -43,7 +43,7 @@ class Cameras(object):
             while True:
                 await ws.send(json.dumps({'key': self.key, 'force': False}))
                 cam = await ws.recv()
-                self.camera = json.loads(cam)
+                self.list = json.loads(cam)
                 await ws.send(json.dumps({'answer': True}))
 
 
