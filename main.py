@@ -83,8 +83,7 @@ def main():
         cameras = web_camera.Cameras(lock)
 
         # retrieve cam
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(cameras.test_get_cam())
+        cameras.get_cam()
 
         # write the file for backup video
         cameras.write()

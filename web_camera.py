@@ -28,12 +28,6 @@ class Cameras(object):
             cam = await ws.recv()
             self.camera = json.loads(cam)
 
-    async def test_get_cam(self):
-        async with websockets.connect(settings.SERVER_WS+'ws') as ws:
-            await ws.send(json.dumps({'key': self.key, 'force': True}))
-            cam = await ws.recv()
-            self.camera = json.loads(cam)
-
     def wait_cam(self):
         return self.loop.run_until_complete(self.__async__wait_cam())
 

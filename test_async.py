@@ -40,3 +40,18 @@ async def get_cam():
 
 
 await get_cam()
+
+
+async def test_get_cam():
+    async with websockets.connect(settings.SERVER_WS + 'ws') as ws:
+        print(1)
+        await ws.send(json.dumps({'key': key, 'force': True}))
+        print(2)
+        cam = await ws.recv()
+        print(3)
+        return json.loads(cam)
+
+async def test_get_cam():
+    async with websockets.connect('ws://51.178.46.24:9090/ws'):
+        print(1)
+    return True
