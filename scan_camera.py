@@ -161,7 +161,7 @@ def set_cam(cam):
         s = json.loads(r.text)
         return s
     except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError, requests.Timeout) as ex:
-        logger.error('exception in setCam : {}'.format(ex))
+        logger.error(f'exception in setCam : except-->{ex} / name-->{type(ex).__name__}')
         pass
     return False
 

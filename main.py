@@ -87,6 +87,7 @@ def main():
 
         # write the file for backup video
         cameras.write()
+        logger.warning(f'Writing camera in json : {cameras.list}')
 
         # launch child processes
         process = {
