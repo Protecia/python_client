@@ -5,7 +5,7 @@ Created on Sat Jun  1 07:34:04 2019
 @author: julien
 """
 import process_camera_thread as pc
-from multiprocessing import Process, Queue, Lock
+from multiprocessing import Process, Queue, Lock, Event as pEvent
 import json
 from log import Logger
 import scan_camera as sc
@@ -27,6 +27,7 @@ Q_img = Queue()
 Q_img_real = Queue()
 Q_result = Queue()
 lock = Lock()
+E_video = pEvent()
 
 def conf():
     try:
@@ -87,7 +88,7 @@ def main():
             'scan_camera': Process(target=sc.run, args=(60, lock )),
             'image_upload': Process(target=up.uploadImage, args=(Q_img,)),
             'image_upload_real_time': Process(target=up.uploadImageRealTime, args=(Q_img_real,)),
-            'result_upload': Process(target=up.uploadResult, args=(Q_result,)),
+            'result_upload': Process(target=up.uploadResult, args=(Q_result, E_video )),
             'serve_http': Process(target=http_serve, args=(2525,))}
         for p in process.values():
             p.start()
