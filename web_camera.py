@@ -4,7 +4,6 @@ import json
 import asyncio
 
 
-
 class Cameras(object):
     def __init__(self, lock):
         self.loop = asyncio.get_event_loop()
@@ -21,7 +20,7 @@ class Cameras(object):
                 json.dump(self.camera, cam)
 
     def get_cam(self):
-        return asyncio.run(self.__async__get_cam())
+        return self.loop.run_until_complete(self.__async__get_cam())
 
     async def __async__get_cam(self):
         async with websockets.connect(settings.SERVER_WS+'ws') as ws:
