@@ -86,24 +86,26 @@ def get_onvif_uri(ip, port, user, passwd):
         media_service = cam.create_media_service()
         profiles = media_service.GetProfiles()
         obj = media_service.create_type('GetStreamUri')
-        rtsp = []
-        http = []
+        uri = []
     except (ONVIFError, HeaderParsingError):
         return None
     for canal in profiles:
         try:
             obj.ProfileToken = canal.token
             obj.StreamSetup = {'Stream': 'RTP-Unicast', 'Transport': {'Protocol': 'RTSP'}}
-            rtsp.append(media_service.GetStreamUri(obj)['Uri'])
+            rtsp = media_service.GetStreamUri(obj)['Uri']
         except (ONVIFError, HeaderParsingError):
+            rtsp = None
             pass
         try:
             obj = media_service.create_type('GetSnapshotUri')
             obj.ProfileToken = canal.token
-            http.append(media_service.GetSnapshotUri(obj)['Uri'])  # .split('?')[0]
+            http = media_service.GetSnapshotUri(obj)['Uri']  # .split('?')[0]
         except (ONVIFError, HeaderParsingError):
+            http = None
             pass
-    return info, rtsp, http
+        uri.append([http, rtsp])
+    return info, uri
 
 
 def check_auth(http, user, passwd):
@@ -136,18 +138,17 @@ def check_cam(cam_ip_dict, users_dict):
             logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
             onvif = get_onvif_uri(ip, port, user, passwd)
             if onvif:
-                info, rtsp, http = onvif
+                info, uri = onvif
                 logger.info(f'onvif OK for {ip} / {port} / {user} / {passwd} ')
                 dict_cam[ip]['brand'] = info['Manufacturer']
                 dict_cam[ip]['model'] = info['Model']
-                dict_cam[ip]['url'] = http
+                dict_cam[ip]['uri'] = [(i[0], i[1].split('//')[0] + '//' + user + ':' + passwd + '@' +
+                                        i[1].split('//')[1]) for i in uri]
                 dict_cam[ip]['username'] = user
                 dict_cam[ip]['active_automatic'] = True
                 dict_cam[ip]['password'] = passwd
                 dict_cam[ip]['wait_for_set'] = False
-                dict_cam[ip]['rtsp'] = [i.split('//')[0] + '//' + user + ':' + passwd + '@' + i.split('//')[1]
-                                        for i in rtsp]
-                auth = check_auth(http, user, passwd)
+                auth = check_auth(uri[0][0], user, passwd)
                 if auth:
                     dict_cam[ip]['auth_type'] = auth
     return dict_cam
@@ -156,7 +157,7 @@ def check_cam(cam_ip_dict, users_dict):
 def set_cam(cam):
     cam_json = {'key': settings.CONF.key, 'cam': cam}
     try:
-        r = requests.post(settings.SERVER+"setCam", json=cam_json, timeout=40)
+        r = requests.post(settings.SERVER+"setcam", json=cam_json, timeout=40)
         logger.info('set cam {}'.format(cam))
         s = json.loads(r.text)
         return s
