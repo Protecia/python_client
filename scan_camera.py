@@ -133,7 +133,8 @@ def check_cam(cam_ip_dict, users_dict):
         """
     dict_cam = {}
     for ip, port in cam_ip_dict.items():
-        dict_cam[ip] = {'name': 'unknow', 'port_onvif': port, 'active_automatic': False}
+        dict_cam[ip] = {'name': 'unknow', 'port_onvif': port, 'active_automatic': False,
+                        'uri': [('http://', 'rtsp://'), ]}
         for user, passwd in users_dict.items():
             logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
             onvif = get_onvif_uri(ip, port, user, passwd)
@@ -162,7 +163,7 @@ def set_cam(cam):
         s = json.loads(r.text)
         return s
     except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError, requests.Timeout) as ex:
-        logger.error(f'exception in setCam : except-->{ex} / name-->{type(ex).__name__}')
+        logger.error(f'exception in set_cam : except-->{ex} / name-->{type(ex).__name__}')
         pass
     return False
 
