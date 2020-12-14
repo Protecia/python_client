@@ -14,9 +14,8 @@ class Cameras(object):
         self.key = data["key"]
 
     def write(self):
-        with self.lock:
-            with open(settings.INSTALL_PATH + '/camera/camera.json', 'w') as cam:
-                json.dump(self.list, cam)
+        with open(settings.INSTALL_PATH + '/camera/camera.json', 'w') as cam:
+            json.dump(self.list, cam)
 
     def get_cam(self):
         return self.loop.run_until_complete(self.__async__get_cam())
