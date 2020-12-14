@@ -50,27 +50,22 @@ class Cameras(object):
 
     async def __async__cam_task(self):
         async with websockets.connect(settings.SERVER_WS + 'ws') as ws:
-            loop = True
-            while loop:
-                task1 = asyncio.ensure_future(self.coro1(ws))
-                task2 = asyncio.ensure_future(self.coro2(ws))
-                done, pending = await asyncio.wait([task1, task2], return_when=asyncio.FIRST_COMPLETED, )
-                for task in done:
-                    result = task.result()
-                    if result == 'task1':
-                        loop = False
-                for task in pending:
-                    task.cancel()
-        return result
+            await ws.send(json.dumps({'key': self.key, 'force': False}))
+            task1 = asyncio.ensure_future(self.coro1(ws))
+            task2 = asyncio.ensure_future(self.coro2(ws))
+            done, pending = await asyncio.wait([task1, task2], return_when=asyncio.FIRST_COMPLETED, )
+            for task in pending:
+                task.cancel()
+            for task in done:
+                cam = task.result()
+            self.list = json.loads(cam)
+            await ws.send(json.dumps({'answer': True}))
 
     async def coro1(self, ws):
-        await ws.send(json.dumps({'key': self.key, 'force': False}))
         cam = await ws.recv()
-        self.list = json.loads(cam)
-        await ws.send(json.dumps({'answer': True}))
-        return 'task1'
+        return cam
 
     async def coro2(self, ws):
-        await sc.run()
-        await asyncio.sleep(60)
-        return 'task2'
+        while True:
+            await sc.run()
+            await asyncio.sleep(60)
