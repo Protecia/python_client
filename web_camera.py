@@ -63,7 +63,7 @@ class Cameras(object):
                         task2 = asyncio.ensure_future(self.coro2())
             for task in pending:
                 task.cancel()
-            return result
+        return result
 
     async def coro1(self, ws):
         await ws.send(json.dumps({'key': self.key, 'force': False}))
@@ -73,6 +73,6 @@ class Cameras(object):
         return 'task1'
 
     async def coro2(self):
-        sc.run()
+        #sc.run()
         await asyncio.sleep(60)
         return 'task2'
