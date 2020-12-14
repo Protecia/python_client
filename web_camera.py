@@ -2,11 +2,10 @@ import settings.settings as settings
 import websockets
 import json
 import asyncio
-from random import randrange
 
 
 class Cameras(object):
-    def __init__(self, lock):
+    def __init__(self):
         self.loop = asyncio.get_event_loop()
         self.running = True
         self.list = None
@@ -47,12 +46,12 @@ class Cameras(object):
                 self.list = json.loads(cam)
                 await ws.send(json.dumps({'answer': True}))
 
-    def test_task(self):
-        return self.loop.run_until_complete(self.__async__test_task())
+    def cam_connect(self):
+        return self.loop.run_until_complete(self.__async__cam_task())
 
-    async def __async__test_task(self):
+    async def __async__cam_task(self):
         async with websockets.connect(settings.SERVER_WS + 'ws') as ws:
-            task1 = asyncio.ensure_future(self.coro1())
+            task1 = asyncio.ensure_future(self.coro1(ws))
             task2 = asyncio.ensure_future(self.coro2())
             loop = True
             while loop:
@@ -67,12 +66,13 @@ class Cameras(object):
                 task.cancel()
             return result
 
-    async def coro1(self):
-        t = randrange(10)
-        await asyncio.sleep(t)
+    async def coro1(self, ws):
+        await ws.send(json.dumps({'key': self.key, 'force': False}))
+        cam = await ws.recv()
+        self.list = json.loads(cam)
+        await ws.send(json.dumps({'answer': True}))
         return 'task1'
 
     async def coro2(self):
-        t = randrange(10)
-        await asyncio.sleep(t)
+        await asyncio.sleep(10)
         return 'task2'

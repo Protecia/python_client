@@ -80,7 +80,7 @@ def main():
         install_check_tunnel_cron()
 
         # Instanciate get_camera :
-        cameras = web_camera.Cameras(lock)
+        cameras = web_camera.Cameras()
 
         # retrieve cam
         cameras.get_cam()
@@ -91,7 +91,6 @@ def main():
 
         # launch child processes
         process = {
-            'scan_camera': Process(target=sc.run, args=(60, lock )),
             'image_upload': Process(target=up.uploadImage, args=(Q_img,)),
             'image_upload_real_time': Process(target=up.uploadImageRealTime, args=(Q_img_real,)),
             'result_upload': Process(target=up.uploadResult, args=(Q_result, E_video )),
@@ -111,8 +110,9 @@ def main():
                 p = pc.ProcessCamera(c, Q_result, Q_img, Q_img_real, tlock)
                 list_thread.append(p)
                 p.start()
+
             # wait until a camera change
-            cameras.wait_cam()
+            cameras.cam_connect()
             # If camera change (websocket answer)
             stop(list_thread)
             logger.warning('Camera change restart !')
