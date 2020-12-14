@@ -168,7 +168,7 @@ def set_cam(cam):
     return False
 
 
-def run():
+async def run():
     with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
         cameras = json.load(out)
     users_dict = dict(set([(c['username'], c['password']) for c in cameras]))
