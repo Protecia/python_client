@@ -2,6 +2,7 @@ import settings.settings as settings
 import websockets
 import json
 import asyncio
+from random import randrange
 
 
 class Cameras(object):
@@ -60,9 +61,11 @@ class Cameras(object):
                 return task.result()
 
     async def coro1(self):
-        await asyncio.sleep(10)
+        t = randrange(10)
+        await asyncio.sleep(t)
         return 'task1'
 
     async def coro2(self):
-        await asyncio.sleep(5)
+        t = randrange(10)
+        await asyncio.sleep(t)
         return 'task2'
