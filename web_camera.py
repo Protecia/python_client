@@ -2,6 +2,7 @@ import settings.settings as settings
 import websockets
 import json
 import asyncio
+import scan_camera as sc
 
 
 class Cameras(object):
@@ -72,5 +73,6 @@ class Cameras(object):
         return 'task1'
 
     async def coro2(self):
-        await asyncio.sleep(10)
+        sc.run()
+        await asyncio.sleep(60)
         return 'task2'
