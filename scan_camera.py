@@ -134,7 +134,7 @@ def check_cam(cam_ip_dict, users_dict):
     dict_cam = {}
     for ip, port in cam_ip_dict.items():
         dict_cam[ip] = {'name': 'unknow', 'port_onvif': port, 'active_automatic': False,
-                        'uri': [('http://', 'rtsp://'), ]}
+                        'uri': [('http://0.0.0.0', 'rtsp://0.0.0.0'), ]}
         for user, passwd in users_dict.items():
             logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
             onvif = get_onvif_uri(ip, port, user, passwd)
