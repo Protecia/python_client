@@ -9,7 +9,6 @@ class Cameras(object):
         self.loop = asyncio.get_event_loop()
         self.running = True
         self.list = None
-        self.lock = lock
         with open(settings.INSTALL_PATH + '/settings/conf.json', 'r') as conf_json:
             data = json.load(conf_json)
         self.key = data["key"]
