@@ -99,8 +99,7 @@ def main():
             p.start()
 
         # log the id of the process
-        logger.error(f'PID of different processes : scan camera->{process["scan_camera"].pid} /'
-                     f' upload image->{process["image_upload"].pid} / '
+        logger.error(f'PID of different processes : upload image->{process["image_upload"].pid} / '
                      f'upload real time image->{process["image_upload_real_time"].pid} / '
                      f'upload result->{process["result_upload"].pid} / serve cherrypy->{process["serve_http"].pid}')
 
