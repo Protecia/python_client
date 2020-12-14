@@ -73,6 +73,6 @@ class Cameras(object):
         return 'task1'
 
     async def coro2(self):
-        #sc.run()
+        sc.run()
         await asyncio.sleep(60)
         return 'task2'
