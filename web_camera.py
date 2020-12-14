@@ -52,10 +52,10 @@ class Cameras(object):
 
     async def __async__test_task(self):
         async with websockets.connect(settings.SERVER_WS + 'ws') as ws:
-            task1 = asyncio.ensure_future(self.coro1())
-            task2 = asyncio.ensure_future(self.coro2())
             loop = True
             while loop:
+                task1 = asyncio.ensure_future(self.coro1())
+                task2 = asyncio.ensure_future(self.coro2())
                 done, pending = await asyncio.wait([task1, task2], return_when=asyncio.FIRST_COMPLETED, )
                 for task in pending:
                     task.cancel()
