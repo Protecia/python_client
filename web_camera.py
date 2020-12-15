@@ -16,7 +16,6 @@ class Cameras(object):
         with open(settings.INSTALL_PATH + '/settings/conf.json', 'r') as conf_json:
             data = json.load(conf_json)
         self.key = data["key"]
-        self.cam = data
 
     def write(self):
         with open(settings.INSTALL_PATH + '/camera/camera.json', 'w') as cam:
@@ -71,7 +70,7 @@ class Cameras(object):
 
     async def coro2(self, ws):
         while True:
-            users_dict = dict(set([(c['username'], c['password']) for c in self.cam]))
+            users_dict = dict(set([(c['username'], c['password']) for c in self.list]))
             logger.warning(f'retrieve user and pass : {users_dict}')
             await ws.send(json.dumps({'answer': True}))
             #await sc.run()
