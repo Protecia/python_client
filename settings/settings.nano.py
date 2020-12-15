@@ -29,6 +29,7 @@ UPLOAD_LOG = logging.ERROR
 SCAN_LOG = logging.ERROR
 PROCESS_CAMERA_LOG = logging.ERROR
 PING_LOG = logging.ERROR
+SOCKET_LOG = logging.ERROR
 
 # Darknet conf
 DARKNET_PATH = '/home/protecia/darknet'

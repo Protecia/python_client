@@ -3,6 +3,9 @@ import websockets
 import json
 import asyncio
 import scan_camera as sc
+from log import Logger
+
+logger = Logger(__name__, level=settings.SOCKET_LOG).run()
 
 
 class Cameras(object):
@@ -67,5 +70,6 @@ class Cameras(object):
 
     async def coro2(self, ws):
         while True:
-            await sc.run()
+            logger.warning('coro1 loop')
+            #await sc.run()
             await asyncio.sleep(60)
