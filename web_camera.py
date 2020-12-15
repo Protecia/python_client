@@ -69,9 +69,10 @@ class Cameras(object):
         return cam
 
     async def coro2(self, ws):
+        logger.warning(f'retrieve cam : {self.list}')
+        users_dict = dict(set([(c['username'], c['password']) for c in self.list]))
+        logger.warning(f'retrieve user and pass : {users_dict}')
         while True:
-            users_dict = dict(set([(c['username'], c['password']) for c in self.list]))
-            logger.warning(f'retrieve user and pass : {users_dict}')
             await ws.send(json.dumps({'answer': True}))
             #await sc.run()
             await asyncio.sleep(60)
