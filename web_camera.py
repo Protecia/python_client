@@ -71,5 +71,6 @@ class Cameras(object):
     async def coro2(self, ws):
         while True:
             logger.warning('coro1 loop')
+            await ws.send(json.dumps({'answer': True}))
             #await sc.run()
             await asyncio.sleep(60)
