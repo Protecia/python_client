@@ -18,8 +18,25 @@ import netifaces as ni
 import xml.etree.ElementTree as eT
 import re
 from urllib3.exceptions import HeaderParsingError
+import subprocess
 
 logger = Logger('scan_camera', level=settings.SCAN_LOG).run()
+
+
+def ping_network():
+    addrs = psutil.net_if_addrs()
+    network = ['.'.join(ni.ifaddresses(i)[ni.AF_INET][0]['addr'].split('.')[:-1]) for i in addrs if i.startswith('e')]
+    list_task = []
+    std = {}
+    for net in network :
+        for i in range(1, 255):
+            bash_cmd = f'ping {network}.{i} -c 1 -w 5 >/dev/null && echo "{net}.{i}"'
+            list_task.append(subprocess.Popen(bash_cmd, shell=True, stdout=subprocess.PIPE))
+        for proc in list_task:
+            outs, errs = proc.communicate()
+            if outs:
+                std[outs.decode().rstrip()] = settings.CONF('scan_camera')
+    return std
 
 
 def ws_discovery(repeat, wait):
@@ -173,6 +190,10 @@ async def run():
         cameras = json.load(out)
     users_dict = dict(set([(c['username'], c['password']) for c in cameras]))
     cam_ip_dict = dict([(c['ip'], c['port_onvif']) for c in cameras])
-    cam_ip_dict.update(ws_discovery(2, 20))
+    if settings.CONF('scan_camera') != 0:
+        detected_cam = ping_network()
+    else:
+        detected_cam = ws_discovery(2, 20)
+    cam_ip_dict.update(detected_cam)
     dict_cam = check_cam(cam_ip_dict, users_dict)
     return dict_cam
