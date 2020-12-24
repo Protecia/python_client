@@ -25,17 +25,20 @@ logger = Logger('scan_camera', level=settings.SCAN_LOG).run()
 
 def ping_network():
     addrs = psutil.net_if_addrs()
-    network = ['.'.join(ni.ifaddresses(i)[ni.AF_INET][0]['addr'].split('.')[:-1]) for i in addrs if i.startswith('e')]
+    box = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
+    network = ['.'.join(i.split('.')[:-1]) for i in box]
     list_task = []
     std = {}
-    for net in network :
+    for net in network:
         for i in range(1, 255):
-            bash_cmd = f'ping {network}.{i} -c 1 -w 5 >/dev/null && echo "{net}.{i}"'
+            bash_cmd = f'ping {net}.{i} -c 1 -w 5 >/dev/null && echo "{net}.{i}"'
             list_task.append(subprocess.Popen(bash_cmd, shell=True, stdout=subprocess.PIPE))
         for proc in list_task:
             outs, errs = proc.communicate()
             if outs:
-                std[outs.decode().rstrip()] = settings.CONF('scan_camera')
+                ip = outs.decode().rstrip()
+                if ip not in box:
+                    std[ip] = str(settings.CONF.get_conf('scan_camera'))
     return std
 
 
