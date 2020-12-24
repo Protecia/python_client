@@ -74,5 +74,5 @@ class Cameras(object):
         logger.warning(f'retrieve user and pass : {users_dict}')
         while True:
             await ws.send(json.dumps({'answer': True}))
-            #await sc.run()
+            await sc.run()
             await asyncio.sleep(60)
