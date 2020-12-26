@@ -140,7 +140,7 @@ def check_auth(http, user, passwd):
                         logger.info(f'request  on camera OK for {http} / {user} / {passwd} / {t}')
                         return t
                 except (requests.exceptions.ConnectionError, requests.Timeout,
-                        requests.exceptions.MissingSchema):
+                        requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema):
                     time.sleep(0.5)
                     pass
     return False
