@@ -73,6 +73,6 @@ class Cameras(object):
         users_dict = dict(set([(c['username'], c['password']) for c in self.list]))
         logger.warning(f'retrieve user and pass : {users_dict}')
         while True:
-            await ws.send(json.dumps({'answer': True}))
-            await sc.run()
+            dict_cam = await sc.run()
+            await ws.send(json.dumps(dict_cam))
             await asyncio.sleep(60)
