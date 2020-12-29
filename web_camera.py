@@ -1,8 +1,19 @@
 import settings.settings as settings
+import requests
+from onvif import ONVIFCamera
+from onvif.exceptions import ONVIFError
+from log import Logger
+import time
+import socket
+import psutil
+import netifaces as ni
+import xml.etree.ElementTree as eT
+import re
+from urllib3.exceptions import HeaderParsingError
+import subprocess
 import websockets
 import json
 import asyncio
-import scan_camera as sc
 from log import Logger
 
 logger = Logger(__name__, level=settings.SOCKET_LOG).run()
@@ -74,8 +85,10 @@ class Cameras(object):
         users_dict = dict(set([(c['username'], c['password']) for c in self.list]))
         logger.warning(f'retrieve user and pass : {users_dict}')
         while True:
-            dict_cam = await sc.run()
-            await ws.send(json.dumps(dict_cam))
+            #dict_cam = await sc.run()
+            #await ws.send(json.dumps(dict_cam))
+            await ws.send(json.dumps({'answer': True}))
+            await self.ping_network()
             await asyncio.sleep(60)
 
     async def coro3(self, ws):
@@ -88,3 +101,21 @@ class Cameras(object):
                 continue
             except:
                 logger.warning(f'BAD ping')
+
+    async def ping_network(self):
+        addrs = psutil.net_if_addrs()
+        box = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
+        network = ['.'.join(i.split('.')[:-1]) for i in box]
+        list_task = []
+        std = {}
+        for net in network:
+            for i in range(1, 255):
+                bash_cmd = f'ping {net}.{i} -c 1 -w 5 >/dev/null && echo "{net}.{i}"'
+                list_task.append(subprocess.Popen(bash_cmd, shell=True, stdout=subprocess.PIPE))
+            for proc in list_task:
+                outs, errs = proc.communicate()
+                if outs:
+                    ip = outs.decode().rstrip()
+                    if ip not in box:
+                        std[ip] = str(settings.CONF.get_conf('scan_camera'))
+        return std
