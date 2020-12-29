@@ -189,7 +189,7 @@ async def check_cam(cam_ip_dict, users_dict):
 
 
 async def run():
-    async with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
+    with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
         cameras = json.load(out)
     users_dict = dict(set([(c['username'], c['password']) for c in cameras]))
     cam_ip_dict = dict([(c['ip'], c['port_onvif']) for c in cameras])
