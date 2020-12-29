@@ -88,7 +88,11 @@ class Cameras(object):
             #dict_cam = await sc.run()
             #await ws.send(json.dumps(dict_cam))
             await ws.send(json.dumps({'answer': True}))
-            await self.ping_network()
+            addrs = psutil.net_if_addrs()
+            box = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
+            network = ['.'.join(i.split('.')[:-1]) for i in box]
+            list_task = []
+            std = {}
             await asyncio.sleep(60)
 
     async def coro3(self, ws):
