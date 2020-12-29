@@ -23,7 +23,7 @@ import subprocess
 logger = Logger('scan_camera', level=settings.SCAN_LOG).run()
 
 
-def ping_network():
+async def ping_network():
     addrs = psutil.net_if_addrs()
     box = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
     network = ['.'.join(i.split('.')[:-1]) for i in box]
@@ -42,7 +42,7 @@ def ping_network():
     return std
 
 
-def ws_discovery(repeat, wait):
+async def ws_discovery(repeat, wait):
     """Discover cameras on network using ws discovery.
     Returns:
         Dictionnary: { ip : port } of cameras found on network.
@@ -94,7 +94,7 @@ def ws_discovery(repeat, wait):
     return dcam
 
 
-def get_onvif_uri(ip, port, user, passwd):
+async def get_onvif_uri(ip, port, user, passwd):
     """Find uri to request the camera.
     Returns:
         List: List of uri found for the camera.
@@ -128,7 +128,7 @@ def get_onvif_uri(ip, port, user, passwd):
     return info, uri
 
 
-def check_auth(http, user, passwd):
+async def check_auth(http, user, passwd):
     auth = {'B': requests.auth.HTTPBasicAuth(user, passwd), 'D': requests.auth.HTTPDigestAuth(user, passwd)}
     for t, a in auth.items():
         for i in range(4):
@@ -146,7 +146,7 @@ def check_auth(http, user, passwd):
     return False
 
 
-def check_cam(cam_ip_dict, users_dict):
+async def check_cam(cam_ip_dict, users_dict):
     """Test connection for all ip/port.
         Returns:
             List: List of camera dict that are active.
@@ -175,28 +175,28 @@ def check_cam(cam_ip_dict, users_dict):
     return dict_cam
 
 
-def set_cam(cam):
-    cam_json = {'key': settings.CONF.key, 'cam': cam}
-    try:
-        r = requests.post(settings.SERVER+"setcam", json=cam_json, timeout=40)
-        logger.info('set cam {}'.format(cam))
-        s = json.loads(r.text)
-        return s
-    except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError, requests.Timeout) as ex:
-        logger.error(f'exception in set_cam : except-->{ex} / name-->{type(ex).__name__}')
-        pass
-    return False
+# def set_cam(cam):
+#     cam_json = {'key': settings.CONF.key, 'cam': cam}
+#     try:
+#         r = requests.post(settings.SERVER+"setcam", json=cam_json, timeout=40)
+#         logger.info('set cam {}'.format(cam))
+#         s = json.loads(r.text)
+#         return s
+#     except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError, requests.Timeout) as ex:
+#         logger.error(f'exception in set_cam : except-->{ex} / name-->{type(ex).__name__}')
+#         pass
+#     return False
 
 
 async def run():
-    with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
+    async with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
         cameras = json.load(out)
     users_dict = dict(set([(c['username'], c['password']) for c in cameras]))
     cam_ip_dict = dict([(c['ip'], c['port_onvif']) for c in cameras])
     if settings.CONF.get_conf('scan_camera') != 0:
-        detected_cam = ping_network()
+        detected_cam = await ping_network()
     else:
-        detected_cam = ws_discovery(2, 20)
+        detected_cam = await ws_discovery(2, 20)
     cam_ip_dict.update(detected_cam)
-    dict_cam = check_cam(cam_ip_dict, users_dict)
+    dict_cam = await check_cam(cam_ip_dict, users_dict)
     return dict_cam
