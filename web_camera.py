@@ -106,20 +106,29 @@ class Cameras(object):
             except:
                 logger.warning(f'BAD ping')
 
+    async def run(self, cmd):
+        proc = await asyncio.create_subprocess_shell(
+            cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE)
+        stdout, stderr = await proc.communicate()
+        # print(f'[{cmd!r} exited with {proc.returncode}]')
+        if stdout:
+            return stdout.decode("utf-8")
+        else:
+            return None
+
     async def ping_network(self):
         addrs = psutil.net_if_addrs()
         box = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
         network = ['.'.join(i.split('.')[:-1]) for i in box]
-        list_task = []
         std = {}
         for net in network:
+            list_task = []
             for i in range(1, 255):
-                bash_cmd = f'ping {net}.{i} -c 1 -w 5 >/dev/null && echo "{net}.{i}"'
-                list_task.append(subprocess.Popen(bash_cmd, shell=True, stdout=subprocess.PIPE))
-            for proc in list_task:
-                outs, errs = proc.communicate()
-                if outs:
-                    ip = outs.decode().rstrip()
-                    if ip not in box:
-                        std[ip] = str(settings.CONF.get_conf('scan_camera'))
+                list_task.append(self.run(f'ping {net}.{i} -c 1 -w 5 >/dev/null && echo "{net}.{i}"'))
+            done, _ = await asyncio.wait(list_task)
+            for ip in [i.result().decode().rstrip() for i in done if i.result()]:
+                if ip not in box:
+                    std[ip] = str(settings.CONF.get_conf('scan_camera'))
         return std

@@ -23,6 +23,8 @@ import subprocess
 logger = Logger('scan_camera', level=settings.SCAN_LOG).run()
 
 
+
+
 async def ping_network():
     addrs = psutil.net_if_addrs()
     box = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
