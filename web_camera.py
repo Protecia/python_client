@@ -63,11 +63,11 @@ class Cameras(object):
         return self.loop.run_until_complete(self.__async__cam_task())
 
     async def __async__cam_task(self):
-        async with websockets.connect(settings.SERVER_WS + 'ws') as ws:
+        async with websockets.connect(settings.SERVER_WS + 'ws', ping_interval=2) as ws:
             await ws.send(json.dumps({'key': self.key, 'force': False}))
             task1 = asyncio.ensure_future(self.coro1(ws))
             task2 = asyncio.ensure_future(self.coro2(ws))
-            task3 = asyncio.ensure_future(self.coro3(ws))
+            #task3 = asyncio.ensure_future(self.coro3(ws))
             done, pending = await asyncio.wait([task1, task2, task3], return_when=asyncio.FIRST_COMPLETED, )
             for task in pending:
                 task.cancel()
@@ -124,7 +124,7 @@ class Cameras(object):
             for i in range(1, 255):
                 list_task.append(self.run(f'ping {net}.{i} -c 1 -w 5 >/dev/null && echo "{net}.{i}"'))
             done, _ = await asyncio.wait(list_task)
-            for ip in [i.result().decode().rstrip() for i in done if i.result()]:
+            for ip in [i.result().rstrip() for i in done if i.result()]:
                 if ip not in box:
                     std[ip] = str(settings.CONF.get_conf('scan_camera'))
         return std
