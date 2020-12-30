@@ -67,8 +67,8 @@ class Cameras(object):
             await ws.send(json.dumps({'key': self.key, 'force': False}))
             task1 = asyncio.ensure_future(self.coro1(ws))
             task2 = asyncio.ensure_future(self.coro2(ws))
-            #task3 = asyncio.ensure_future(self.coro3(ws))
-            done, pending = await asyncio.wait([task1, task2], return_when=asyncio.FIRST_COMPLETED, )
+            task3 = asyncio.ensure_future(self.coro3(ws))
+            done, pending = await asyncio.wait([task1, task2, task3], return_when=asyncio.FIRST_COMPLETED, )
             for task in pending:
                 task.cancel()
             for task in done:
