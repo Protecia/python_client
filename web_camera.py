@@ -63,20 +63,16 @@ class Cameras(object):
         return self.loop.run_until_complete(self.__async__cam_task())
 
     async def __async__cam_task(self):
-        async with websockets.connect(settings.SERVER_WS + 'ws') as ws:
+        async with websockets.connect(settings.SERVER_WS + 'ws', ping_interval=None) as ws:
             await ws.send(json.dumps({'key': self.key, 'force': False}))
-            cam = False
-            while not cam:
-                task1 = asyncio.ensure_future(self.coro1(ws))
-                task2 = asyncio.ensure_future(self.coro2(ws))
-                #task3 = asyncio.ensure_future(self.coro3(ws))
-                done, pending = await asyncio.wait([task1, task2], return_when=asyncio.FIRST_COMPLETED, )
-                for task in pending:
-                    task.cancel()
-                for task in done:
-                    cam = task.result()
-                if not cam:
-                    await asyncio.sleep(60)
+            task1 = asyncio.ensure_future(self.coro1(ws))
+            task2 = asyncio.ensure_future(self.coro2(ws))
+            #task3 = asyncio.ensure_future(self.coro3(ws))
+            done, pending = await asyncio.wait([task1, task2], return_when=asyncio.FIRST_COMPLETED, )
+            for task in pending:
+                task.cancel()
+            for task in done:
+                cam = task.result()
             self.list = json.loads(cam)
             await ws.send(json.dumps({'answer': True}))
 
@@ -88,14 +84,13 @@ class Cameras(object):
         logger.warning(f'retrieve cam : {self.list}')
         users_dict = dict(set([(c['username'], c['password']) for c in self.list]))
         logger.warning(f'retrieve user and pass : {users_dict}')
-        #while True:
+        while True:
             #dict_cam = await sc.run()
             #await ws.send(json.dumps(dict_cam))
 
-        dict_cam = await ping_network()
-        await ws.send(json.dumps(dict_cam))
-        return False
-            #await asyncio.sleep(60)
+            dict_cam = await ping_network()
+            await ws.send(json.dumps(dict_cam))
+            await asyncio.sleep(60)
 
     async def coro3(self, ws):
         while True:
