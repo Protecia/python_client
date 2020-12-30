@@ -87,8 +87,9 @@ class Cameras(object):
         while True:
             #dict_cam = await sc.run()
             #await ws.send(json.dumps(dict_cam))
-            await ws.send(json.dumps({'answer': True}))
+
             dict_cam = await self.ping_network()
+            await ws.send(json.dumps(dict_cam))
             await asyncio.sleep(60)
 
     async def coro3(self, ws):
