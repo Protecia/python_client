@@ -63,7 +63,7 @@ class Cameras(object):
         return self.loop.run_until_complete(self.__async__cam_task())
 
     async def __async__cam_task(self):
-        async with websockets.connect(settings.SERVER_WS + 'ws', ping_interval=None) as ws:
+        async with websockets.connect(settings.SERVER_WS + 'ws') as ws:
             await ws.send(json.dumps({'key': self.key, 'force': False}))
             task1 = asyncio.ensure_future(self.coro1(ws))
             task2 = asyncio.ensure_future(self.coro2(ws))
