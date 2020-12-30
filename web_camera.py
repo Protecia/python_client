@@ -88,7 +88,7 @@ class Cameras(object):
             #dict_cam = await sc.run()
             #await ws.send(json.dumps(dict_cam))
 
-            dict_cam = await scan_camera()
+            dict_cam = await ping_network()
             await ws.send(json.dumps(dict_cam))
             await asyncio.sleep(60)
 
@@ -117,7 +117,7 @@ async def run_cmd(cmd):
         return None
 
 
-def ping_network():
+async def ping_network():
     addrs = psutil.net_if_addrs()
     box = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
     network = ['.'.join(i.split('.')[:-1]) for i in box]
