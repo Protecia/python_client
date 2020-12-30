@@ -88,7 +88,7 @@ class Cameras(object):
             #dict_cam = await sc.run()
             #await ws.send(json.dumps(dict_cam))
 
-            dict_cam = await ping_network()
+            dict_cam = await scan_camera()
             await ws.send(json.dumps(dict_cam))
             await asyncio.sleep(60)
 
@@ -266,7 +266,7 @@ def check_cam(cam_ip_dict, users_dict):
     return dict_cam
 
 
-async def run():
+async def scan_camera():
     with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
         cameras = json.load(out)
     users_dict = dict(set([(c['username'], c['password']) for c in cameras]))
