@@ -167,6 +167,7 @@ async def check_cam(cam_ip_dict, users_dict):
             onvif = await get_onvif_uri(ip, port, user, passwd)
             logger.info(f'onvif answer is {onvif}')
             if onvif:
+                logger.info(f'unpack onvif with {onvif}')
                 info, uri = onvif
                 logger.info(f'onvif OK for {ip} / {port} / {user} / {passwd} ')
                 dict_cam[ip]['brand'] = info['Manufacturer']
