@@ -43,7 +43,7 @@ def ping_network():
     return std
 
 
-def ws_discovery(repeat, wait):
+async def ws_discovery(repeat, wait):
     """Discover cameras on network using ws discovery.
     Returns:
         Dictionnary: { ip : port } of cameras found on network.
@@ -205,7 +205,7 @@ async def run():
     if settings.CONF.get_conf('scan_camera') != 0:
         detected_cam = ping_network()
     else:
-        detected_cam = ws_discovery(2, 20)
-    cam_ip_dict.update(detected_cam)
-    dict_cam = await check_cam(cam_ip_dict, users_dict)
-    return dict_cam
+        detected_cam = await ws_discovery(2, 20)
+#    cam_ip_dict.update(detected_cam)
+#    dict_cam = await check_cam(cam_ip_dict, users_dict)
+#   return dict_cam
