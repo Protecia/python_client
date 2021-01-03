@@ -133,15 +133,16 @@ async def get_onvif_uri(ip, port, user, passwd):
     return info, uri
 
 
-def check_auth(http, user, passwd):
+def check_auth(uri, user, passwd):
     auth = {'B': requests.auth.HTTPBasicAuth(user, passwd), 'D': requests.auth.HTTPDigestAuth(user, passwd)}
     for t, a in auth.items():
         for i in range(4):
-            for url in http:
+            for url in uri:
+                http = url[0]
                 try:
-                    logger.info(f'before request on {url}')
-                    r = requests.get(url, auth=a, stream=False, timeout=1)
-                    logger.info(f'after request on {url}')
+                    logger.info(f'before request on {http}')
+                    r = requests.get(http, auth=a, stream=False, timeout=1)
+                    logger.info(f'after request on {http}')
                     if r.ok:
                         logger.info(f'request  on camera OK for {http} / {user} / {passwd} / {t}')
                         return t
@@ -176,7 +177,7 @@ async def check_cam(cam_ip_dict, users_dict):
                 dict_cam[ip]['active_automatic'] = True
                 dict_cam[ip]['password'] = passwd
                 dict_cam[ip]['wait_for_set'] = False
-                auth = check_auth(uri[0][0], user, passwd)
+                auth = check_auth(uri, user, passwd)
                 if auth:
                     dict_cam[ip]['auth_type'] = auth
     return dict_cam
