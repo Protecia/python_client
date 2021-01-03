@@ -4,7 +4,6 @@ import json
 import asyncio
 from log import Logger
 import scan_camera as sc
-import socket
 
 logger = Logger(__name__, level=settings.SOCKET_LOG).run()
 
@@ -63,7 +62,7 @@ class Cameras(object):
                     #task3 = asyncio.ensure_future(self.coro3(ws))
                     done, pending = await asyncio.wait([task1, task2], return_when=asyncio.FIRST_COMPLETED, )
                     finish = True
-            except socket.gaierror:
+            except websockets.exceptions.ConnectionClosedError:
                 logger.warning(f'socket disconnected !!')
                 continue
         for task in pending:

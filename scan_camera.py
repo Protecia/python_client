@@ -94,7 +94,7 @@ async def ws_discovery(repeat, wait):
     return dcam
 
 
-async def get_onvif_uri(ip, port, user, passwd):
+def get_onvif_uri(ip, port, user, passwd):
     """Find uri to request the camera.
     Returns:
         List: List of uri found for the camera.
@@ -128,7 +128,7 @@ async def get_onvif_uri(ip, port, user, passwd):
     return info, uri
 
 
-async def check_auth(http, user, passwd):
+def check_auth(http, user, passwd):
     auth = {'B': requests.auth.HTTPBasicAuth(user, passwd), 'D': requests.auth.HTTPDigestAuth(user, passwd)}
     for t, a in auth.items():
         for i in range(4):
@@ -146,7 +146,7 @@ async def check_auth(http, user, passwd):
     return False
 
 
-async def check_cam(cam_ip_dict, users_dict):
+def check_cam(cam_ip_dict, users_dict):
     """Test connection for all ip/port.
         Returns:
             List: List of camera dict that are active.
@@ -157,7 +157,7 @@ async def check_cam(cam_ip_dict, users_dict):
                         'uri': [('http://0.0.0.0', 'rtsp://0.0.0.0'), ]}
         for user, passwd in users_dict.items():
             logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
-            onvif = await get_onvif_uri(ip, port, user, passwd)
+            onvif = get_onvif_uri(ip, port, user, passwd)
             if onvif:
                 info, uri = onvif
                 logger.info(f'onvif OK for {ip} / {port} / {user} / {passwd} ')
@@ -169,7 +169,7 @@ async def check_cam(cam_ip_dict, users_dict):
                 dict_cam[ip]['active_automatic'] = True
                 dict_cam[ip]['password'] = passwd
                 dict_cam[ip]['wait_for_set'] = False
-                auth = await check_auth(uri[0][0], user, passwd)
+                auth = check_auth(uri[0][0], user, passwd)
                 if auth:
                     dict_cam[ip]['auth_type'] = auth
     return dict_cam
@@ -198,5 +198,5 @@ async def run():
     else:
         detected_cam = await ws_discovery(2, 20)
     cam_ip_dict.update(detected_cam)
-    dict_cam = await check_cam(cam_ip_dict, users_dict)
+    dict_cam = check_cam(cam_ip_dict, users_dict)
     return dict_cam
