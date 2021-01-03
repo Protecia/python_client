@@ -61,7 +61,7 @@ class Cameras(object):
 
     async def coro_send(self, ws):
         while True:
-            #dict_cam = await sc.run()
+            dict_cam = await sc.run()
             #await ws.send(json.dumps(dict_cam))
             #logger.info(f'sending the scan camera to the server : {dict_cam}')
             #dict_cam = await ping_network()
