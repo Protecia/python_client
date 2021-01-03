@@ -139,8 +139,9 @@ def check_auth(http, user, passwd):
         for i in range(4):
             for url in http:
                 try:
+                    logger.info(f'before request on {url}')
                     r = requests.get(url, auth=a, stream=False, timeout=1)
-                    logger.info(f'request on {url}')
+                    logger.info(f'after request on {url}')
                     if r.ok:
                         logger.info(f'request  on camera OK for {http} / {user} / {passwd} / {t}')
                         return t
