@@ -157,7 +157,7 @@ async def check_cam(cam_ip_dict, users_dict):
                         'uri': [('http://0.0.0.0', 'rtsp://0.0.0.0'), ]}
         for user, passwd in users_dict.items():
             logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
-            onvif = get_onvif_uri(ip, port, user, passwd)
+            onvif = await get_onvif_uri(ip, port, user, passwd)
             if onvif:
                 info, uri = onvif
                 logger.info(f'onvif OK for {ip} / {port} / {user} / {passwd} ')
@@ -169,7 +169,7 @@ async def check_cam(cam_ip_dict, users_dict):
                 dict_cam[ip]['active_automatic'] = True
                 dict_cam[ip]['password'] = passwd
                 dict_cam[ip]['wait_for_set'] = False
-                auth = check_auth(uri[0][0], user, passwd)
+                auth = await check_auth(uri[0][0], user, passwd)
                 if auth:
                     dict_cam[ip]['auth_type'] = auth
     return dict_cam
