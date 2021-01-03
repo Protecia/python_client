@@ -29,6 +29,8 @@ class Cameras(object):
             await ws.send(json.dumps({'key': self.key, 'force': True}))
             cam = await ws.recv()
             self.list = json.loads(cam)
+            await ws.send(json.dumps({'answer': True}))
+
 
     def wait_cam(self):
         return self.loop.run_until_complete(self.__async__wait_cam())
