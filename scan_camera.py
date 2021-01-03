@@ -99,7 +99,7 @@ async def onvif_cam(ip, port, user, passwd, wsdir):
     return ONVIFCamera(ip, port, user, passwd, wsdir)
 
 
-def get_onvif_uri(ip, port, user, passwd):
+async def get_onvif_uri(ip, port, user, passwd):
     """Find uri to request the camera.
     Returns:
         List: List of uri found for the camera.
@@ -151,7 +151,7 @@ def check_auth(http, user, passwd):
     return False
 
 
-def check_cam(cam_ip_dict, users_dict):
+async def check_cam(cam_ip_dict, users_dict):
     """Test connection for all ip/port.
         Returns:
             List: List of camera dict that are active.
@@ -162,7 +162,7 @@ def check_cam(cam_ip_dict, users_dict):
                         'uri': [('http://0.0.0.0', 'rtsp://0.0.0.0'), ]}
         for user, passwd in users_dict.items():
             logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
-            onvif = get_onvif_uri(ip, port, user, passwd)
+            onvif = await get_onvif_uri(ip, port, user, passwd)
             logger.info(f'onvif answer is {onvif}')
             if onvif:
                 info, uri = onvif
@@ -204,5 +204,5 @@ async def run():
     else:
         detected_cam = ws_discovery(2, 20)
     cam_ip_dict.update(detected_cam)
-    dict_cam = check_cam(cam_ip_dict, users_dict)
+    dict_cam = await check_cam(cam_ip_dict, users_dict)
     return dict_cam
