@@ -158,6 +158,7 @@ def check_cam(cam_ip_dict, users_dict):
         for user, passwd in users_dict.items():
             logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
             onvif = get_onvif_uri(ip, port, user, passwd)
+            logger.info(f'onvif answer is {onvif}')
             if onvif:
                 info, uri = onvif
                 logger.info(f'onvif OK for {ip} / {port} / {user} / {passwd} ')
