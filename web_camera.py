@@ -81,7 +81,7 @@ class Cameras(object):
         while True:
             dict_cam = await sc.run()
             await ws.send(json.dumps(dict_cam))
-
+            logger.info(f'sending the scan camera to the server : {dict_cam}')
             #dict_cam = await ping_network()
             #await ws.send(json.dumps(dict_cam))
             await asyncio.sleep(60)
