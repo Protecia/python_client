@@ -18,12 +18,13 @@ import netifaces as ni
 import xml.etree.ElementTree as eT
 import re
 from urllib3.exceptions import HeaderParsingError
+import asyncio
 import subprocess
 
 logger = Logger('scan_camera', level=settings.SCAN_LOG).run()
 
 
-async def ping_network():
+def ping_network():
     addrs = psutil.net_if_addrs()
     box = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
     network = ['.'.join(i.split('.')[:-1]) for i in box]
@@ -42,7 +43,7 @@ async def ping_network():
     return std
 
 
-async def ws_discovery(repeat, wait):
+def ws_discovery(repeat, wait):
     """Discover cameras on network using ws discovery.
     Returns:
         Dictionnary: { ip : port } of cameras found on network.
@@ -94,6 +95,10 @@ async def ws_discovery(repeat, wait):
     return dcam
 
 
+async def onvif_cam(ip, port, user, passwd, wsdir):
+    return ONVIFCamera(ip, port, user, passwd, wsdir)
+
+
 def get_onvif_uri(ip, port, user, passwd):
     """Find uri to request the camera.
     Returns:
@@ -101,13 +106,13 @@ def get_onvif_uri(ip, port, user, passwd):
     """
     wsdir = '/usr/local/lib/python3.6/site-packages/wsdl/'
     try:
-        cam = ONVIFCamera(ip, port, user, passwd, wsdir)
+        cam = await asyncio.wait_for(onvif_cam(ip, port, user, passwd, wsdir), timeout=1.0)
         info = cam.devicemgmt.GetDeviceInformation()
         media_service = cam.create_media_service()
         profiles = media_service.GetProfiles()
         obj = media_service.create_type('GetStreamUri')
         uri = []
-    except (ONVIFError, HeaderParsingError):
+    except (ONVIFError, HeaderParsingError, asyncio.TimeoutError):
         return None
     for canal in profiles:
         try:
@@ -195,9 +200,9 @@ async def run():
     users_dict = dict(set([(c['username'], c['password']) for c in cameras]))
     cam_ip_dict = dict([(c['ip'], c['port_onvif']) for c in cameras])
     if settings.CONF.get_conf('scan_camera') != 0:
-        detected_cam = await ping_network()
+        detected_cam = ping_network()
     else:
-        detected_cam = await ws_discovery(2, 20)
+        detected_cam = ws_discovery(2, 20)
     cam_ip_dict.update(detected_cam)
     dict_cam = check_cam(cam_ip_dict, users_dict)
     return dict_cam
