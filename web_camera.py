@@ -66,6 +66,9 @@ class Cameras(object):
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_send_cam') as ws:
                     await ws.send(json.dumps({'key': self.key, }))
+                    recv = json.loads(await ws.recv())
+                    if recv['answer']:
+                        logger.warning(f'com OK on receive cam')
                     cam = await ws.recv()
                     finish = True
             except websockets.exceptions.ConnectionClosedError:
