@@ -32,8 +32,8 @@ class Cameras(object):
             await ws.send(json.dumps({'answer': True}))
 
     def connect(self):
-        task1 = asyncio.ensure_future(self.__async__send_cam)
-        task2 = asyncio.ensure_future(self.__async__receive_cam)
+        task1 = asyncio.ensure_future(self.__async__send_cam())
+        task2 = asyncio.ensure_future(self.__async__receive_cam())
         done, pending = self.loop.run_until_complete(asyncio.wait([task1, task2], return_when=asyncio.FIRST_COMPLETED,))
         for task in pending:
             task.cancel()
