@@ -13,9 +13,7 @@ class Cameras(object):
         self.loop = asyncio.get_event_loop()
         self.running = True
         self.list = None
-        with open(settings.INSTALL_PATH + '/settings/conf.json', 'r') as conf_json:
-            data = json.load(conf_json)
-        self.key = data["key"]
+        self.key = settings.CONF.get_conf('key')
 
     def write(self):
         with open(settings.INSTALL_PATH + '/camera/camera.json', 'w') as cam:
@@ -48,10 +46,10 @@ class Cameras(object):
         while not finish:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_receive_cam') as ws:
-                    await ws.send(json.dumps({'key': self.key, 'force': False}))
+                    await ws.send(json.dumps({'key': self.key, }))
                     while True:
                         logger.warning(f'START OF SCAN CAMERA')
-                        dict_cam = await sc.run()
+                        #dict_cam = await sc.run()
                         logger.warning(f'END OF SCAN CAMERA')
                         # await ws.send(json.dumps(dict_cam))
                         # logger.info(f'sending the scan camera to the server : {dict_cam}')
@@ -67,6 +65,7 @@ class Cameras(object):
         while not finish:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_send_cam') as ws:
+                    await ws.send(json.dumps({'key': self.key, }))
                     cam = await ws.recv()
                     finish = True
             except websockets.exceptions.ConnectionClosedError:
