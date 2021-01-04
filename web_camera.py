@@ -69,7 +69,7 @@ class Cameras(object):
                             cameras = json.load(cam)
                         logger.warning(f'Reading camera in file -> {cameras}')
                         await ws.send(json.dumps(cameras))
-                        await asyncio.sleep(10)
+                        await asyncio.sleep(settings.SCAN_INTERVAL)
             except websockets.exceptions.ConnectionClosedError:
                 logger.warning(f'socket disconnected !!')
                 continue
