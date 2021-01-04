@@ -20,7 +20,6 @@ import web_camera
 import signal
 import time
 from urllib3.exceptions import ProtocolError
-import asyncio
 
 # globals var
 logger = Logger(__name__, level=settings.MAIN_LOG).run()
@@ -91,6 +90,7 @@ def main():
 
         # launch child processes
         process = {
+            'scan_camera': Process(target=sc.run, args=(60,)),
             'image_upload': Process(target=up.uploadImage, args=(Q_img,)),
             'image_upload_real_time': Process(target=up.uploadImageRealTime, args=(Q_img_real,)),
             'result_upload': Process(target=up.uploadResult, args=(Q_result, E_video )),
@@ -99,9 +99,10 @@ def main():
             p.start()
 
         # log the id of the process
-        logger.error(f'PID of different processes : upload image->{process["image_upload"].pid} / '
-                     f'upload real time image->{process["image_upload_real_time"].pid} / '
-                     f'upload result->{process["result_upload"].pid} / serve cherrypy->{process["serve_http"].pid}')
+        txt = f'PID of different processes : '
+        for key, value in process.items():
+            txt += f'{key}->{value.pid} / '
+        logger.error(txt)
 
         while True:
             list_thread = []
