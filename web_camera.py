@@ -71,7 +71,7 @@ class Cameras(object):
                         await ws.send(json.dumps(cameras))
                         await asyncio.sleep(settings.SCAN_INTERVAL)
             except websockets.exceptions.ConnectionClosedError:
-                logger.warning(f'socket disconnected !!')
+                logger.error(f'socket disconnected !!')
                 continue
 
     async def __async__receive_cam(self):
@@ -86,7 +86,7 @@ class Cameras(object):
                     cam = await ws.recv()
                     finish = True
             except websockets.exceptions.ConnectionClosedError:
-                logger.warning(f'socket disconnected !!')
+                logger.error(f'socket disconnected !!')
                 continue
 
 
