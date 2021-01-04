@@ -50,6 +50,7 @@ class Cameras(object):
                     while True:
                         logger.warning(f'START OF SCAN CAMERA')
                         #dict_cam = await sc.run()
+                        r = await sc.ws_discovery(2, 20)
                         logger.warning(f'END OF SCAN CAMERA')
                         # await ws.send(json.dumps(dict_cam))
                         # logger.info(f'sending the scan camera to the server : {dict_cam}')
