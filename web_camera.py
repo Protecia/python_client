@@ -31,8 +31,45 @@ class Cameras(object):
             self.list = json.loads(cam)
             await ws.send(json.dumps({'answer': True}))
 
-    def connect(self):
-        return self.loop.run_until_complete(self.__async__cam_task())
+    def send_cam(self):
+        return self.loop.run_until_complete(self.__async__send_cam())
+
+    async def __async__send_cam(self):
+        finish = False
+        while not finish:
+            try:
+                async with websockets.connect(settings.SERVER_WS + 'ws_receive_cam') as ws:
+                    await ws.send(json.dumps({'key': self.key, 'force': False}))
+                    while True:
+                        logger.warning(f'START OF SCAN CAMERA')
+                        #dict_cam = await sc.run()
+                        logger.warning(f'END OF SCAN CAMERA')
+                        # await ws.send(json.dumps(dict_cam))
+                        # logger.info(f'sending the scan camera to the server : {dict_cam}')
+                        # dict_cam = await ping_network()
+                        await ws.send(json.dumps({'cam': 'ollé'}))
+                        await asyncio.sleep(10)
+            except websockets.exceptions.ConnectionClosedError:
+                logger.warning(f'socket disconnected !!')
+                continue
+
+    def receive_cam(self):
+        return self.loop.run_until_complete(self.__async__receive_cam())
+
+    async def __async__receive_cam(self):
+        finish = False
+        while not finish:
+            try:
+                async with websockets.connect(settings.SERVER_WS + 'ws_receive_cam') as ws:
+                    cam = await ws.recv()
+                    finish = True
+            except websockets.exceptions.ConnectionClosedError:
+                logger.warning(f'socket disconnected !!')
+                continue
+
+
+
+
 
     async def __async__cam_task(self):
         finish = False
@@ -42,8 +79,8 @@ class Cameras(object):
                     await ws.send(json.dumps({'key': self.key, 'force': False}))
                     task1 = asyncio.ensure_future(self.coro_recv(ws))
                     task2 = asyncio.ensure_future(self.coro_send(ws))
-                    task3 = asyncio.ensure_future(self.coro3(ws))
-                    done, pending = await asyncio.wait([task1, task2, task3], return_when=asyncio.FIRST_COMPLETED, )
+                    #task3 = asyncio.ensure_future(self.coro3(ws))
+                    done, pending = await asyncio.wait([task1, task2], return_when=asyncio.FIRST_COMPLETED, )
                     finish = True
             except websockets.exceptions.ConnectionClosedError:
                 logger.warning(f'socket disconnected !!')

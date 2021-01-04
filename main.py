@@ -111,7 +111,7 @@ def main():
                 p.start()
 
             # wait until a camera change
-            cameras.connect()
+            cameras.send_cam()
             # If camera change (websocket answer)
             stop(list_thread)
             logger.warning('Camera change restart !')
