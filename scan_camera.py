@@ -212,4 +212,5 @@ def run(wait):
         dict_cam = check_cam(cam_ip_dict, users_dict)
         with open(settings.INSTALL_PATH+'/camera/camera_from_scan.json', 'w') as out:
             json.dump(dict_cam, out)
+        logger.warning(f'Writing scam camera in file <-  {dict_cam}')
         time.sleep(wait)
