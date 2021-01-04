@@ -44,7 +44,7 @@ def uploadImage(Q):
             server = True
             logger.info('send json image : {}'.format(imgJson))
             logger.warning('send image to server  : {}'.format(r.status_code))
-        except (requests.exceptions.ConnectionError, requests.Timeout) :
+        except (requests.exceptions.ConnectionError, requests.Timeout):
             server = False
             logger.warning('uploadImage Can not find the remote server')
             time.sleep(5)

@@ -200,17 +200,21 @@ def check_cam(cam_ip_dict, users_dict):
 
 def run(wait):
     while True:
-        with open(settings.INSTALL_PATH+'/camera/camera_from_server.json', 'r') as out:
-            cameras = json.load(out)
-        users_dict = dict(set([(c['username'], c['password']) for c in cameras]))
-        cam_ip_dict = dict([(c['ip'], c['port_onvif']) for c in cameras])
-        if settings.CONF.get_conf('scan_camera') != 0:
-            detected_cam = ping_network()
-        else:
-            detected_cam = ws_discovery(2, 20)
-        cam_ip_dict.update(detected_cam)
-        dict_cam = check_cam(cam_ip_dict, users_dict)
-        with open(settings.INSTALL_PATH+'/camera/camera_from_scan.json', 'w') as out:
-            json.dump(dict_cam, out)
-        logger.warning(f'Writing scam camera in file <-  {dict_cam}')
-        time.sleep(wait)
+        try:
+            with open(settings.INSTALL_PATH+'/camera/camera_from_server.json', 'r') as out:
+                cameras = json.load(out)
+            users_dict = dict(set([(c['username'], c['password']) for c in cameras]))
+            cam_ip_dict = dict([(c['ip'], c['port_onvif']) for c in cameras])
+            if settings.CONF.get_conf('scan_camera') != 0:
+                detected_cam = ping_network()
+            else:
+                detected_cam = ws_discovery(2, 20)
+            cam_ip_dict.update(detected_cam)
+            dict_cam = check_cam(cam_ip_dict, users_dict)
+            with open(settings.INSTALL_PATH+'/camera/camera_from_scan.json', 'w') as out:
+                json.dump(dict_cam, out)
+            logger.warning(f'Writing scam camera in file <-  {dict_cam}')
+            time.sleep(wait)
+        except Exception as ex:
+            logger.error(f'exception in scan_camera : except-->{ex} / name-->{type(ex).__name__}')
+            continue
