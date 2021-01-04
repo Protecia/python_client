@@ -14,6 +14,7 @@ import sys
 # production
 # ------------------------------------------------------------------------------
 
+
 class Logger(object):
     def __init__(self, name, level=logging.ERROR):
         self.logger = logging.getLogger(name)
@@ -26,6 +27,7 @@ class Logger(object):
         screen_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
         self.logger.addHandler(screen_handler)
+        self.logger.propagate = False
 
     def run(self):
         return self.logger

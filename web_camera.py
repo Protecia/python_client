@@ -62,14 +62,11 @@ class Cameras(object):
                 logger.warning(f'socket disconnected !!')
                 continue
 
-    def receive_cam(self):
-        return self.loop.run_until_complete(self.__async__receive_cam())
-
     async def __async__receive_cam(self):
         finish = False
         while not finish:
             try:
-                async with websockets.connect(settings.SERVER_WS + 'ws_receive_cam') as ws:
+                async with websockets.connect(settings.SERVER_WS + 'ws_send_cam') as ws:
                     cam = await ws.recv()
                     finish = True
             except websockets.exceptions.ConnectionClosedError:
