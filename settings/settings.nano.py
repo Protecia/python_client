@@ -64,7 +64,7 @@ SERVER_WS = 'ws://client.protecia.com/'
 VIDEO_REC_TIME = 10
 VIDEO_SPACE = 30  # Go
 QUEUE_SIZE = 10  # number of images to queue at max
-SCAN_INTERVAl = 60 # seconds between each scan of the network to find onvif camera
+SCAN_INTERVAL = 60 # seconds between each scan of the network to find onvif camera
 
 # client conf
 TUNNEL_IP = 'my.protecia.com'

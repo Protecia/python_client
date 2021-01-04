@@ -90,7 +90,7 @@ def main():
 
         # launch child processes
         process = {
-            'scan_camera': Process(target=sc.run, args=(60,)),
+            'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL,)),
             'image_upload': Process(target=up.uploadImage, args=(Q_img,)),
             'image_upload_real_time': Process(target=up.uploadImageRealTime, args=(Q_img_real,)),
             'result_upload': Process(target=up.uploadResult, args=(Q_result, E_video )),
