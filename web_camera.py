@@ -42,7 +42,7 @@ class Cameras(object):
                     await ws.send(json.dumps({'key': self.key, 'force': False}))
                     while True:
                         logger.warning(f'START OF SCAN CAMERA')
-                        #dict_cam = await sc.run()
+                        dict_cam = await sc.run()
                         logger.warning(f'END OF SCAN CAMERA')
                         # await ws.send(json.dumps(dict_cam))
                         # logger.info(f'sending the scan camera to the server : {dict_cam}')
