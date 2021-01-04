@@ -76,6 +76,28 @@ class Cameras(object):
                         mul_port = 3702
                         ret = []
                         dcam = {}
+                        for i in range(1):
+                            for ip in ip_list:
+                                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+                                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                                s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 255)
+                                s.bind((ip, mul_port))
+                                s.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP,
+                                             socket.inet_aton(mul_ip) + socket.inet_aton(ip))
+                                s.setblocking(False)
+                                s.sendto(soap_xml.encode(), (mul_ip, mul_port))
+                                time.sleep(3)
+                                while True:
+                                    try:
+                                        data, address = s.recvfrom(65535)
+                                        # time.sleep(1)
+                                        # print(address)
+                                        ret.append(data)
+                                    except BlockingIOError:
+                                        pass
+                                        break
+                                # s.shutdown()
+                                s.close()
 
                         logger.warning(f'END OF SCAN CAMERA')
                         # await ws.send(json.dumps(dict_cam))
