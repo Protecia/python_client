@@ -43,7 +43,7 @@ def ping_network():
     return std
 
 
-async def ws_discovery(repeat, wait):
+def ws_discovery(repeat, wait):
     """Discover cameras on network using ws discovery.
     Returns:
         Dictionnary: { ip : port } of cameras found on network.
@@ -153,7 +153,7 @@ def check_auth(uri, user, passwd):
     return False
 
 
-async def check_cam(cam_ip_dict, users_dict):
+def check_cam(cam_ip_dict, users_dict):
     """Test connection for all ip/port.
         Returns:
             List: List of camera dict that are active.
@@ -164,7 +164,8 @@ async def check_cam(cam_ip_dict, users_dict):
                         'uri': [('http://0.0.0.0', 'rtsp://0.0.0.0'), ]}
         for user, passwd in users_dict.items():
             logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
-            onvif = await get_onvif_uri(ip, port, user, passwd)
+            loop = asyncio.get_event_loop()
+            onvif = loop.run_until_complete(get_onvif_uri(ip, port, user, passwd))
             logger.info(f'onvif answer is {onvif}')
             if onvif:
                 logger.info(f'unpack onvif with {onvif}')
@@ -197,15 +198,15 @@ async def check_cam(cam_ip_dict, users_dict):
 #     return False
 
 
-async def run():
-    with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
+def run():
+    with open(settings.INSTALL_PATH+'/camera/camera_from_server.json', 'r') as out:
         cameras = json.load(out)
     users_dict = dict(set([(c['username'], c['password']) for c in cameras]))
     cam_ip_dict = dict([(c['ip'], c['port_onvif']) for c in cameras])
     if settings.CONF.get_conf('scan_camera') != 0:
         detected_cam = ping_network()
     else:
-        detected_cam = await ws_discovery(2, 20)
-#    cam_ip_dict.update(detected_cam)
-#    dict_cam = await check_cam(cam_ip_dict, users_dict)
-#   return dict_cam
+        detected_cam = ws_discovery(2, 20)
+    cam_ip_dict.update(detected_cam)
+    dict_cam = check_cam(cam_ip_dict, users_dict)
+    return dict_cam
