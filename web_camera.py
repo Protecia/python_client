@@ -71,7 +71,7 @@ class Cameras(object):
                         addrs = psutil.net_if_addrs()
                         ip_list = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
                         logger.warning(f'ip list is {ip_list}')
-                        async with open('soap.xml') as f:
+                        with open('soap.xml') as f:
                             soap_xml = f.read()
                         mul_ip = "239.255.255.250"
                         mul_port = 3702
@@ -86,7 +86,7 @@ class Cameras(object):
                                 s.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP,
                                              socket.inet_aton(mul_ip) + socket.inet_aton(ip))
                                 s.setblocking(False)
-                                s.sendto(soap_xml.encode(), (mul_ip, mul_port))
+                                #s.sendto(soap_xml.encode(), (mul_ip, mul_port))
                                 time.sleep(3)
                                 while True:
                                     try:
