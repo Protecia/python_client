@@ -65,11 +65,11 @@ class Cameras(object):
                 async with websockets.connect(settings.SERVER_WS + 'ws_receive_cam') as ws:
                     await ws.send(json.dumps({'key': self.key, }))
                     while True:
+                        await asyncio.sleep(settings.SCAN_INTERVAL)
                         with open(settings.INSTALL_PATH + '/camera/camera_from_scan.json', 'r') as cam:
                             cameras = json.load(cam)
                         logger.warning(f'Reading camera in file -> {cameras}')
                         await ws.send(json.dumps(cameras))
-                        await asyncio.sleep(settings.SCAN_INTERVAL)
             except websockets.exceptions.ConnectionClosedError:
                 logger.error(f'socket disconnected !!')
                 continue
