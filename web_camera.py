@@ -70,7 +70,8 @@ class Cameras(object):
                         # TEST CODE ****************************************************************************
                         addrs = psutil.net_if_addrs()
                         ip_list = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
-                        with open('soap.xml') as f:
+                        logger.warning(f'ip list is {ip_list}')
+                        async with open('soap.xml') as f:
                             soap_xml = f.read()
                         mul_ip = "239.255.255.250"
                         mul_port = 3702
