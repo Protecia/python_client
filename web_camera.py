@@ -5,6 +5,23 @@ import asyncio
 from log import Logger
 import scan_camera as sc
 
+
+import json
+import settings.settings as settings
+import requests
+from onvif import ONVIFCamera
+from onvif.exceptions import ONVIFError
+from log import Logger
+import time
+import socket
+import psutil
+import netifaces as ni
+import xml.etree.ElementTree as eT
+import re
+from urllib3.exceptions import HeaderParsingError
+import asyncio
+import subprocess
+
 logger = Logger(__name__, level=settings.SOCKET_LOG).run()
 
 
@@ -50,7 +67,16 @@ class Cameras(object):
                     while True:
                         logger.warning(f'START OF SCAN CAMERA')
                         #dict_cam = await sc.run()
-                        r = await sc.ws_discovery(2, 20)
+                        # TEST CODE ****************************************************************************
+                        addrs = psutil.net_if_addrs()
+                        ip_list = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
+                        with open('soap.xml') as f:
+                            soap_xml = f.read()
+                        mul_ip = "239.255.255.250"
+                        mul_port = 3702
+                        ret = []
+                        dcam = {}
+
                         logger.warning(f'END OF SCAN CAMERA')
                         # await ws.send(json.dumps(dict_cam))
                         # logger.info(f'sending the scan camera to the server : {dict_cam}')
