@@ -3,7 +3,6 @@ import websockets
 import json
 import asyncio
 from log import Logger
-import scan_camera as sc
 
 logger = Logger(__name__, level=settings.SOCKET_LOG).run()
 
@@ -52,7 +51,7 @@ class Cameras(object):
                         await ws.send(json.dumps(cameras))
             except (websockets.exceptions.ConnectionClosedError, OSError):
                 logger.error(f'socket disconnected !!')
-                asyncio.wait(1)
+                await asyncio.wait(1)
                 continue
 
     async def __async__receive_cam(self):
@@ -67,5 +66,5 @@ class Cameras(object):
                     finish = True
             except (websockets.exceptions.ConnectionClosedError, OSError):
                 logger.error(f'socket disconnected !!')
-                asyncio.wait(1)
+                await asyncio.wait(1)
                 continue
