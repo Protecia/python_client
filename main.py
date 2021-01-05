@@ -48,7 +48,7 @@ def conf():
                 return False
     except (ConnectionResetError, requests.exceptions.ConnectionError, requests.Timeout, KeyError,
             json.decoder.JSONDecodeError, ProtocolError) as ex:
-        logger.warning(f'exception in configuration : except-->{ex} / name-->{type(ex).__name__}')
+        logger.error(f'exception in configuration : except-->{ex} / name-->{type(ex).__name__}')
         return False
 
 
@@ -115,7 +115,7 @@ def main():
             cameras.connect()
             # If camera change (websocket answer)
             stop(list_thread)
-            logger.warning('Camera change restart !')
+            logger.error('Camera change restart !')
             # write the file for backup video
             cameras.write()
     except KeyboardInterrupt:
