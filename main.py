@@ -84,10 +84,6 @@ def main():
         # retrieve cam
         cameras.get_cam()
 
-        # write the file for backup video
-        cameras.write()
-        logger.warning(f'Writing camera in json : {cameras.list}')
-
         # launch child processes
         process = {
             'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL,)),
@@ -105,6 +101,10 @@ def main():
         logger.error(txt)
 
         while True:
+            # write the file for backup video
+            cameras.write()
+            logger.warning(f'Writing camera in json : {cameras.list}')
+
             list_thread = []
             for c in cameras.list:
                 p = pc.ProcessCamera(c, Q_result, Q_img, Q_img_real, tlock)
