@@ -173,8 +173,7 @@ def check_cam(cam_ip_dict, users_dict):
                 logger.info(f'onvif OK for {ip} / {port} / {user} / {passwd} ')
                 dict_cam[ip]['brand'] = info['Manufacturer']
                 dict_cam[ip]['model'] = info['Model']
-                dict_cam[ip]['uri'] = [(i[0], i[1].split('//')[0] + '//' + user + ':' + passwd + '@' +
-                                        i[1].split('//')[1]) for i in uri]
+                dict_cam[ip]['uri'] = [(i[0], i[1]) for i in uri]
                 dict_cam[ip]['username'] = user
                 dict_cam[ip]['active_automatic'] = True
                 dict_cam[ip]['password'] = passwd
@@ -183,19 +182,6 @@ def check_cam(cam_ip_dict, users_dict):
                 if auth:
                     dict_cam[ip]['auth_type'] = auth
     return dict_cam
-
-
-# def set_cam(cam):
-#     cam_json = {'key': settings.CONF.key, 'cam': cam}
-#     try:
-#         r = requests.post(settings.SERVER+"setcam", json=cam_json, timeout=40)
-#         logger.info('set cam {}'.format(cam))
-#         s = json.loads(r.text)
-#         return s
-#     except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError, requests.Timeout) as ex:
-#         logger.error(f'exception in set_cam : except-->{ex} / name-->{type(ex).__name__}')
-#         pass
-#     return False
 
 
 def run(wait):

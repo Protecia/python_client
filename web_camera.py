@@ -50,7 +50,7 @@ class Cameras(object):
                             cameras = json.load(cam)
                         logger.warning(f'Reading camera in file -> {cameras}')
                         await ws.send(json.dumps(cameras))
-            except websockets.exceptions.ConnectionClosedError:
+            except (websockets.exceptions.ConnectionClosedError, ConnectionRefusedError):
                 logger.error(f'socket disconnected !!')
                 asyncio.wait(1)
                 continue
@@ -65,7 +65,7 @@ class Cameras(object):
                     self.list = json.loads(cam)
                     await ws.send(json.dumps({'answer': True}))
                     finish = True
-            except websockets.exceptions.ConnectionClosedError:
+            except (websockets.exceptions.ConnectionClosedError, ConnectionRefusedError):
                 logger.error(f'socket disconnected !!')
                 asyncio.wait(1)
                 continue
