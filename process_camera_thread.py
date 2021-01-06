@@ -318,3 +318,27 @@ class ProcessCamera(Thread):
                     last.remove(obj_last)
                     break
 
+"""
+This part should be rewrite using a websocket for each camera, following this model : 
+class Test(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        self.a = []
+        self.loop=asyncio.new_event_loop()
+    def run(self):
+        print('ok')
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(asyncio.gather(self.task1(self.a), self.task2(self.a)))
+    async def task1(self, a):
+        for _ in range(10):
+            self.a.append('toto')
+            print(a)
+            await asyncio.sleep(1)
+    async def task2(self, a):
+        for _ in range(10):
+            self.a.append('tata')
+            print(a)
+            await asyncio.sleep(1)
+t = Test()
+t.start()
+"""
