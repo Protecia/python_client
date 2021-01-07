@@ -203,4 +203,5 @@ def run(wait):
             time.sleep(wait)
         except Exception as ex:
             logger.error(f'exception in scan_camera : except-->{ex} / name-->{type(ex).__name__}')
+            time.sleep(1)
             continue

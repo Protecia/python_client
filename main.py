@@ -116,7 +116,7 @@ def main():
             # launch the camera thread
             list_thread = []
             for c in cameras.list:
-                cameras_state[c.id] = [pEvent(), pEvent()]
+                cameras_state[c['id']] = [pEvent(), pEvent()]
                 p = pc.ProcessCamera(c, Q_result, Q_img, Q_img_real, tlock, cameras_state, E_state)
                 list_thread.append(p)
                 p.start()
