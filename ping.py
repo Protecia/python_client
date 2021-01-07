@@ -21,7 +21,7 @@ def set_token(token1, token2):
 def getState(E, camera_state):
     while True:
         try :
-            r = requests.post(settings.SERVER+"getState", data = {'key': settings.KEY, }, timeout= 40 )
+            r = requests.post(settings.SERVER+"getState", data = {'key': settings.CONF.get_conf('key') }, timeout= 40 )
             data = json.loads(r.text)
             logger.warning('getState answer : {}'.format(data))
             if data['reboot'] and settings.HARDWARE=='nano':
