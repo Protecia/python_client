@@ -20,6 +20,7 @@ import web_camera
 import signal
 import time
 from urllib3.exceptions import ProtocolError
+import ping as pg
 
 # globals var
 logger = Logger(__name__, level=settings.MAIN_LOG).run()
@@ -30,6 +31,7 @@ Q_result = Queue()
 lock = Lock()
 E_video = pEvent()
 tlock = tLock()
+E_state = pEvent()
 
 
 def conf():
@@ -89,7 +91,7 @@ def main():
             'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL,)),
             'image_upload': Process(target=up.uploadImage, args=(Q_img,)),
             'image_upload_real_time': Process(target=up.uploadImageRealTime, args=(Q_img_real,)),
-            'result_upload': Process(target=up.uploadResult, args=(Q_result, E_video )),
+            'result_upload': Process(target=up.uploadResult, args=(Q_result, E_video)),
             'serve_http': Process(target=http_serve, args=(2525,))}
         for p in process.values():
             p.start()
@@ -105,16 +107,28 @@ def main():
             cameras.write()
             logger.warning(f'Writing camera in json : {cameras.list}')
 
+            # set the video event
+            E_video.set()
+
+            # initialize the camera state event
+            cameras_state = {}
+
+            # launch the camera thread
             list_thread = []
             for c in cameras.list:
-                p = pc.ProcessCamera(c, Q_result, Q_img, Q_img_real, tlock)
+                cameras_state[c.id] = [pEvent(), pEvent()]
+                p = pc.ProcessCamera(c, Q_result, Q_img, Q_img_real, tlock, cameras_state, E_state)
                 list_thread.append(p)
                 p.start()
-
+            # process to get the state of the camera on the server
+            pState = Process(target=pg.getState, args=(E_state, cameras_state))
+            pState.start()
             # wait until a camera change
             cameras.connect()
-            # If camera change (websocket answer)
+
+            # If camera change (websocket answer) -----------------------------
             stop(list_thread)
+            pState.terminate()
             logger.error('Camera change restart !')
             # write the file for backup video
             cameras.write()
@@ -122,6 +136,7 @@ def main():
         stop(list_thread)
         for p in process.values():
             p.terminate()
+        pState.terminate()
         logger.warning('Ctrl-c or SIGTERM')
 
 

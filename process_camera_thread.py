@@ -70,6 +70,12 @@ def read_write(rw, *args):
         return r
 
 
+def EtoB(E):
+    if E.is_set():
+        return True
+    else:
+        return False
+
 # the base condition to store the image is : is there a new objects detection
 # or a change in the localisation of the objects. It is not necessary to store
 # billions of images but only the different one.
@@ -77,7 +83,7 @@ def read_write(rw, *args):
 class ProcessCamera(Thread):
     """Thread used to grab camera images and process the image with darknet"""
 
-    def __init__(self, cam, q_result, q_img, q_img_real, tlock):
+    def __init__(self, cam, q_result, q_img, q_img_real, tlock, camera_state, e_state):
         Thread.__init__(self)
         self.cam = cam
         self.running = False
@@ -97,8 +103,10 @@ class ProcessCamera(Thread):
         self.vcap = None
         self.frame = None
         self.thread_rtsp = None
-        self.rec = False
-        self.real_time = {'HD': False, 'LD': False}
+        #self.rec = False
+        #self.real_time = {'HD': False, 'LD': False}
+        self.camera_state = camera_state
+        self.e_state = e_state
 
         if cam['auth_type'] == 'B':
             self.auth = requests.auth.HTTPBasicAuth(cam['username'], cam['password'])
@@ -214,14 +222,14 @@ class ProcessCamera(Thread):
                 # if gueue free
                 if self.Q_img_real.qsize() < 1:
                     # if on page camera HD
-                    if self.real_time['HD']:
+                    if EtoB(self.camera_state[1]):
                         resize_factor = self.cam['max_width_rtime_HD']/arr.shape[1]
                         self.Q_img_real.put((self.cam['id'], result_filtered_true, cv2.imencode('.jpg', arr)[1].tobytes(),
                                              resize_factor))
                         self.logger.warning('Q_img_real HD   on {} : size {}'.format(self.cam['name'],
                                                                                      self.Q_img_real.qsize()))
                     # if on page camera LD
-                    elif self.real_time['LD']:
+                    elif EtoB(self.camera_state[0]):
                         resize_factor = self.cam.max_width_rtime/arr.shape[1]
                         arr = cv2.resize(arr, (self.cam['max_width_rtime'], int(arr.shape[0]*resize_factor)),
                                          interpolation = cv2.INTER_CUBIC)
@@ -230,8 +238,8 @@ class ProcessCamera(Thread):
                         self.logger.warning('Q_img_real LD on {} : size {}'.format(self.cam['name'],
                                                                                    self.Q_img_real.qsize()))
                 # compare with last result to check if different
-                self.logger.debug(f'rec :{self.rec}')
-                if self.base_condition(result_filtered) and self.rec:
+                self.logger.debug(f'rec :{EtoB(self.e_state)}')
+                if self.base_condition(result_filtered) and EtoB(self.E_state):
                     self.logger.debug('>>> Result have changed <<< ')
                     date = time.strftime("%Y-%m-%d-%H-%M-%S")
                     token = secrets.token_urlsafe(6)
