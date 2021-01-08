@@ -239,7 +239,7 @@ class ProcessCamera(Thread):
                                                                                    self.Q_img_real.qsize()))
                 # compare with last result to check if different
                 self.logger.debug(f'rec :{EtoB(self.e_state)}')
-                if self.base_condition(result_filtered) and EtoB(self.E_state):
+                if self.base_condition(result_filtered) and EtoB(self.e_state):
                     self.logger.debug('>>> Result have changed <<< ')
                     date = time.strftime("%Y-%m-%d-%H-%M-%S")
                     token = secrets.token_urlsafe(6)
