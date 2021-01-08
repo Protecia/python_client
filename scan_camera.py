@@ -168,14 +168,12 @@ def check_cam(cam_ip_dict, users_dict):
             onvif = loop.run_until_complete(get_onvif_uri(ip, port, user, passwd))
             logger.info(f'onvif answer is {onvif}')
             if onvif:
-                logger.info(f'unpack onvif with {onvif}')
                 info, uri = onvif
                 logger.info(f'onvif OK for {ip} / {port} / {user} / {passwd} ')
                 dict_cam[ip]['brand'] = info['Manufacturer']
                 dict_cam[ip]['model'] = info['Model']
                 dict_cam[ip]['uri'] = [(i[0], i[1]) for i in uri]
                 auth = check_auth(uri, user, passwd)
-                dict_cam[ip]['active_automatic'] = False
                 if auth:
                     dict_cam[ip]['auth_type'] = auth
                     dict_cam[ip]['wait_for_set'] = False
