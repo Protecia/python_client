@@ -128,7 +128,7 @@ def main():
 
             # If camera change (websocket answer) -----------------------------
             stop(list_thread)
-            pState.terminate()
+            #pState.terminate()
             logger.error('Camera change restart !')
             # write the file for backup video
             cameras.write()
@@ -136,7 +136,7 @@ def main():
         stop(list_thread)
         for p in process.values():
             p.terminate()
-        pState.terminate()
+        #pState.terminate()
         logger.warning('Ctrl-c or SIGTERM')
 
 
