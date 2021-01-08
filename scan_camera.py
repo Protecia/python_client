@@ -39,7 +39,7 @@ def ping_network():
             if outs:
                 ip = outs.decode().rstrip()
                 if ip not in box:
-                    std[ip] = str(settings.CONF.get_conf('scan_camera'))
+                    std[ip] = settings.CONF.get_conf('scan_camera')
     return std
 
 
@@ -174,13 +174,14 @@ def check_cam(cam_ip_dict, users_dict):
                 dict_cam[ip]['brand'] = info['Manufacturer']
                 dict_cam[ip]['model'] = info['Model']
                 dict_cam[ip]['uri'] = [(i[0], i[1]) for i in uri]
-                dict_cam[ip]['username'] = user
-                dict_cam[ip]['active_automatic'] = True
-                dict_cam[ip]['password'] = passwd
-                dict_cam[ip]['wait_for_set'] = False
                 auth = check_auth(uri, user, passwd)
+                dict_cam[ip]['active_automatic'] = False
                 if auth:
                     dict_cam[ip]['auth_type'] = auth
+                    dict_cam[ip]['wait_for_set'] = False
+                    dict_cam[ip]['active_automatic'] = True
+                    dict_cam[ip]['username'] = user
+                    dict_cam[ip]['password'] = passwd
     return dict_cam
 
 
