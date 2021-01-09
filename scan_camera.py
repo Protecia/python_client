@@ -172,7 +172,7 @@ def check_cam(cam_ip_dict, users_dict):
             check_auth(cam['uri'], cam["username"], cam["password"], dict_cam[ip])
         else:  # this is a new cam
             dict_cam[ip] = {'name': 'unknow', 'port_onvif': cam["port_onvif"], 'active_automatic': False,
-                            'from_client': True, }
+                            'from_client': True, 'uri': []}
             port = cam["port_onvif"]
             for user, passwd in users_dict.items():
                 logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
