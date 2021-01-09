@@ -16,7 +16,17 @@ class Cameras(object):
 
     def write(self):
         with open(settings.INSTALL_PATH + '/camera/camera_from_server.json', 'w') as cam:
-            json.dump(self.list, cam)
+            dict_cam = {}
+            for c in self.list:
+                if c['ip'] not in dict:
+                    dict_cam['ip'] = c
+                    dict_cam['ip']['uri'] = [(c['url'], c['rtsp'], c['index_uri']), ]
+                    key_to_remove = ('rtsp', 'url', 'on_camera_LD', 'on_camera_HD', 'ip')
+                    for k in key_to_remove:
+                        dict_cam['ip'].pop(k, None)
+                else:
+                    dict_cam['ip']['uri'].append((c['url'], c['rtsp'], c['index_uri']))
+            json.dump(dict_cam, cam)
 
     def get_cam(self):
         return self.loop.run_until_complete(self.__async__get_cam())

@@ -39,7 +39,7 @@ def ping_network():
             if outs:
                 ip = outs.decode().rstrip()
                 if ip not in box:
-                    std[ip] = settings.CONF.get_conf('scan_camera')
+                    std[ip] = {'port_onvif': settings.CONF.get_conf('scan_camera')}
     return std
 
 
@@ -86,7 +86,7 @@ def ws_discovery(repeat, wait):
                     url = url[0]
                     ip = re.search('http://(.*):', url).group(1)
                     port = re.search('[0-9]+:([0-9]+)/', url).group(1)
-                    dcam[ip] = port
+                    dcam[ip] = {'port_onvif': port}
             if not i+1 == repeat:
                 time.sleep(wait)
     except (KeyError, OSError):
@@ -133,7 +133,7 @@ async def get_onvif_uri(ip, port, user, passwd):
     return info, uri
 
 
-def check_auth(uri, user, passwd):
+def check_auth(uri, user, passwd, dict_cam_ip):
     auth = {'B': requests.auth.HTTPBasicAuth(user, passwd), 'D': requests.auth.HTTPDigestAuth(user, passwd)}
     for t, a in auth.items():
         for i in range(4):
@@ -145,12 +145,17 @@ def check_auth(uri, user, passwd):
                     logger.info(f'after request on {http}')
                     if r.ok:
                         logger.info(f'request  on camera OK for {http} / {user} / {passwd} / {t}')
-                        return t
+                        dict_cam_ip['auth_type'] = t
+                        dict_cam_ip['wait_for_set'] = False
+                        dict_cam_ip['active_automatic'] = True
+                        dict_cam_ip['username'] = user
+                        dict_cam_ip['password'] = passwd
+                    else:
+                        dict_cam_ip['active_automatic'] = False
                 except (requests.exceptions.ConnectionError, requests.Timeout,
                         requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema):
                     time.sleep(0.5)
                     pass
-    return False
 
 
 def check_cam(cam_ip_dict, users_dict):
@@ -159,27 +164,28 @@ def check_cam(cam_ip_dict, users_dict):
             List: List of camera dict that are active.
         """
     dict_cam = {}
-    for ip, port in cam_ip_dict.items():
-        dict_cam[ip] = {'name': 'unknow', 'port_onvif': port, 'active_automatic': False,
-                        'uri': [('http://0.0.0.0', 'rtsp://0.0.0.0'), ], 'from_client': True, }
-        for user, passwd in users_dict.items():
-            logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
-            loop = asyncio.get_event_loop()
-            onvif = loop.run_until_complete(get_onvif_uri(ip, port, user, passwd))
-            logger.info(f'onvif answer is {onvif}')
-            if onvif:
-                info, uri = onvif
-                logger.info(f'onvif OK for {ip} / {port} / {user} / {passwd} ')
-                dict_cam[ip]['brand'] = info['Manufacturer']
-                dict_cam[ip]['model'] = info['Model']
-                dict_cam[ip]['uri'] = [(i[0], i[1]) for i in uri]
-                auth = check_auth(uri, user, passwd)
-                if auth:
-                    dict_cam[ip]['auth_type'] = auth
-                    dict_cam[ip]['wait_for_set'] = False
-                    dict_cam[ip]['active_automatic'] = True
-                    dict_cam[ip]['username'] = user
-                    dict_cam[ip]['password'] = passwd
+    for ip, cam in cam_ip_dict.items():
+        dict_cam[ip] = cam
+        http = cam.get('url', None)
+        if http:  # this is a know cam, so test
+            logger.info(f'testing old cam with http:{http} user:{cam["username"]} pass:{cam["password"]}')
+            check_auth(cam['uri'], cam["username"], cam["password"], dict_cam[ip])
+        else:  # this is a new cam
+            dict_cam[ip] = {'name': 'unknow', 'port_onvif': cam["port_onvif"], 'active_automatic': False,
+                            'from_client': True, }
+            port = cam["port_onvif"]
+            for user, passwd in users_dict.items():
+                logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
+                loop = asyncio.get_event_loop()
+                onvif = loop.run_until_complete(get_onvif_uri(ip, port, user, passwd))
+                logger.info(f'onvif answer is {onvif}')
+                if onvif:
+                    info, uri = onvif
+                    logger.info(f'onvif OK for {ip} / {port} / {user} / {passwd} ')
+                    dict_cam[ip]['brand'] = info['Manufacturer']
+                    dict_cam[ip]['model'] = info['Model']
+                    dict_cam[ip]['uri'] = [(i[0], i[1], count) for count, i in enumerate(uri)]
+                    check_auth(uri, user, passwd, dict_cam[ip])
     return dict_cam
 
 
@@ -187,13 +193,13 @@ def run(wait):
     while True:
         try:
             with open(settings.INSTALL_PATH+'/camera/camera_from_server.json', 'r') as out:
-                cameras = json.load(out)
-            users_dict = dict(set([(c['username'], c['password']) for c in cameras]))
-            cam_ip_dict = dict([(c['ip'], c['port_onvif']) for c in cameras])
+                cam_ip_dict = json.load(out)
+            users_dict = dict(set([(c['username'], c['password']) for c in cam_ip_dict.values()]))
             if settings.CONF.get_conf('scan_camera') != 0:
                 detected_cam = ping_network()
             else:
                 detected_cam = ws_discovery(2, 20)
+            detected_cam.update(cam_ip_dict)
             cam_ip_dict.update(detected_cam)
             dict_cam = check_cam(cam_ip_dict, users_dict)
             with open(settings.INSTALL_PATH+'/camera/camera_from_scan.json', 'w') as out:
