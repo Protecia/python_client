@@ -28,6 +28,9 @@ class Cameras(object):
                     dict_cam['ip']['uri'].append((c['url'], c['rtsp'], c['index_uri']))
             json.dump(dict_cam, cam)
 
+    def active_cam(self):
+        return [cam for cam in self.list if cam['active'] and cam['active_automatic']]
+
     def get_cam(self):
         return self.loop.run_until_complete(self.__async__get_cam())
 
