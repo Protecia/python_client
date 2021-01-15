@@ -11,26 +11,25 @@ class Cameras(object):
     def __init__(self):
         self.loop = asyncio.get_event_loop()
         self.running = True
-        self.list = None
+        self.list_cam = None
         self.key = settings.CONF.get_conf('key')
 
     def write(self):
         with open(settings.INSTALL_PATH + '/camera/camera_from_server.json', 'w') as cam:
             dict_cam = {}
-            working_list = self.list.copy()
-            for c in working_list:
+            for c in self.list_cam:
                 if c['ip'] not in dict_cam:
-                    dict_cam['ip'] = c
-                    dict_cam['ip']['uri'] = [(c['url'], c['rtsp'], c['index_uri']), ]
+                    dict_cam[c['ip']] = c.copy()
+                    dict_cam[c['ip']]['uri'] = [(c['url'], c['rtsp'], c['index_uri']), ]
                     key_to_remove = ('rtsp', 'url', 'on_camera_LD', 'on_camera_HD', 'ip')
                     for k in key_to_remove:
-                        dict_cam['ip'].pop(k, None)
+                        dict_cam[c['ip']].pop(k, None)
                 else:
-                    dict_cam['ip']['uri'].append((c['url'], c['rtsp'], c['index_uri']))
+                    dict_cam[c['ip']]['uri'].append((c['url'], c['rtsp'], c['index_uri']))
             json.dump(dict_cam, cam)
 
     def active_cam(self):
-        return [cam for cam in self.list if cam['active_automatic']]
+        return [cam for cam in self.list_cam if cam['active_automatic']]
 
     def get_cam(self):
         return self.loop.run_until_complete(self.__async__get_cam())
@@ -39,8 +38,8 @@ class Cameras(object):
         async with websockets.connect(settings.SERVER_WS+'ws') as ws:
             await ws.send(json.dumps({'key': self.key}))
             cam = await ws.recv()
-            self.list = json.loads(cam)
-            logger.warning(f' receive cam from server -> {self.list}')
+            self.list_cam = json.loads(cam)
+            logger.warning(f' receive cam from server -> {self.list_cam}')
             await ws.send(json.dumps({'answer': True}))
 
     def connect(self):
@@ -78,7 +77,7 @@ class Cameras(object):
                     await ws.send(json.dumps({'key': self.key, }))
                     cam = await ws.recv()
                     logger.warning(f'Receive cam from server -> {cam}')
-                    self.list = json.loads(cam)
+                    self.list_cam = json.loads(cam)
                     await ws.send(json.dumps({'answer': True}))
                     finish = True
             except (websockets.exceptions.ConnectionClosedError, OSError):
