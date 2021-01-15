@@ -17,7 +17,7 @@ class Cameras(object):
     def write(self):
         with open(settings.INSTALL_PATH + '/camera/camera_from_server.json', 'w') as cam:
             dict_cam = {}
-            for c in self.list: 
+            for c in self.list:
                 if c['ip'] not in dict_cam:
                     dict_cam['ip'] = c
                     dict_cam['ip']['uri'] = [(c['url'], c['rtsp'], c['index_uri']), ]
@@ -72,6 +72,7 @@ class Cameras(object):
                 async with websockets.connect(settings.SERVER_WS + 'ws_send_cam') as ws:
                     await ws.send(json.dumps({'key': self.key, }))
                     cam = await ws.recv()
+                    logger.warning(f'Receive cam from server -> {cam}')
                     self.list = json.loads(cam)
                     await ws.send(json.dumps({'answer': True}))
                     finish = True
