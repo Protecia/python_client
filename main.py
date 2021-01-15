@@ -105,7 +105,7 @@ def main():
         while True:
             # write the file for backup video
             cameras.write()
-            logger.warning(f'Writing camera in json : {cameras.list}')
+            logger.warning(f'Writing camera in json : {cameras.list_cam}')
 
             # set the video event
             E_video.set()
