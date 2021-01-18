@@ -15,6 +15,7 @@ class Cameras(object):
         self.running = True
         self.list_cam = None
         self.key = settings.CONF.get_conf('key')
+        self.E_state = None
 
     def write(self):
         with open(settings.INSTALL_PATH + '/camera/camera_from_server.json', 'w') as cam:
@@ -47,6 +48,7 @@ class Cameras(object):
     def connect(self):
         task1 = asyncio.ensure_future(self.__async__send_cam())
         task2 = asyncio.ensure_future(self.__async__receive_cam())
+        task3 = asyncio.ensure_future(self.__async__get_state())
         done, pending = self.loop.run_until_complete(asyncio.wait([task1, task2], return_when=asyncio.FIRST_COMPLETED,))
         for task in pending:
             task.cancel()
@@ -86,6 +88,20 @@ class Cameras(object):
                     self.list_cam = json.loads(cam)
                     await ws.send(json.dumps({'answer': True}))
                     finish = True
+            except (websockets.exceptions.ConnectionClosedError, OSError):
+                logger.error(f'socket disconnected !!')
+                await asyncio.sleep(1)
+                continue
+
+    async def __async__get_state(self):
+        finish = False
+        while not finish:
+            try:
+                async with websockets.connect(settings.SERVER_WS + 'ws_get_state') as ws:
+                    await ws.send(json.dumps({'key': self.key, }))
+                    state = await ws.recv()
+                    logger.warning(f'Receive change state -> {state}')
+                    self.list_cam = json.loads(cam)
             except (websockets.exceptions.ConnectionClosedError, OSError):
                 logger.error(f'socket disconnected !!')
                 await asyncio.sleep(1)
