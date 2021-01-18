@@ -121,8 +121,8 @@ def main():
                 list_thread.append(p)
                 p.start()
             # process to get the state of the camera on the server
-            get_state = Process(target=pg.getState, args=(E_state, cameras_state))
-            get_state.start()
+            #get_state = Process(target=pg.getState, args=(E_state, cameras_state))
+            #get_state.start()
             # wait until a camera change
             cameras.connect()
 
