@@ -103,8 +103,9 @@ class Cameras(object):
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_get_state') as ws:
                     await ws.send(json.dumps({'key': self.key, }))
-                    state = await ws.recv()
-                    logger.warning(f'Receive change state -> {state}')
+                    while True:
+                        state = await ws.recv()
+                        logger.warning(f'Receive change state -> {state}')
             except (websockets.exceptions.ConnectionClosedError, OSError):
                 logger.error(f'socket disconnected !!')
                 await asyncio.sleep(1)
