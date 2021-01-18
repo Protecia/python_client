@@ -101,7 +101,7 @@ class Cameras(object):
                     await ws.send(json.dumps({'key': self.key, }))
                     state = await ws.recv()
                     logger.warning(f'Receive change state -> {state}')
-                    self.list_cam = json.loads(cam)
+                    self.list_cam = json.loads(state)
             except (websockets.exceptions.ConnectionClosedError, OSError):
                 logger.error(f'socket disconnected !!')
                 await asyncio.sleep(1)
