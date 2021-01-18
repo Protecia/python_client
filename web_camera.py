@@ -2,6 +2,8 @@ import settings.settings as settings
 import websockets
 import json
 import asyncio
+import pathlib
+import time
 from log import Logger
 
 logger = Logger(__name__, level=settings.SOCKET_LOG).run()
@@ -53,17 +55,20 @@ class Cameras(object):
 
     async def __async__send_cam(self):
         finish = False
+        t1 = time.time()
         while not finish:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_receive_cam') as ws:
                     await ws.send(json.dumps({'key': self.key, }))
                     while True:
-                        await asyncio.sleep(20)
-                        with open(settings.INSTALL_PATH + '/camera/camera_from_scan.json', 'r') as cam:
-                            cameras = json.load(cam)
-                        logger.warning(f'Reading camera in file -> {cameras}')
-                        await ws.send(json.dumps(cameras))
-                        await asyncio.sleep(settings.SCAN_INTERVAL)
+                        fname = pathlib.Path('camera/camera_from_scan.json')
+                        t2 = fname.stat().st_ctime
+                        if t2 > t1:
+                            with open(settings.INSTALL_PATH + '/camera/camera_from_scan.json', 'r') as cam:
+                                cameras = json.load(cam)
+                            logger.warning(f'Reading camera in file -> {cameras}')
+                            await ws.send(json.dumps(cameras))
+                        await asyncio.sleep(5)
             except (websockets.exceptions.ConnectionClosedError, OSError):
                 logger.error(f'socket disconnected !!')
                 await asyncio.sleep(1)
