@@ -115,7 +115,7 @@ class ProcessCamera(Thread):
             self.auth = requests.auth.HTTPDigestAuth(cam['username'], cam['password'])
 
     def grab(self):
-        self.vcap = cv2.VideoCapture(self.cam['uri'][1])
+        self.vcap = cv2.VideoCapture(self.cam['rtsp'])
         self.running_rtsp = self.vcap.isOpened()
         self.logger.warning('openning videocapture {} is {}'.format(self.vcap, self.vcap.isOpened()))
         i = 15
@@ -164,7 +164,7 @@ class ProcessCamera(Thread):
             if not self.cam['stream']:
                 self.request_OK = True
                 try:
-                    r = requests.get(self.cam['uri'][0], auth=self.auth, stream=False, timeout=4)
+                    r = requests.get(self.cam['url'], auth=self.auth, stream=False, timeout=4)
                     if r.status_code == 200 and len(r.content) > 1000:
                         self.frame = cv2.imdecode(np.asarray(bytearray(r.content), dtype="uint8"), 1)
                     else:
