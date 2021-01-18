@@ -76,6 +76,10 @@ class Cameras(object):
                 logger.error(f'socket disconnected !!')
                 await asyncio.sleep(1)
                 continue
+            except json.decoder.JSONDecodeError:
+                logger.error(f'bad json maybe writing the file !!')
+                await asyncio.sleep(1)
+                continue
 
     async def __async__receive_cam(self):
         finish = False
