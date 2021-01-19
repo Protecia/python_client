@@ -49,7 +49,8 @@ class Cameras(object):
         task1 = asyncio.ensure_future(self._send_cam())
         task2 = asyncio.ensure_future(self._receive_cam())
         task3 = asyncio.ensure_future(self._get_state(e_state))
-        done, pending = self.loop.run_until_complete(asyncio.wait([task1, task2, task3], return_when=asyncio.FIRST_COMPLETED,))
+        done, pending = self.loop.run_until_complete(asyncio.wait([task1, task2, task3],
+                                                                  return_when=asyncio.FIRST_COMPLETED,))
         for task in pending:
             task.cancel()
         for task in done:
