@@ -45,17 +45,17 @@ class Cameras(object):
             logger.warning(f' receive cam from server -> {self.list_cam}')
             await ws.send(json.dumps({'answer': True}))
 
-    def connect(self):
-        task1 = asyncio.ensure_future(self.__async__send_cam())
-        task2 = asyncio.ensure_future(self.__async__receive_cam())
-        task3 = asyncio.ensure_future(self.__async__get_state())
-        done, pending = self.loop.run_until_complete(asyncio.wait([task1, task2], return_when=asyncio.FIRST_COMPLETED,))
+    def connect(self, e_state):
+        task1 = asyncio.ensure_future(self.send_cam())
+        task2 = asyncio.ensure_future(self.receive_cam())
+        task3 = asyncio.ensure_future(self.get_state())
+        done, pending = self.loop.run_until_complete(asyncio.wait([task1, task2, task3], return_when=asyncio.FIRST_COMPLETED,))
         for task in pending:
             task.cancel()
         for task in done:
             cam = task.result()
 
-    async def __async__send_cam(self):
+    async def send_cam(self):
         finish = False
         t1 = time.time()
         while not finish:
@@ -81,7 +81,7 @@ class Cameras(object):
                 await asyncio.sleep(1)
                 continue
 
-    async def __async__receive_cam(self):
+    async def receive_cam(self):
         finish = False
         while not finish:
             try:
@@ -97,7 +97,7 @@ class Cameras(object):
                 await asyncio.sleep(1)
                 continue
 
-    async def __async__get_state(self):
+    async def get_state(self):
         finish = False
         while not finish:
             try:

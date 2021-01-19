@@ -5,7 +5,7 @@ Created on Sat Jun  1 07:34:04 2019
 @author: julien
 """
 import process_camera_thread as pc
-from threading import Lock as tLock
+from threading import Lock as tLock, Event
 from multiprocessing import Process, Queue, Lock, Event as pEvent
 import json
 from log import Logger
@@ -31,7 +31,7 @@ Q_result = Queue()
 lock = Lock()
 E_video = pEvent()
 tlock = tLock()
-E_state = pEvent()
+e_state = Event()
 
 
 def conf():
@@ -124,7 +124,7 @@ def main():
             #get_state = Process(target=pg.getState, args=(E_state, cameras_state))
             #get_state.start()
             # wait until a camera change
-            cameras.connect()
+            cameras.connect(e_state)
 
             # If camera change (websocket answer) -----------------------------
             stop(list_thread)
