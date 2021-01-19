@@ -97,7 +97,7 @@ class Cameras(object):
                 await asyncio.sleep(1)
                 continue
 
-    async def _get_state(self):
+    async def _get_state(self, e_state):
         finish = False
         while not finish:
             try:
