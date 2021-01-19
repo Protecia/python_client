@@ -117,7 +117,7 @@ def main():
             list_thread = []
             for c in cameras.active_cam():
                 cameras_state[c['id']] = [pEvent(), pEvent()]
-                p = pc.ProcessCamera(c, Q_result, Q_img, Q_img_real, tlock, cameras_state, E_state)
+                p = pc.ProcessCamera(c, Q_result, Q_img, Q_img_real, tlock, cameras_state, e_state)
                 list_thread.append(p)
                 p.start()
             # process to get the state of the camera on the server
