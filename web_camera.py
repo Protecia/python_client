@@ -74,7 +74,7 @@ class Cameras(object):
                             t1 = time.time()
                         await asyncio.sleep(5)
             except (websockets.exceptions.ConnectionClosedError, OSError):
-                logger.error(f'socket disconnected !!')
+                logger.error(f'socket _send_cam disconnected !!')
                 await asyncio.sleep(1)
                 continue
             except json.decoder.JSONDecodeError:
@@ -94,7 +94,7 @@ class Cameras(object):
                     await ws.send(json.dumps({'answer': True}))
                     finish = True
             except (websockets.exceptions.ConnectionClosedError, OSError):
-                logger.error(f'socket disconnected !!')
+                logger.error(f'socket _reveive_cam disconnected !!')
                 await asyncio.sleep(1)
                 continue
 
@@ -109,6 +109,6 @@ class Cameras(object):
                         logger.warning(f'Receive change state -> {state}')
                         e_state.set() if state['rec'] else e_state.clear()
             except (websockets.exceptions.ConnectionClosedError, OSError):
-                logger.error(f'socket disconnected !!')
+                logger.error(f'socket _get_state disconnected !!')
                 await asyncio.sleep(1)
                 continue
