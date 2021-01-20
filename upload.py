@@ -65,7 +65,7 @@ def upload_result(Q, E_video):
             result_filtered, result_darknet = [(r[0].decode(),r[1],r[2]) for r in result_filtered ], [(r[0].decode(),r[1],r[2]) for r in result_darknet ]
             # set video record for this result
             #video = recCamera.rec_cam(cam)
-            video = None
+            video = 'None'
             logger.info('get video token : {}'.format(video))
             result_json = {'key': settings.CONF.KEY, 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet, 'video' : video, 'correction' : correction }
         try :
