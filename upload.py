@@ -39,7 +39,7 @@ def uploadImage(Q):
             cam, img_name, result, img = Q.get()
             logger.info('get image from queue : {}'.format(img_name))
             files = {'myFile': img}
-            imgJson = {'key': settings.KEY, 'img_name': img_name, 'cam': cam,
+            imgJson = {'key': settings.CONF.KEY, 'img_name': img_name, 'cam': cam,
                        'result': json.dumps([(r[0].decode(), r[1], r[2]) for r in result]), 'real_time': False}
         try:
             r = requests.post(settings.SERVER+"uploadimage", files=files, data=imgJson,  timeout=40)
