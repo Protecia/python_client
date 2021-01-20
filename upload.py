@@ -31,7 +31,7 @@ def uploadImageRealTime(Q):
             pass
 
 
-def uploadImage(Q):
+def upload_image(Q):
     server = True
     logger.warning('starting upload image')
     while True:
@@ -52,9 +52,10 @@ def uploadImage(Q):
             time.sleep(5)
             pass
 
-def uploadResult(Q, E_video):
+
+def upload_result(Q, E_video):
     from video import RecCamera
-    #recCamera  = RecCamera(E_video)
+    # recCamera  = RecCamera(E_video)
     server = True
     logger.warning('starting upload result')
     while True:
