@@ -59,7 +59,7 @@ def upload_result(Q, E_video):
     server = True
     logger.warning('starting upload result')
     while True:
-        if server :
+        if server:
             img, cam, result_filtered, result_darknet, correction = Q.get()
             logger.info('get result from queue : {}'.format((img, cam, result_filtered, result_darknet, correction)))
             result_filtered, result_darknet = [(r[0].decode(),r[1],r[2]) for r in result_filtered ], [(r[0].decode(),r[1],r[2]) for r in result_darknet ]
@@ -67,11 +67,11 @@ def upload_result(Q, E_video):
             #video = recCamera.rec_cam(cam)
             video = None
             logger.info('get video token : {}'.format(video))
-            resultJson = {'key': settings.KEY, 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet, 'video' : video, 'correction' : correction }
+            result_json = {'key': settings.CONF.KEY, 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet, 'video' : video, 'correction' : correction }
         try :
-            r = requests.post(settings.SERVER+"uploadresult", json=resultJson,  timeout= 40)
+            r = requests.post(settings.SERVER+"uploadresult", json=result_json,  timeout= 40)
             server = True
-            logger.info('send json : {}'.format(resultJson))
+            logger.info('send json : {}'.format(result_json))
             logger.warning('send result to server  : {}'.format(r.text))
         except (requests.exceptions.ConnectionError, requests.Timeout) :
             server = False
