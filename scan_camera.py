@@ -136,6 +136,7 @@ async def get_onvif_uri(ip, port, user, passwd):
 def check_auth(uri, user, passwd, dict_cam_ip):
     auth = {'B': requests.auth.HTTPBasicAuth(user, passwd), 'D': requests.auth.HTTPDigestAuth(user, passwd)}
     for t, a in auth.items():
+        check = False
         for i in range(4):
             for url in uri:
                 http = url[0]
@@ -150,13 +151,16 @@ def check_auth(uri, user, passwd, dict_cam_ip):
                         dict_cam_ip['active_automatic'] = True
                         dict_cam_ip['username'] = user
                         dict_cam_ip['password'] = passwd
+                        check = True
+                        break
                     else:
                         dict_cam_ip['active_automatic'] = False
                 except (requests.exceptions.ConnectionError, requests.Timeout,
                         requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema):
                     time.sleep(0.5)
                     pass
-
+        if check:
+            break
 
 def check_cam(cam_ip_dict, users_dict):
     """Test connection for all ip/port.
