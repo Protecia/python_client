@@ -14,6 +14,7 @@ class Conf(object):
             with open(INSTALL_PATH + '/settings/conf.json', 'r') as conf_json:
                 data = json.load(conf_json)
             self.key = data["key"]
+            self.KEY = self.key
             self.data = data
         except KeyError:
             pass
