@@ -73,7 +73,8 @@ class Cameras(object):
                             await ws.send(json.dumps(cameras))
                             t1 = time.time()
                         await asyncio.sleep(5)
-            except (websockets.exceptions.ConnectionClosedError, OSError, ConnectionResetError):
+            except (websockets.exceptions.ConnectionClosedError, OSError, ConnectionResetError,
+                    websockets.exceptions.InvalidMessage):
                 logger.error(f'socket _send_cam disconnected !!')
                 await asyncio.sleep(1)
                 continue
