@@ -166,7 +166,7 @@ def check_cam(cam_ip_dict, users_dict):
     dict_cam = {}
     for ip, cam in cam_ip_dict.items():
         dict_cam[ip] = cam
-        http = cam.get('url', None)
+        http = cam.get('uri', None)
         if http:  # this is a know cam, so test
             logger.info(f'testing old cam with http:{http} user:{cam["username"]} pass:{cam["password"]}')
             check_auth(cam['uri'], cam["username"], cam["password"], dict_cam[ip])
