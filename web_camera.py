@@ -46,21 +46,18 @@ class Cameras(object):
             await ws.send(json.dumps({'answer': True}))
 
     def connect(self, e_state):
-        #try:
-        task1 = asyncio.ensure_future(self._send_cam())
-        task2 = asyncio.ensure_future(self._receive_cam())
-        task3 = asyncio.ensure_future(self._get_state(e_state))
-        done, pending = self.loop.run_until_complete(asyncio.wait([task1, task2, task3],
-                                                                  return_when=asyncio.FIRST_COMPLETED,))
-        logger.warning(f' WAITING for pending TASK <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-        for task in pending:
-            logger.warning(f' cancelling TASK <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-            task.cancel()
-        for task in done:
-            cam = task.result()
-        logger.warning(f' TASK concelled  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-        #except Exception as e:
-        #    logger.warning(f' execption in CONNECT****************')
+        try:
+            task1 = asyncio.ensure_future(self._send_cam())
+            task2 = asyncio.ensure_future(self._receive_cam())
+            task3 = asyncio.ensure_future(self._get_state(e_state))
+            done, pending = self.loop.run_until_complete(asyncio.wait([task1, task2, task3],
+                                                                      return_when=asyncio.FIRST_COMPLETED,))
+            for task in pending:
+                task.cancel()
+            for task in done:
+                cam = task.result()
+        except Exception as e:
+            logger.warning(f' exception in CONNECT****************')
 
     async def _send_cam(self):
         finish = False
