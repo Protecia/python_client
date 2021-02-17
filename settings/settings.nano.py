@@ -53,7 +53,7 @@ DARKNET_CONF = {
 
 # hardware conf
 INSTALL_PATH = '/home/protecia/NNvision/python_client'
-FFMPEG = '/usr/local/bin/ffmpeg'
+FFMPEG = '/usr/bin/ffmpeg'
 HARDWARE = 'nano'
 UUID = '/proc/device-tree/chosen/uuid'
 
