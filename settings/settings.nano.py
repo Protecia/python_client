@@ -16,7 +16,7 @@ class Conf(object):
             self.key = data["key"]
             self.KEY = self.key
             self.data = data
-        except KeyError:
+        except (KeyError, FileNotFoundError):
             pass
 
     def get_conf(self, value):
