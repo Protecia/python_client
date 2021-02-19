@@ -9,6 +9,7 @@ import settings.settings as settings
 from log import Logger
 import time
 import json
+from utils import get_conf
 
 logger = Logger(__name__, level=settings.UPLOAD_LOG).run()
 
@@ -19,7 +20,7 @@ def uploadImageRealTime(Q):
         cam, result, img, resize_factor = Q.get()
         logger.info('get image from queue real on cam  : {}'.format(cam))
         files = {'myFile': img}
-        imgJson = {'key': settings.KEY, 'img_name': 'temp_img_cam_'+str(cam), 'cam': cam,
+        imgJson = {'key': get_conf('key'), 'img_name': 'temp_img_cam_'+str(cam), 'cam': cam,
                    'result': json.dumps([(r[0].decode(), r[1], r[2]) for r in result]), 'real_time': True,
                    'resize_factor': resize_factor}
         try:
@@ -39,7 +40,7 @@ def upload_image(Q):
             cam, img_name, result, img = Q.get()
             logger.info('get image from queue : {}'.format(img_name))
             files = {'myFile': img}
-            imgJson = {'key': settings.CONF.KEY, 'img_name': img_name, 'cam': cam,
+            imgJson = {'key': get_conf('key'), 'img_name': img_name, 'cam': cam,
                        'result': json.dumps([(r[0].decode(), r[1], r[2]) for r in result]), 'real_time': False}
         try:
             r = requests.post(settings.SERVER+"uploadimage", files=files, data=imgJson,  timeout=40)
@@ -67,7 +68,7 @@ def upload_result(Q, E_video):
             #video = recCamera.rec_cam(cam)
             video = 'None'
             logger.info('get video token : {}'.format(video))
-            result_json = {'key': settings.CONF.KEY, 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet, 'video' : video, 'correction' : correction }
+            result_json = {'key': get_conf('key'), 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet, 'video' : video, 'correction' : correction }
         try :
             r = requests.post(settings.SERVER+"uploadresult", json=result_json,  timeout= 40)
             server = True

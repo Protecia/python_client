@@ -5,23 +5,6 @@ Created on Tue Dec  3 15:06:16 2019
 @author: julien
 """
 import logging
-import json
-
-
-class Conf(object):
-    def __init__(self):
-        try:
-            with open(INSTALL_PATH + '/settings/conf.json', 'r') as conf_json:
-                data = json.load(conf_json)
-            self.key = data["key"]
-            self.KEY = self.key
-            self.data = data
-        except (KeyError, FileNotFoundError):
-            pass
-
-    def get_conf(self, value):
-        return self.data[value]
-
 
 LOG = logging.ERROR
 MAIN_LOG = logging.ERROR
@@ -72,5 +55,3 @@ TUNNEL_IP = 'my.protecia.com'
 TUNNEL_USER = 'cez542de@client.protecia.com'
 SSH_SERVER = 2222
 INIT_PASS = 'jznsjoa3z54d'
-
-CONF = Conf()

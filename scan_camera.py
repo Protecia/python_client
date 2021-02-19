@@ -20,6 +20,7 @@ import re
 from urllib3.exceptions import HeaderParsingError
 import asyncio
 import subprocess
+from utils import get_conf
 
 logger = Logger('scan_camera', level=settings.SCAN_LOG).run()
 
@@ -39,7 +40,7 @@ def ping_network():
             if outs:
                 ip = outs.decode().rstrip()
                 if ip not in box:
-                    std[ip] = {'port_onvif': settings.CONF.get_conf('scan_camera')}
+                    std[ip] = {'port_onvif': get_conf('scan_camera')}
     return std
 
 
@@ -201,7 +202,7 @@ def run(wait):
             with open(settings.INSTALL_PATH+'/camera/camera_from_server.json', 'r') as out:
                 cam_ip_dict = json.load(out)
             users_dict = dict(set([(c['username'], c['password']) for c in cam_ip_dict.values()]))
-            if settings.CONF.get_conf('scan_camera') != 0:
+            if get_conf('scan_camera') != 0:
                 detected_cam = ping_network()
             else:
                 detected_cam = ws_discovery(2, 20)

@@ -5,6 +5,7 @@ import asyncio
 import pathlib
 import time
 from log import Logger
+from utils import get_conf
 
 logger = Logger(__name__, level=settings.SOCKET_LOG).run()
 
@@ -14,7 +15,7 @@ class Cameras(object):
         self.loop = asyncio.get_event_loop()
         self.running = True
         self.list_cam = None
-        self.key = settings.CONF.get_conf('key')
+        self.key = get_conf('key')
         self.E_state = None
 
     def write(self):

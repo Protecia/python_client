@@ -1,6 +1,7 @@
 import asyncio
 import time
 import web_camera
+from utils import get_conf
 
 
 async def get_answer():
@@ -35,7 +36,7 @@ camera = None
 
 async def get_cam():
     async with websockets.connect(settings.SERVER_WS + 'ws') as ws:
-        await ws.send(json.dumps({'key': settings.KEY, 'force': True}))
+        await ws.send(json.dumps({'key': get_conf('key'), 'force': True}))
         camera = await ws.recv()
 
 
