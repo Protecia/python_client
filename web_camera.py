@@ -44,7 +44,6 @@ class Cameras(object):
             cam = await ws.recv()
             self.list_cam = json.loads(cam)
             logger.warning(f' receive cam from server -> {self.list_cam}')
-            await ws.send(json.dumps({'answer': True}))
 
     def connect(self, e_state):
         try:
