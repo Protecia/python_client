@@ -145,8 +145,8 @@ def check_auth(uri, user, passwd, dict_cam_ip):
                     logger.info(f'before request on {http}')
                     r = requests.get(http, auth=a, stream=False, timeout=1)
                     logger.info(f'after request on {http}')
+                    logger.info(f'request  on camera is {r.ok} for {http} / {user} / {passwd} / {t}')
                     if r.ok:
-                        logger.info(f'request  on camera OK for {http} / {user} / {passwd} / {t}')
                         dict_cam_ip['auth_type'] = t
                         dict_cam_ip['wait_for_set'] = False
                         dict_cam_ip['active_automatic'] = True
