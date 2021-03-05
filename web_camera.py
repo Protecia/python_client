@@ -24,8 +24,10 @@ class Cameras(object):
             for c in self.list_cam:
                 if c['ip'] not in dict_cam:
                     dict_cam[c['ip']] = c.copy()
-                    dict_cam[c['ip']]['uri'] = [(c['url'], c['rtsp'], c['index_uri']), ]
-                    key_to_remove = ('rtsp', 'url', 'on_camera_LD', 'on_camera_HD', 'ip')
+                    dict_cam[c['ip']]['uri'] = [(c['url'], c['rtsp'], c['index_uri'], c['password'], c['username'],
+                                                 c['active'], c['active_automatic'], c['threshold'], c['gap'],), ]
+                    key_to_remove = ('rtsp', 'url', 'on_camera_LD', 'on_camera_HD', 'ip', 'username', 'password',
+                                     'active', 'active_automatic', 'threshold', 'gap')
                     for k in key_to_remove:
                         dict_cam[c['ip']].pop(k, None)
                 else:

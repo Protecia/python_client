@@ -174,7 +174,7 @@ def check_cam(cam_ip_dict, users_dict):
     for ip, cam in cam_ip_dict.items():
         dict_cam[ip] = cam
         http = cam.get('uri', None)
-        if http:  # this is a know cam, so test
+        if http:  # this is a known cam, so test
             logger.info(f'testing old cam with http:{http} user:{cam["username"]} pass:{cam["password"]}')
             check_auth(cam['uri'], cam["username"], cam["password"], dict_cam[ip])
         else:  # this is a new cam
@@ -201,7 +201,7 @@ def run(wait):
         try:
             with open(settings.INSTALL_PATH+'/camera/camera_from_server.json', 'r') as out:
                 cam_ip_dict = json.load(out)
-            users_dict = dict(set([(c['username'], c['password']) for c in cam_ip_dict.values()]))
+            users_dict = dict(set([(c['uri']['username'], c['uri']['password']) for c in cam_ip_dict.values()]))
             if get_conf('scan_camera') != 0:
                 detected_cam = ping_network()
             else:
