@@ -22,16 +22,20 @@ class Cameras(object):
         with open(settings.INSTALL_PATH + '/camera/camera_from_server.json', 'w') as cam:
             dict_cam = {}
             for c in self.list_cam:
+                key_to_change = ('rtsp', 'url', 'username', 'password', 'max_width_rtime', 'max_width_rtime_HD',
+                                 'active', 'active_automatic', 'threshold', 'gap', 'reso', 'width', 'height',
+                                 'pos_sensivity', 'max_object_area_detection')
+                d = {}
+                for key in key_to_change:
+                    d[key] = c[key]
+                # remove the key moved
                 if c['ip'] not in dict_cam:
                     dict_cam[c['ip']] = c.copy()
-                    dict_cam[c['ip']]['uri'] = [(c['url'], c['rtsp'], c['index_uri'], c['password'], c['username'],
-                                                 c['active'], c['active_automatic'], c['threshold'], c['gap'],), ]
-                    key_to_remove = ('rtsp', 'url', 'on_camera_LD', 'on_camera_HD', 'ip', 'username', 'password',
-                                     'active', 'active_automatic', 'threshold', 'gap')
-                    for k in key_to_remove:
+                    key_to_remove = ('on_camera_LD', 'on_camera_HD', 'ip',)
+                    for k in key_to_change+key_to_remove:
                         dict_cam[c['ip']].pop(k, None)
-                else:
-                    dict_cam[c['ip']]['uri'].append((c['url'], c['rtsp'], c['index_uri']))
+                # add uri
+                dict_cam[c['ip']]['uri'][c['index_uri']] = d
             json.dump(dict_cam, cam)
 
     def active_cam(self):
@@ -41,7 +45,7 @@ class Cameras(object):
         return self.loop.run_until_complete(self._get_cam())
 
     async def _get_cam(self):
-        async with websockets.connect(settings.SERVER_WS+'ws') as ws:
+        async with websockets.connect(settings.SERVER_WS + 'ws') as ws:
             await ws.send(json.dumps({'key': self.key}))
             cam = await ws.recv()
             self.list_cam = json.loads(cam)
@@ -53,7 +57,7 @@ class Cameras(object):
             task2 = asyncio.ensure_future(self._receive_cam())
             task3 = asyncio.ensure_future(self._get_state(e_state))
             done, pending = self.loop.run_until_complete(asyncio.wait([task1, task2, task3],
-                                                                      return_when=asyncio.FIRST_COMPLETED,))
+                                                                      return_when=asyncio.FIRST_COMPLETED, ))
             for task in pending:
                 task.cancel()
             for task in done:
