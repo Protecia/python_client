@@ -34,6 +34,7 @@ class Cameras(object):
                     key_to_remove = ('on_camera_LD', 'on_camera_HD', 'ip',)
                     for k in key_to_change+key_to_remove:
                         dict_cam[c['ip']].pop(k, None)
+                    dict_cam[c['ip']]['uri'] = {}
                 # add uri
                 dict_cam[c['ip']]['uri'][c['index_uri']] = d
             json.dump(dict_cam, cam)
