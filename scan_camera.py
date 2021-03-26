@@ -165,6 +165,7 @@ def check_auth(uri, user, passwd, dict_cam_ip):
         if check:
             break
 
+
 def check_cam(cam_ip_dict, users_dict):
     """Test connection for all ip/port.
         Returns:
@@ -201,7 +202,8 @@ def run(wait):
         try:
             with open(settings.INSTALL_PATH+'/camera/camera_from_server.json', 'r') as out:
                 cam_ip_dict = json.load(out)
-            users_dict = dict(set([(c['uri']['username'], c['uri']['password']) for c in cam_ip_dict.values()]))
+            flatten_dict = [list(u.values())[0] for u in [c['uri'] for c in cam_ip_dict.values()]]
+            users_dict = dict(set([(c['username'], c['password']) for c in flatten_dict]))
             if get_conf('scan_camera') != 0:
                 detected_cam = ping_network()
             else:
