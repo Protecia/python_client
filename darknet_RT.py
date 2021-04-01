@@ -13,6 +13,7 @@ import numpy as np
 import argparse
 import os
 from threading import Thread
+from settings import settings
 import time
 
 class IMAGE(Structure):
@@ -102,63 +103,66 @@ def resizePadding(image, height, width):
 
 def detect_image(net, meta, darknet_image, thresh=.5):
     num = c_int(0)
-
+    if debug: print("Assigned num")
     pnum = pointer(num)
+    if debug: print("Assigned pnum")
     do_inference(net, darknet_image)
+    if debug: print("did prediction")
     dets = get_network_boxes(net, 0.5, 0, pnum)
+    if debug: print("Got dets")
     res = []
     for i in range(pnum[0]):
         b = dets[i].bbox
         res.append((dets[i].name.decode("ascii"), dets[i].prob, (b.x, b.y, b.w, b.h)))
-
+    if debug: print("free detections")
     return res
 
 
-def loop_detect(detect_m, video_path):
-    stream = cv2.VideoCapture(video_path)
-    start = time.time()
-    cnt = 0
-    while stream.isOpened():
-        ret, image = stream.read()
-        if ret is False:
-            break
-        # image = resizePadding(image, 512, 512)
-        # frame_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = cv2.resize(image,
-                           (416, 416),
-                           interpolation=cv2.INTER_LINEAR)
-        detections = detect_m.detect(image, need_resize=False)
-        cnt += 1
-        for det in detections:
-            print(det)
-    end = time.time()
-    print("frame:{},time:{:.3f},FPS:{:.2f}".format(cnt, end-start, cnt/(end-start)))
-    stream.release()
+# def loop_detect(detect_m, video_path):
+#     stream = cv2.VideoCapture(video_path)
+#     start = time.time()
+#     cnt = 0
+#     while stream.isOpened():
+#         ret, image = stream.read()
+#         if ret is False:
+#             break
+#         # image = resizePadding(image, 512, 512)
+#         # frame_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+#         image = cv2.resize(image,
+#                            (416, 416),
+#                            interpolation=cv2.INTER_LINEAR)
+#         detections = detect_m.detect(image, need_resize=False)
+#         cnt += 1
+#         for det in detections:
+#             print(det)
+#     end = time.time()
+#     print("frame:{},time:{:.3f},FPS:{:.2f}".format(cnt, end-start, cnt/(end-start)))
+#     stream.release()
 
-def loop_img_detect(dtect_m, images_path):
-    start = time.time()
-    cnt=0
-    for image in os.listdir(images_path):
-        image=cv2.imread(images_path + image)
-        start = time.time()
-        image = cv2.resize(image,
-                            (416, 416),
-                            interpolation=cv2.INTER_LINEAR)
-        detections = detect_m.detect(image, need_resize=False)
-        for det in detections:
-                print(det)
-        cnt += 1
-    end = time.time()
-    print("frame:{},time:{:.3f},FPS:{:.2f}".format(cnt, end-start, cnt/(end-start)))
+# def loop_img_detect(dtect_m, images_path):
+#     start = time.time()
+#     cnt=0
+#     for image in os.listdir(images_path):
+#         image=cv2.imread(images_path + image)
+#         start = time.time()
+#         image = cv2.resize(image,
+#                             (416, 416),
+#                             interpolation=cv2.INTER_LINEAR)
+#         detections = detect_m.detect(image, need_resize=False)
+#         for det in detections:
+#                 print(det)
+#         cnt += 1
+#     end = time.time()
+#     print("frame:{},time:{:.3f},FPS:{:.2f}".format(cnt, end-start, cnt/(end-start)))
 
-def img_detect(detect_m, image_path):
-    image=cv2.imread(image_path)
-    image = cv2.resize(image,
-                           (416, 416),
-                           interpolation=cv2.INTER_LINEAR)
-    detections = detect_m.detect(image, need_resize=False)
-    for det in detections:
-            print(det)
+# def img_detect(detect_m, image_path):
+#     image=cv2.imread(image_path)
+#     image = cv2.resize(image,
+#                            (416, 416),
+#                            interpolation=cv2.INTER_LINEAR)
+#     detections = detect_m.detect(image, need_resize=False)
+#     for det in detections:
+#             print(det)
 
             
 # class myThread(threading.Thread):
