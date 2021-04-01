@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 """
-@File    :   darknetTR.py.py
-@Contact :   JZ
+Python 3 wrapper for identifying objects in image
 
-@Modify Time      @Author    @Version    @Desciption
-------------      -------    --------    -----------
-2020/6/12 14:40   JZ      1.0         None
+@author: Xavier Robellet
+@date: 20210401
 """
 
 from ctypes import *
@@ -127,7 +125,7 @@ def loop_detect(detect_m, video_path):
         # image = resizePadding(image, 512, 512)
         # frame_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = cv2.resize(image,
-                           (512, 512),
+                           (416, 416),
                            interpolation=cv2.INTER_LINEAR)
         detections = detect_m.detect(image, need_resize=False)
         cnt += 1
@@ -144,7 +142,7 @@ def loop_img_detect(dtect_m, images_path):
         image=cv2.imread(images_path + image)
         start = time.time()
         image = cv2.resize(image,
-                            (512, 512),
+                            (416, 416),
                             interpolation=cv2.INTER_LINEAR)
         detections = detect_m.detect(image, need_resize=False)
         for det in detections:
@@ -156,7 +154,7 @@ def loop_img_detect(dtect_m, images_path):
 def img_detect(detect_m, image_path):
     image=cv2.imread(image_path)
     image = cv2.resize(image,
-                           (512, 512),
+                           (416, 416),
                            interpolation=cv2.INTER_LINEAR)
     detections = detect_m.detect(image, need_resize=False)
     for det in detections:
@@ -176,8 +174,8 @@ def img_detect(detect_m, image_path):
 
 class YOLO4RT(object):
     def __init__(self,
-                 input_size=512,
-                 weight_file='./yolo4_fp16.rt',
+                 input_size=416,
+                 weight_file='./room_detector_fp16.rt',
                  metaPath='Models/yolo4/coco.data',
                  nms=0.2,
                  conf_thres=0.3,
