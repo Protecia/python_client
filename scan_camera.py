@@ -134,13 +134,12 @@ async def get_onvif_uri(ip, port, user, passwd):
     return info, uri
 
 
-def check_auth(uri, user, passwd, dict_cam_ip):
-    auth = {'B': requests.auth.HTTPBasicAuth(user, passwd), 'D': requests.auth.HTTPDigestAuth(user, passwd)}
+def check_auth(dict_cam_ip, user, passwd, auth):
     for t, a in auth.items():
         check = False
         for i in range(4):
-            for url in uri:
-                http = url[0]
+            for url in dict_cam_ip['uri'].values():
+                http = url['http']
                 try:
                     logger.info(f'before request on {http}')
                     r = requests.get(http, auth=a, stream=False, timeout=1)
@@ -177,10 +176,11 @@ def check_cam(cam_ip_dict, users_dict):
         http = cam.get('uri', None)
         if http:  # this is a known cam, so test
             logger.info(f'testing old cam with http:{http} user:{cam["username"]} pass:{cam["password"]}')
-            check_auth(cam['uri'], cam["username"], cam["password"], dict_cam[ip])
+            auth = {cam['auth_type']: requests.auth.HTTPBasicAuth(cam["username"], cam["password"])}
+            check_auth(dict_cam[ip], cam["username"], cam["password"], auth)
         else:  # this is a new cam
-            dict_cam[ip] = {'name': 'unknow', 'port_onvif': cam["port_onvif"], 'active_automatic': False,
-                            'from_client': True, 'uri': [('http://0.0.0.0', 'rtsp://0.0.0.0', 0)]}
+            dict_cam[ip] = {'name': 'unknow', 'port_onvif': cam["port_onvif"],
+                            'from_client': True, 'uri': {}}
             port = cam["port_onvif"]
             for user, passwd in users_dict.items():
                 logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
@@ -192,8 +192,11 @@ def check_cam(cam_ip_dict, users_dict):
                     logger.info(f'onvif OK for {ip} / {port} / {user} / {passwd} ')
                     dict_cam[ip]['brand'] = info['Manufacturer']
                     dict_cam[ip]['model'] = info['Model']
-                    dict_cam[ip]['uri'] = [(i[0], i[1], count) for count, i in enumerate(uri)]
-                    check_auth(uri, user, passwd, dict_cam[ip])
+                    for count, i in enumerate(uri):
+                        dict_cam[ip]['uri'][count] = {'url': i[0], 'rtsp': i[1]}
+                    auth = {'B': requests.auth.HTTPBasicAuth(user, passwd),
+                            'D': requests.auth.HTTPDigestAuth(user, passwd)}
+                    check_auth(dict_cam[ip], user, passwd, auth)
     return dict_cam
 
 

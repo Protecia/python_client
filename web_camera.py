@@ -22,7 +22,7 @@ class Cameras(object):
         with open(settings.INSTALL_PATH + '/camera/camera_from_server.json', 'w') as cam:
             dict_cam = {}
             for c in self.list_cam:
-                key_to_change = ('rtsp', 'url', 'username', 'password', 'max_width_rtime', 'max_width_rtime_HD',
+                key_to_change = ('rtsp', 'url', 'max_width_rtime', 'max_width_rtime_HD',
                                  'active', 'active_automatic', 'threshold', 'gap', 'reso', 'width', 'height',
                                  'pos_sensivity', 'max_object_area_detection')
                 d = {}
