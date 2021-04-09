@@ -22,9 +22,6 @@ class Cameras(object):
         with open(settings.INSTALL_PATH + '/camera/camera_from_server.json', 'w') as cam:
             json.dump(self.list_cam, cam)
 
-    def active_cam(self):
-        return [cam for cam in self.list_cam if cam['active_automatic']]
-
     def get_cam(self):
         return self.loop.run_until_complete(self._get_cam())
 
