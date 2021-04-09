@@ -20,24 +20,7 @@ class Cameras(object):
 
     def write(self):
         with open(settings.INSTALL_PATH + '/camera/camera_from_server.json', 'w') as cam:
-            dict_cam = {}
-            for c in self.list_cam:
-                key_to_change = ('rtsp', 'url', 'max_width_rtime', 'max_width_rtime_HD',
-                                 'active', 'active_automatic', 'threshold', 'gap', 'reso', 'width', 'height',
-                                 'pos_sensivity', 'max_object_area_detection')
-                d = {}
-                for key in key_to_change:
-                    d[key] = c[key]
-                # remove the key moved
-                if c['ip'] not in dict_cam:
-                    dict_cam[c['ip']] = c.copy()
-                    key_to_remove = ('on_camera_LD', 'on_camera_HD', 'ip',)
-                    for k in key_to_change+key_to_remove:
-                        dict_cam[c['ip']].pop(k, None)
-                    dict_cam[c['ip']]['uri'] = {}
-                # add uri
-                dict_cam[c['ip']]['uri'][c['index_uri']] = d
-            json.dump(dict_cam, cam)
+            json.dump(self.list_cam, cam)
 
     def active_cam(self):
         return [cam for cam in self.list_cam if cam['active_automatic']]
