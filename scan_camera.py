@@ -193,7 +193,7 @@ def check_cam(cam_ip_dict, users_dict):
                     dict_cam[ip]['brand'] = info['Manufacturer']
                     dict_cam[ip]['model'] = info['Model']
                     for count, i in enumerate(uri):
-                        dict_cam[ip]['uri'][count] = {'url': i[0], 'rtsp': i[1]}
+                        dict_cam[ip]['uri'][count] = {'http': i[0], 'rtsp': i[1]}
                     auth = {'B': requests.auth.HTTPBasicAuth(user, passwd),
                             'D': requests.auth.HTTPDigestAuth(user, passwd)}
                     check_auth(dict_cam[ip], user, passwd, auth)
