@@ -119,6 +119,7 @@ def main():
                 if c['active'] and c['active_automatic']:
                     for uri in c['uri'].values():
                         if uri['use']:
+                            uri.pop('id', None)
                             ready_cam = {**c, **uri}
                             cameras_state[c['id']] = [pEvent(), pEvent()]
                             p = pc.ProcessCamera(ready_cam, Q_result, Q_img, Q_img_real, tlock, cameras_state, e_state)
