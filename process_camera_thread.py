@@ -222,9 +222,8 @@ class ProcessCamera(Thread):
                 img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
                 # if gueue free
                 if self.Q_img_real.qsize() < 1:
-                    # if on page camera HD
                     self.logger.info(f'camera state : {self.camera_state} / cam : {self.cam}')
-
+                    # if on page camera HD
                     if EtoB(self.camera_state[self.cam['id']][1]):
                         resize_factor = self.cam['max_width_rtime_HD']/arr.shape[1]
                         self.Q_img_real.put((self.cam['id'], result_filtered_true, cv2.imencode('.jpg', arr)[1].tobytes(),
