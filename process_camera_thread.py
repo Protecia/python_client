@@ -202,7 +202,8 @@ class ProcessCamera(Thread):
                     with concurrent.futures.ThreadPoolExecutor() as executor:
                         result_dict={}
                         for key, network in net.items():
-                            result_dict[key] = executor.submit(detect_thread, network, meta[key], im, th)
+                            #result_dict[key] = executor.submit(detect_thread, network, meta[key], im, th)
+                            pass
                 if 'all' in result_dict:
                     result_darknet = [r for r in result_dict['all'].result() if r[0] not in self.black_list]
                     result_dict.pop('all')
