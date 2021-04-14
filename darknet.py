@@ -16,15 +16,15 @@ On a GPU system, you can force CPU evaluation by any of:
 Directly viewing or returning bounding-boxed images requires scikit-image to be installed (`pip install scikit-image`)
 
 Original *nix 2.7: https://github.com/pjreddie/darknet/blob/0f110834f4e18b30d5f101bf8f1724c34b7b83db/python/darknet.py
-Windows Python 2.7 version: https://github.com/AlexeyAB/darknet/blob/fc496d52bf22a0bb257300d3c79be9cd80e722cb/build/darknet/x64/darknet.py
+
 
 @author: Philip Kahn
 @date: 20180503
 """
 from ctypes import *
-import math
 import random
 import os
+from settings import settings
 
 
 class BOX(Structure):
@@ -47,6 +47,7 @@ class DETECTION(Structure):
                 ("embedding_size", c_int),
                 ("sim", c_float),
                 ("track_id", c_int)]
+
 
 class DETNUMPAIR(Structure):
     _fields_ = [("num", c_int),
@@ -123,7 +124,8 @@ def print_detections(detections, coordinates=False):
     for label, confidence, bbox in detections:
         x, y, w, h = bbox
         if coordinates:
-            print("{}: {}%    (left_x: {:.0f}   top_y:  {:.0f}   width:   {:.0f}   height:  {:.0f})".format(label, confidence, x, y, w, h))
+            print("{}: {}%    (left_x: {:.0f}   top_y:  {:.0f}   width:   {:.0f}   height:  {:.0f})".
+                  format(label, confidence, x, y, w, h))
         else:
             print("{}: {}%".format(label, confidence))
 
@@ -218,11 +220,10 @@ if os.name == "nt":
         else:
             # Try the other way, in case no_gpu was compile but not renamed
             lib = CDLL(winGPUdll, RTLD_GLOBAL)
-            print("Environment variables indicated a CPU run, but we didn't find {}. Trying a GPU run anyway.".format(winNoGPUdll))
+            print("Environment variables indicated a CPU run, but we didn't find {}. Trying a GPU run anyway.".
+                  format(winNoGPUdll))
 else:
-    lib = CDLL(os.path.join(
-        os.environ.get('DARKNET_PATH', './'),
-        "libdarknet.so"), RTLD_GLOBAL)
+    lib = CDLL(settings.DARKNET_PATH+"/libdarknet.so", RTLD_GLOBAL)
 lib.network_width.argtypes = [c_void_p]
 lib.network_width.restype = c_int
 lib.network_height.argtypes = [c_void_p]
