@@ -24,17 +24,27 @@ threated_requests = settings.THREATED_REQUESTS
 path = settings.DARKNET_PATH
 net = {}
 meta = {}
+width = {}
+height = {}
+class_names = {}
 
 for key, values in settings.DARKNET_CONF.items():
-    cfg = os.path.join(path,values['CFG']).encode()
-    weights = os.path.join(path,values['WEIGHTS']).encode()
-    data = os.path.join(path,values['DATA']).encode()
-    net[key] = dn.load_net_custom(cfg,weights, 0, 1)
+    cfg = os.path.join(path, values['CFG']).encode()
+    weights = os.path.join(path, values['WEIGHTS']).encode()
+    data = os.path.join(path, values['DATA']).encode()
+    net[key] = dn.load_net_custom(cfg, weights, 0, 1)
     meta[key] = dn.load_meta(data)
+    class_names[key] = [meta[key].names[i].decode() for i in range(meta[key].classes)]
+    width[key] = dn.network_width(net[key])
+    height[key] = dn.network_height(net[key])
 
 
-def detect_thread(net, meta, im, thresh):
-    return dn.detect_image(net, meta, im, thresh)
+def detect_thread(my_net, my_class_names, im, my_width, my_height, thresh):
+    darknet_image = dn.make_image(my_width, my_height, 3)
+    dn.copy_image_from_bytes(darknet_image, im.tobytes())
+    detections = dn.detect_image(my_net, my_class_names, darknet_image, thresh=thresh)
+    dn.free_image(darknet_image)
+    return detections
 
 
 def get_list_diff(l_new, l_old, thresh):
@@ -198,16 +208,17 @@ class ProcessCamera(Thread):
                 self.logger.debug('thresh set to {}'.format(th))
                 frame_rgb = cv2.cvtColor(arr, cv2.COLOR_BGR2RGB)
                 with self.tlock:
-                    im, arrd = dn.array_to_image(frame_rgb)
                     with concurrent.futures.ThreadPoolExecutor() as executor:
-                        result_dict={}
-                        for key, network in net.items():
-                            result_dict[key] = executor.submit(detect_thread, network, meta[key], im, th)
-                            pass
+                        result_dict = {}
+                        for nkey, network in net.items():
+                            frame_resized = cv2.resize(frame_rgb, (width[nkey], height[nkey]),
+                                                       interpolation=cv2.INTER_LINEAR)
+                            result_dict[nkey] = executor.submit(detect_thread, network, class_names[nkey],
+                                                                frame_resized, width[nkey], height[nkey], th)
                 if 'all' in result_dict:
                     result_darknet = [r for r in result_dict['all'].result() if r[0] not in self.black_list]
                     result_dict.pop('all')
-                else :
+                else:
                     result_darknet=[]
                 for key, partial_result in result_dict.items():
                     result_darknet += partial_result.result()                        
