@@ -32,6 +32,7 @@ lock = Lock()
 E_video = pEvent()
 tlock = tLock()
 e_state = Event()
+scan_state = pEvent()
 
 
 def conf():
@@ -88,7 +89,7 @@ def main():
 
         # launch child processes
         process = {
-            'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL,)),
+            'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,)),
             'image_upload': Process(target=up.upload_image, args=(Q_img,)),
             #'image_upload_real_time': Process(target=up.uploadImageRealTime, args=(Q_img_real,)),
             'result_upload': Process(target=up.upload_result, args=(Q_result, E_video)),
@@ -121,7 +122,7 @@ def main():
                         if uri['use']:
                             uri.pop('id', None)
                             ready_cam = {**c, **uri}
-                            cameras_state[c['id']] = [pEvent(), pEvent()]
+                            cameras_state[c['id']] = [Event(), Event()]
                             p = pc.ProcessCamera(ready_cam, Q_result, Q_img, Q_img_real, tlock, cameras_state, e_state)
                             list_thread.append(p)
                             p.start()
@@ -129,7 +130,7 @@ def main():
             # get_state = Process(target=pg.getState, args=(E_state, cameras_state))
             # get_state.start()
             # wait until a camera change
-            cameras.connect(e_state)
+            cameras.connect(e_state, scan_state)
 
             # If camera change (websocket answer) -----------------------------
             stop(list_thread)
