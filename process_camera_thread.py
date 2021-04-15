@@ -248,7 +248,7 @@ class ProcessCamera(Thread):
                                                                                      self.Q_img_real.qsize()))
                     # if on page camera LD
                     elif EtoB(self.camera_state[self.cam['id']][0]):
-                        resize_factor = self.cam.max_width_rtime/arr.shape[1]
+                        resize_factor = self.cam['max_width_rtime']/arr.shape[1]
                         arr = cv2.resize(arr, (self.cam['max_width_rtime'], int(arr.shape[0]*resize_factor)),
                                          interpolation = cv2.INTER_CUBIC)
                         self.Q_img_real.put((self['cam.id'], result_filtered_true,
