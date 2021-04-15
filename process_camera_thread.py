@@ -250,8 +250,8 @@ class ProcessCamera(Thread):
                     elif EtoB(self.camera_state[self.cam['id']][0]):
                         resize_factor = self.cam['max_width_rtime']/arr.shape[1]
                         arr = cv2.resize(arr, (self.cam['max_width_rtime'], int(arr.shape[0]*resize_factor)),
-                                         interpolation = cv2.INTER_CUBIC)
-                        self.Q_img_real.put((self['cam.id'], result_filtered_true,
+                                         interpolation=cv2.INTER_CUBIC)
+                        self.Q_img_real.put((self.cam['id'], result_filtered_true,
                                              cv2.imencode('.jpg', arr)[1].tobytes(), resize_factor))
                         self.logger.warning('Q_img_real LD on {} : size {}'.format(self.cam['name'],
                                                                                    self.Q_img_real.qsize()))
