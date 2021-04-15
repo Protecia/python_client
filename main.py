@@ -91,7 +91,7 @@ def main():
         process = {
             'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,)),
             'image_upload': Process(target=up.upload_image, args=(Q_img,)),
-            #'image_upload_real_time': Process(target=up.uploadImageRealTime, args=(Q_img_real,)),
+            'image_upload_real_time': Process(target=up.uploadImageRealTime, args=(Q_img_real,)),
             'result_upload': Process(target=up.upload_result, args=(Q_result, E_video)),
             'serve_http': Process(target=http_serve, args=(2525,))}
         for p in process.values():
@@ -130,7 +130,7 @@ def main():
             # get_state = Process(target=pg.getState, args=(E_state, cameras_state))
             # get_state.start()
             # wait until a camera change
-            cameras.connect(e_state, scan_state)
+            cameras.connect(e_state, scan_state, cameras_state)
 
             # If camera change (websocket answer) -----------------------------
             stop(list_thread)

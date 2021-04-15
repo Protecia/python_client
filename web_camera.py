@@ -32,11 +32,11 @@ class Cameras(object):
             self.list_cam = json.loads(cam)
             logger.warning(f' receive cam from server -> {self.list_cam}')
 
-    def connect(self, e_state, scan_state):
+    def connect(self, e_state, scan_state, camera_state):
         try:
             task1 = asyncio.ensure_future(self._send_cam())
             task2 = asyncio.ensure_future(self._receive_cam())
-            task3 = asyncio.ensure_future(self._get_state(e_state, scan_state))
+            task3 = asyncio.ensure_future(self._get_state(e_state, scan_state, camera_state))
             done, pending = self.loop.run_until_complete(asyncio.wait([task1, task2, task3],
                                                                       return_when=asyncio.FIRST_COMPLETED, ))
             for task in pending:
@@ -89,7 +89,7 @@ class Cameras(object):
                 await asyncio.sleep(1)
                 continue
 
-    async def _get_state(self, e_state, scan_state):
+    async def _get_state(self, e_state, scan_state, camera_state):
         finish = False
         while not finish:
             try:
@@ -100,6 +100,11 @@ class Cameras(object):
                         logger.warning(f'Receive change state -> {state}')
                         e_state.set() if state['rec'] else e_state.clear()
                         scan_state.set() if state['scan'] else scan_state.clear()
+                        # trigger to send real time image
+                        on_camera = state['cam']
+                        for pk, state in on_camera.items():
+                            [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for
+                             index, i in enumerate(state)]
             except (websockets.exceptions.ConnectionClosedError, OSError):
                 logger.error(f'socket _get_state disconnected !!')
                 await asyncio.sleep(1)
