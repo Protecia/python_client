@@ -102,9 +102,9 @@ class Cameras(object):
                         scan_state.set() if state['scan'] else scan_state.clear()
                         # trigger to send real time image
                         on_camera = state['cam']
-                        for pk, state in on_camera.items():
-                            [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for
-                             index, i in enumerate(state)]
+                        # for pk, state in on_camera.items():
+                        #     [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for
+                        #      index, i in enumerate(state)]
             except (websockets.exceptions.ConnectionClosedError, OSError):
                 logger.error(f'socket _get_state disconnected !!')
                 await asyncio.sleep(1)
