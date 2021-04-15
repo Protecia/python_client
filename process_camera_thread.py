@@ -221,7 +221,8 @@ class ProcessCamera(Thread):
                 else:
                     result_darknet=[]
                 for key, partial_result in result_dict.items():
-                    result_darknet += partial_result.result()                        
+                    result_darknet += partial_result.result()
+                result_darknet = [(r[0], float(r[1]), r[2]) for r in result_darknet]
                 self.logger.info('get brut result from darknet in {}s : {} \n'.format(
                                  time.time()-t, result_darknet))
                 # get only result above trheshlod or previously valid
