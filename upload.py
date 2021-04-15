@@ -41,7 +41,7 @@ def upload_image(Q):
             logger.info('get image from queue : {}'.format(img_name))
             files = {'myFile': img}
             imgJson = {'key': get_conf('key'), 'img_name': img_name, 'cam': cam,
-                       'result': json.dumps([(r[0].decode(), r[1], r[2]) for r in result]), 'real_time': False}
+                       'result': json.dumps([(r[0], r[1], r[2]) for r in result]), 'real_time': False}
         try:
             r = requests.post(settings.SERVER+"uploadimage", files=files, data=imgJson,  timeout=40)
             server = True
@@ -63,7 +63,7 @@ def upload_result(Q, E_video):
         if server:
             img, cam, result_filtered, result_darknet, correction = Q.get()
             logger.info('get result from queue : {}'.format((img, cam, result_filtered, result_darknet, correction)))
-            result_filtered, result_darknet = [(r[0].decode(),r[1],r[2]) for r in result_filtered ], [(r[0].decode(),r[1],r[2]) for r in result_darknet ]
+            result_filtered, result_darknet = [(r[0], r[1], r[2]) for r in result_filtered], [(r[0].decode(),r[1],r[2]) for r in result_darknet ]
             # set video record for this result
             #video = recCamera.rec_cam(cam)
             video = 'None'

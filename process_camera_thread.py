@@ -313,7 +313,7 @@ class ProcessCamera(Thread):
                     diff_pos_sav = diff_pos
                     find = obj_result
                     self.logger.debug('find object {} same as {}'.format(obj_result, obj_lost))
-                    if find[1] > self.cam['threshold']:
+                    if float(find[1]) > self.cam['threshold']:
                         if find[0] not in self.force_remove:
                             self.force_remove[find[0]] = 0
                         if self.force_remove[find[0]] < 5:
