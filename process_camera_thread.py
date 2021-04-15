@@ -39,10 +39,16 @@ for key, values in settings.DARKNET_CONF.items():
     height[key] = dn.network_height(net[key])
 
 
-def detect_thread(my_net, my_class_names, im, my_width, my_height, thresh):
+def detect_thread(my_net, my_class_names, frame, my_width, my_height, thresh):
+    frame_resized = cv2.resize(frame, (my_width, my_height), interpolation=cv2.INTER_LINEAR)
     darknet_image = dn.make_image(my_width, my_height, 3)
-    dn.copy_image_from_bytes(darknet_image, im.tobytes())
+    dn.copy_image_from_bytes(darknet_image, frame_resized.tobytes())
     detections = dn.detect_image(my_net, my_class_names, darknet_image, thresh=thresh)
+    # make coordinate function of initial size
+    height_factor = frame.shape[0] / my_height
+    width_factor = frame.shape[1] / my_width
+    detections = [(r[0], float(r[1]), (r[2][0]*width_factor, r[2][1]*height_factor,
+                                       r[2][2]*width_factor, r[2][3]*height_factor)) for r in detections]
     dn.free_image(darknet_image)
     return detections
 
@@ -211,10 +217,8 @@ class ProcessCamera(Thread):
                     with concurrent.futures.ThreadPoolExecutor() as executor:
                         result_dict = {}
                         for nkey, network in net.items():
-                            frame_resized = cv2.resize(frame_rgb, (width[nkey], height[nkey]),
-                                                       interpolation=cv2.INTER_LINEAR)
                             result_dict[nkey] = executor.submit(detect_thread, network, class_names[nkey],
-                                                                frame_resized, width[nkey], height[nkey], th)
+                                                                frame_rgb, width[nkey], height[nkey], th)
                 if 'all' in result_dict:
                     result_darknet = [r for r in result_dict['all'].result() if r[0] not in self.black_list]
                     result_dict.pop('all')
@@ -222,7 +226,6 @@ class ProcessCamera(Thread):
                     result_darknet=[]
                 for key, partial_result in result_dict.items():
                     result_darknet += partial_result.result()
-                result_darknet = [(r[0], float(r[1]), r[2]) for r in result_darknet]
                 self.logger.info('get brut result from darknet in {}s : {} \n'.format(
                                  time.time()-t, result_darknet))
                 # get only result above trheshlod or previously valid
