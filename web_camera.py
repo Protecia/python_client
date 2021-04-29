@@ -97,9 +97,11 @@ class Cameras(object):
                     await ws.send(json.dumps({'key': self.key, }))
                     while True:
                         state = json.loads(await ws.recv())
-                        logger.warning(f'Receive change state -> {state}')
-                        e_state.set() if state['rec'] else e_state.clear()
-                        scan_state.set() if state['scan'] else scan_state.clear()
+                        ping = state.get('ping', False)
+                        if not ping:
+                            logger.warning(f'Receive change state -> {state}')
+                            e_state.set() if state['rec'] else e_state.clear()
+                            scan_state.set() if state['scan'] else scan_state.clear()
                         # trigger to send real time image
                         on_camera = state['cam']
                         # for pk, state in on_camera.items():
