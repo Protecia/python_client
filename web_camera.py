@@ -99,13 +99,14 @@ class Cameras(object):
                         state = json.loads(await ws.recv())
                         ping = state.get('ping', False)
                         logger.warning(f'Receive change state -> {ping}')
-                        e_state.set() if state['rec'] else e_state.clear()
-                        scan_state.set() if state['scan'] else scan_state.clear()
-                        # trigger to send real time image
-                        on_camera = state['cam']
-                        # for pk, state in on_camera.items():
-                        #     [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for
-                        #      index, i in enumerate(state)]
+                        if ping is False:
+                            e_state.set() if state['rec'] else e_state.clear()
+                            scan_state.set() if state['scan'] else scan_state.clear()
+                            # trigger to send real time image
+                            on_camera = state['cam']
+                            # for pk, state in on_camera.items():
+                            #     [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for
+                            #      index, i in enumerate(state)]
             except (websockets.exceptions.ConnectionClosedError, OSError):
                 logger.error(f'socket _get_state disconnected !!')
                 await asyncio.sleep(1)
