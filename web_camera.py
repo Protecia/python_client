@@ -104,6 +104,7 @@ class Cameras(object):
                             scan_state.set() if state['scan'] else scan_state.clear()
                             # trigger to send real time image
                             on_camera = state['cam']
+                            logger.warning(f'camera state is -> {on_camera}')
                             # for pk, state in on_camera.items():
                             #     [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for
                             #      index, i in enumerate(state)]
