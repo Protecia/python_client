@@ -129,6 +129,7 @@ def main():
                         p = pc.ProcessCamera(ready_cam, Q_result, Q_img, Q_img_real, tlock, cameras_state, e_state)
                         list_thread.append(p)
                         p.start()
+                        logger.warning(f'starting process camera on  : {ready_cam}')
             # wait until a camera change
             cameras.connect(e_state, scan_state, cameras_state)
 
