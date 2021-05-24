@@ -55,17 +55,20 @@ class Cameras(object):
                     await ws.send(json.dumps({'key': self.key, }))
                     while True:
                         fname = pathlib.Path('camera/camera_from_scan.json')
-                        t2 = fname.stat().st_ctime
-                        if t2 > t1:
-                            with open(settings.INSTALL_PATH + '/camera/camera_from_scan.json', 'r') as cam:
-                                cameras = json.load(cam)
-                            logger.warning(f'Reading camera in file -> {cameras}')
-                            await ws.send(json.dumps(cameras))
-                            t1 = time.time()
+                        try:
+                            t2 = fname.stat().st_ctime
+                            if t2 > t1:
+                                with open(settings.INSTALL_PATH + '/camera/camera_from_scan.json', 'r') as cam:
+                                    cameras = json.load(cam)
+                                logger.warning(f'Reading camera in file -> {cameras}')
+                                await ws.send(json.dumps(cameras))
+                                t1 = time.time()
+                        except FileNotFoundError:
+                            await asyncio.sleep(30)
                         await asyncio.sleep(5)
             except (websockets.exceptions.ConnectionClosedError, OSError, ConnectionResetError,
-                    websockets.exceptions.InvalidMessage):
-                logger.error(f'socket _send_cam disconnected !!')
+                    websockets.exceptions.InvalidMessage)as ex:
+                logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
                 await asyncio.sleep(1)
                 continue
             except json.decoder.JSONDecodeError:
