@@ -180,7 +180,7 @@ class ProcessCamera(Thread):
             if not self.cam['stream']:
                 self.request_OK = True
                 try:
-                    t - time.time()
+                    t = time.time()
                     r = requests.get(self.cam['http'], auth=self.auth, stream=False, timeout=4)
                     self.logger.info(f'get http image {self.cam["http"]} in  {time.time()-t}s')
                     if r.status_code == 200 and len(r.content) > 1000:
