@@ -138,6 +138,8 @@ def main():
             logger.error('Camera change restart !')
             # write the file for backup video
             cameras.write()
+            # launch a scan in case you need to update camera
+            scan_state.set()
     except KeyboardInterrupt:
         stop(list_thread)
         for p in process.values():
