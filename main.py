@@ -20,7 +20,6 @@ import web_camera
 import signal
 import time
 from urllib3.exceptions import ProtocolError
-import ping as pg
 
 # globals var
 logger = Logger(__name__, level=settings.MAIN_LOG).run()
