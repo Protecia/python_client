@@ -52,7 +52,4 @@ QUEUE_SIZE = 10  # number of images to queue at max
 SCAN_INTERVAL = 60  # seconds between each scan of the network to find onvif camera
 
 # client conf
-TUNNEL_IP = 'dev.protecia.com'
-TUNNEL_USER = 'cez542de@client.protecia.com'
-SSH_SERVER = 2222
 INIT_PASS = 'jznsjoa3z54d'
