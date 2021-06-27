@@ -40,14 +40,16 @@ def conf():
         r = requests.post(settings.SERVER + "conf", data={'machine': machine_id, 'pass': settings.INIT_PASS},
                           timeout=40)
         data = json.loads(r.text)
-        with open(settings.INSTALL_PATH + '/settings/conf.json', 'w') as conf_json:
-            if data.get('key', False):
-                json.dump(data, conf_json)
-                logger.warning(f'Receiving  json conf :  {r.text}')
-                return True
-            else:
-                logger.warning(f'No client affected.')
-                return False
+        if data.get('key', False):
+            with open(settings.INSTALL_PATH + '/settings/conf.json', 'w') as conf_json:
+                json.dump({key: data[key] for key in ['cp', 'city', 'key', 'scan_camera']}, conf_json)
+            with open(settings.INSTALL_PATH + '/settings/docker.json', 'w') as docker_json:
+                json.dump({key: data[key] for key in ['tunnel_port', 'docker_version', 'reboot']}, docker_json)
+                logger.warning(f'Receiving  conf :  {r.text}')
+            return True
+        else:
+            logger.warning(f'No client affected.')
+            return False
     except (ConnectionResetError, requests.exceptions.ConnectionError, requests.Timeout, KeyError,
             json.decoder.JSONDecodeError, ProtocolError) as ex:
         logger.error(f'exception in configuration : except-->{ex} / name-->{type(ex).__name__}')
