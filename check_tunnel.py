@@ -4,16 +4,18 @@ Created on Fri Jun  5 19:31:50 2020
 
 @author: julien
 """
-
+import logging
 import socket
 import time
 import settings.settings as settings
 import psutil
 import subprocess
 import json
+from log import Logger, logging
 
-# ip = settings.TUNNEL_IP
-# port = settings.TUNNEL_PORT
+
+logger = Logger(__name__, level=logging.DEBUG, file=False).run()
+
 retry = 3
 delay = 2
 timeout = 3
@@ -23,10 +25,11 @@ def is_open(host, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(timeout)
     try:
-        s.connect((host, int(port)))
+        logger.info(f'try connecting {host} / {port}')
+        s.connect((host, port))
         s.shutdown(socket.SHUT_RDWR)
         return True
-    except:
+    except OSError:
         return False
     finally:
         s.close()
@@ -36,7 +39,7 @@ def check_host():
     ip = settings.SERVER.split('//')[1]
     with open(settings.INSTALL_PATH + '/settings/docker.json', 'r') as conf_json:
         data = json.load(conf_json)
-    port = data['tunnel_port']
+    port = int(data['tunnel_port'])
     ipup = False
     for i in range(retry):
         if is_open(ip, port) and is_open(ip, port+1000):
