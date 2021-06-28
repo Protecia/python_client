@@ -24,7 +24,7 @@ def is_open(host_o, port_o):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(timeout)
     try:
-        logger.info(f'try connecting {host} / {port}')
+        logger.info(f'try connecting {host_o} / {port_o}')
         s.connect((host_o, port_o))
         s.shutdown(socket.SHUT_RDWR)
         return True
