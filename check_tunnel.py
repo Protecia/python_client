@@ -64,7 +64,7 @@ if __name__ == '__main__':
         cmd = f"autossh -C -N -f -n -T -p {settings.SSH_SERVER_PORT} " \
               f"-R {port}:localhost:22  -R {port+1000}:localhost:2525  {user}"
         logger.info(f'cmd is {cmd}')
-        #subprocess.call("./sshtunnel.sh")
+        subprocess.call(cmd, shell=True)
 
     # on docker restart autossh
     # on nano reboot
