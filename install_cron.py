@@ -31,3 +31,8 @@ def install_check_tunnel_cron():
         job = cron.new(command=cmd)
         job.minute.every(10)
         cron.write()
+
+
+if __name__ == "__main__":
+    install_rec_backup_cron()
+    install_check_tunnel_cron()
