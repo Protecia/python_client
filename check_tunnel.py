@@ -49,7 +49,7 @@ def check_host():
     return ipup_check, host_check, port_check
 
 
-if __name__ == 'main':
+if __name__ == '__main__':
     ipup, host, port = check_host()
     if not ipup:
         print(host, 'is DOWN')
