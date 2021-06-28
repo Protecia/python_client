@@ -19,15 +19,11 @@ delay = 2
 timeout = 3
 
 
-def is_open():
-    ip = settings.SERVER.split('//')[1]
-    with open(settings.INSTALL_PATH + '/settings/docker.json', 'r') as conf_json:
-        data = json.load(conf_json)
-    port = data['tunnel_port']
+def is_open(host, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(timeout)
     try:
-        s.connect((ip, int(port)))
+        s.connect((host, int(port)))
         s.shutdown(socket.SHUT_RDWR)
         return True
     except:
@@ -37,6 +33,10 @@ def is_open():
 
 
 def check_host(ip, port):
+    ip = settings.SERVER.split('//')[1]
+    with open(settings.INSTALL_PATH + '/settings/docker.json', 'r') as conf_json:
+        data = json.load(conf_json)
+    port = data['tunnel_port']
     ipup = False
     for i in range(retry):
         if is_open(ip, port) and is_open(ip, port+1000):
