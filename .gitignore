@@ -134,3 +134,4 @@ dmypy.json
 .idea
 settings/settings.py
 settings/docker.json
+settings/conf.json
