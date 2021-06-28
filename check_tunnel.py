@@ -61,7 +61,7 @@ if __name__ == '__main__':
                 except psutil.AccessDenied:
                     pass
         user = settings.SSH_USER + '@' + host
-        cmd = f"autossh -C -N -f -n -T -p {settings.SSH_SERVER_PORT} " \
+        cmd = f"autossh -o StrictHostKeyChecking=no -C -N -f -n -T -p {settings.SSH_SERVER_PORT} " \
               f"-R {port}:localhost:22  -R {port+1000}:localhost:2525  {user}"
         logger.info(f'cmd is {cmd}')
         subprocess.call(cmd, shell=True)
