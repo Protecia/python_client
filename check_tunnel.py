@@ -32,7 +32,7 @@ def is_open(host, port):
         s.close()
 
 
-def check_host(ip, port):
+def check_host():
     ip = settings.SERVER.split('//')[1]
     with open(settings.INSTALL_PATH + '/settings/docker.json', 'r') as conf_json:
         data = json.load(conf_json)
