@@ -4,7 +4,6 @@ Created on Fri Jun  5 19:31:50 2020
 
 @author: julien
 """
-import logging
 import socket
 import time
 import settings.settings as settings
@@ -21,12 +20,12 @@ delay = 2
 timeout = 3
 
 
-def is_open(host, port):
+def is_open(host_o, port_o):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(timeout)
     try:
         logger.info(f'try connecting {host} / {port}')
-        s.connect((host, port))
+        s.connect((host_o, port_o))
         s.shutdown(socket.SHUT_RDWR)
         return True
     except OSError:
@@ -36,23 +35,24 @@ def is_open(host, port):
 
 
 def check_host():
-    ip = settings.SERVER.split('/')[2]
+    host_check = settings.SERVER.split('/')[2]
     with open(settings.INSTALL_PATH + '/settings/docker.json', 'r') as conf_json:
         data = json.load(conf_json)
-    port = int(data['tunnel_port'])
-    ipup = False
+    port_check = int(data['tunnel_port'])
+    ipup_check = False
     for i in range(retry):
-        if is_open(ip, port) and is_open(ip, port+1000):
-            ipup = True
+        if is_open(host_check, port_check) and is_open(host_check, port_check+1000):
+            ipup_check = True
             break
         else:
             time.sleep(delay)
-    return ipup
+    return ipup_check, host_check, port_check
 
 
 if __name__ == 'main':
-    if not check_host():
-        print(settings.SERVER.split('//')[1], 'is DOWN')
+    ipup, host, port = check_host()
+    if not ipup:
+        print(host, 'is DOWN')
         for proc in psutil.process_iter():
             # check whether the process name matches
             if 'ssh' in proc.name() and 'sshd' not in proc.name():
@@ -60,8 +60,11 @@ if __name__ == 'main':
                     proc.kill()
                 except psutil.AccessDenied:
                     pass
-        subprocess.call("./sshtunnel.sh")
-
+        user = settings.SSH_USER + '@' + host
+        cmd = f"autossh -C -N -f -n -T -p {settings.SSH_SERVER_PORT} " \
+              f"-R {port}:localhost:22  -R {port+1000}:localhost:2525  {user}"
+        logger.info(f'cmd is {cmd}')
+        #subprocess.call("./sshtunnel.sh")
 
     # on docker restart autossh
     # on nano reboot

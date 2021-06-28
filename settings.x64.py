@@ -50,5 +50,9 @@ VIDEO_SPACE = 30  # Go
 QUEUE_SIZE = 10  # number of images to queue at max
 SCAN_INTERVAL = 60  # seconds between each scan of the network to find onvif camera
 
+# remote conf
+SSH_SERVER_PORT = 2222
+SSH_USER = 'tunnel'
+
 # client conf
 INIT_PASS = 'jznsjoa3z54d'
