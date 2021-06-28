@@ -10,45 +10,54 @@ import time
 import settings.settings as settings
 import psutil
 import subprocess
+import json
 
-ip = settings.TUNNEL_IP
-port = settings.TUNNEL_PORT
+# ip = settings.TUNNEL_IP
+# port = settings.TUNNEL_PORT
 retry = 3
 delay = 2
 timeout = 3
 
-def isOpen(ip, port):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(timeout)
-        try:
-                s.connect((ip, int(port)))
-                s.shutdown(socket.SHUT_RDWR)
-                return True
-        except:
-                return False
-        finally:
-                s.close()
 
-def checkHost(ip, port):
-        ipup = False
-        for i in range(retry):
-                if isOpen(ip, port) and isOpen(ip, port+1):
-                        ipup = True
-                        break
-                else:
-                        time.sleep(delay)
-        return ipup
+def is_open():
+    ip = settings.SERVER.split('//')[1]
+    with open(settings.INSTALL_PATH + '/settings/docker.json', 'r') as conf_json:
+        data = json.load(conf_json)
+    port = data['tunnel_port']
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(timeout)
+    try:
+        s.connect((ip, int(port)))
+        s.shutdown(socket.SHUT_RDWR)
+        return True
+    except:
+        return False
+    finally:
+        s.close()
 
-if not checkHost(ip, port):
-    print(ip,'is DOWN')
-    for proc in psutil.process_iter():
-        # check whether the process name matches
-        if 'ssh' in proc.name() and 'sshd' not in proc.name():
-            try:
-                proc.kill()
-            except psutil.AccessDenied:
-                pass
-    subprocess.call("./sshtunnel.sh")
+
+def check_host(ip, port):
+    ipup = False
+    for i in range(retry):
+        if is_open(ip, port) and is_open(ip, port+1000):
+            ipup = True
+            break
+        else:
+            time.sleep(delay)
+    return ipup
+
+
+if __name__ == 'main':
+    if not check_host():
+        print(settings.SERVER.split('//')[1], 'is DOWN')
+        for proc in psutil.process_iter():
+            # check whether the process name matches
+            if 'ssh' in proc.name() and 'sshd' not in proc.name():
+                try:
+                    proc.kill()
+                except psutil.AccessDenied:
+                    pass
+        subprocess.call("./sshtunnel.sh")
 
 
     # on docker restart autossh
