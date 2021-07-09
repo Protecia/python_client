@@ -38,21 +38,21 @@ DARKNET_CONF = {
 INSTALL_PATH = '/NNvision/python_client'
 FFMPEG = '/usr/local/bin/ffmpeg'
 HARDWARE = 'nano'
-UUID = '/proc/device-tree/chosen/uuid'  # on nano
+UUID = '/NNvision/uuid/uuid'  # on nano
 # UUID = '/proc/device-tree/chosen/ecid' on xavier
 
 # python conf
 PYTHON = 'python3'
 THREATED_REQUESTS = True
 SERVER = 'https://dev.protecia.com/'
-SERVER_WS = 'ws://dev.protecia.com/'
+SERVER_WS = 'wss://dev.protecia.com/'
 VIDEO_REC_TIME = 10
 VIDEO_SPACE = 30  # Go
 QUEUE_SIZE = 10  # number of images to queue at max
 SCAN_INTERVAL = 60  # seconds between each scan of the network to find onvif camera
 
 # remote conf
-SSH_SERVER_PORT = 2222
+SSH_SERVER_PORT = 2223
 SSH_USER = 'tunnel'
 
 # client conf
