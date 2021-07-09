@@ -43,8 +43,8 @@ class Cameras(object):
                 task.cancel()
             for task in done:
                 cam = task.result()
-        except Exception as e:
-            logger.warning(f' exception in CONNECT****************')
+        except Exception as ex:
+            logger.warning(f' exception in CONNECT**************** / except-->{ex} / name-->{type(ex).__name__}')
 
     async def _send_cam(self):
         finish = False
@@ -101,7 +101,7 @@ class Cameras(object):
                     while True:
                         state = json.loads(await ws.recv())
                         ping = state.get('ping', False)
-                        logger.warning(f'Receive change state -> {ping}')
+                        logger.warning(f'Receive change state -> {state}')
                         if ping is False:
                             e_state.set() if state['rec'] else e_state.clear()
                             scan_state.set() if state['scan'] else scan_state.clear()
@@ -114,7 +114,8 @@ class Cameras(object):
 
                             # write the change for reboot and docker version
                             with open(settings.INSTALL_PATH + '/settings/docker.json', 'w') as conf_json:
-                                json.dump(state, conf_json)
+                                json.dump({key: state[key] for key in ['tunnel_port', 'docker_version', 'reboot']},
+                                          conf_json)
                                 logger.warning(f'Receiving  json docker :  {state}')
 
             except (websockets.exceptions.ConnectionClosedError, OSError):
