@@ -107,16 +107,16 @@ class Cameras(object):
                             scan_state.set() if state['scan'] else scan_state.clear()
                             # trigger to send real time image
                             on_camera = state['cam']
-                            logger.warning(f'camera state is -> {on_camera}')
+                            logger.warning(f'camera state is -> {on_camera} / events are {camera_state}')
                             for pk, state in on_camera.items():
                                 [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for
                                  index, i in enumerate(state)]
 
                             # write the change for reboot and docker version
                             with open(settings.INSTALL_PATH + '/settings/docker.json', 'w') as conf_json:
-                                json.dump({key: state[key] for key in ['tunnel_port', 'docker_version', 'reboot']},
-                                          conf_json)
-                                logger.warning(f'Receiving  json docker :  {state}')
+                                docker_json = {key: state[key] for key in ['tunnel_port', 'docker_version', 'reboot']}
+                                json.dump(docker_json , conf_json)
+                                logger.warning(f'Receiving  json docker :  {docker_json}')
 
             except (websockets.exceptions.ConnectionClosedError, OSError):
                 logger.error(f'socket _get_state disconnected !!')
