@@ -229,6 +229,7 @@ def run(wait, scan_state):
             continue
 
 
+# only for testing and launching independant scan_camera
 if __name__ == '__main__':
     from multiprocessing import Event as pEvent
     scan = pEvent()
