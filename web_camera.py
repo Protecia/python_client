@@ -54,9 +54,11 @@ class Cameras(object):
                 async with websockets.connect(settings.SERVER_WS + 'ws_receive_cam') as ws:
                     await ws.send(json.dumps({'key': self.key, }))
                     while True:
-                        fname = pathlib.Path('camera/camera_from_scan.json')
+                        fname = pathlib.Path(settings.INSTALL_PATH + '/camera/camera_from_scan.json')
+                        logger.debug(f'loop for sending new cam')
                         try:
                             t2 = fname.stat().st_ctime
+                            logger.debug(f't2 is {t2} / t1 is {t1}')
                             if t2 > t1:
                                 with open(settings.INSTALL_PATH + '/camera/camera_from_scan.json', 'r') as cam:
                                     cameras = json.load(cam)
@@ -64,6 +66,7 @@ class Cameras(object):
                                 await ws.send(json.dumps(cameras))
                                 t1 = time.time()
                         except FileNotFoundError:
+                            logger.error(f'scan file error NOT FOUND')
                             await asyncio.sleep(30)
                         await asyncio.sleep(5)
             except (websockets.exceptions.ConnectionClosedError, OSError, ConnectionResetError,

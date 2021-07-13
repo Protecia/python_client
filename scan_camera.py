@@ -221,7 +221,7 @@ def run(wait, scan_state):
             dict_cam = check_cam(cam_ip_dict, users_dict)
             with open(settings.INSTALL_PATH+'/camera/camera_from_scan.json', 'w') as out:
                 json.dump(dict_cam, out)
-            logger.warning(f'Writing scam camera in file <-  {dict_cam} / scan_state is {scan_state.is_set()}')
+            logger.warning(f'Writing scan camera in file <-  {dict_cam} / scan_state is {scan_state.is_set()}')
             scan_state.wait()
             time.sleep(wait)
         except Exception as ex:
