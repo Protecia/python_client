@@ -52,7 +52,7 @@ def ws_discovery(repeat, wait):
     addrs = psutil.net_if_addrs()
     try:
         ip_list = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
-        logger.info(f'if the box is :{ip_list} ')
+        logger.info(f'ip of the box is :{ip_list} ')
         with open('soap.xml') as f:
             soap_xml = f.read()
         mul_ip = "239.255.255.250"
@@ -227,3 +227,12 @@ def run(wait, scan_state):
             logger.error(f'exception in scan_camera : except-->{ex} / name-->{type(ex).__name__}')
             time.sleep(1)
             continue
+
+
+if __name__ == '__main__':
+    from multiprocessing import Event as pEvent
+    scan = pEvent()
+    # initial scan state :
+    if get_conf('scan'):
+        scan.set()
+    run(20, scan)
