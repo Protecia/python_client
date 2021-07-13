@@ -52,6 +52,7 @@ def ws_discovery(repeat, wait):
     addrs = psutil.net_if_addrs()
     try:
         ip_list = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
+        logger.info(f'if the box is :{ip_list} ')
         with open('soap.xml') as f:
             soap_xml = f.read()
         mul_ip = "239.255.255.250"
@@ -68,10 +69,12 @@ def ws_discovery(repeat, wait):
                              socket.inet_aton(mul_ip) + socket.inet_aton(ip))
                 s.setblocking(False)
                 s.sendto(soap_xml.encode(), (mul_ip, mul_port))
+                logger.info(f'Sending broadcast onvif')
                 time.sleep(3)
                 while True:
                     try:
                         data, address = s.recvfrom(65535)
+                        logger.info(f'reading onvif answer {data}')
                         # time.sleep(1)
                         # print(address)
                         ret.append(data)
