@@ -94,6 +94,7 @@ def ws_discovery(repeat, wait):
             if not i+1 == repeat:
                 time.sleep(wait)
     except (KeyError, OSError):
+        logger.error(f'exception in ws_discovery : except-->{ex} / name-->{type(ex).__name__}')
         return {}
     logger.info('scan camera : {}'.format(dcam))
     return dcam
