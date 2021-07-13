@@ -20,6 +20,7 @@ import web_camera
 import signal
 import time
 from urllib3.exceptions import ProtocolError
+from utils import get_conf
 
 # globals var
 logger = Logger(__name__, level=settings.MAIN_LOG).run()
@@ -42,7 +43,7 @@ def conf():
         data = json.loads(r.text)
         if data.get('key', False):
             with open(settings.INSTALL_PATH + '/settings/conf.json', 'w') as conf_json:
-                json.dump({key: data[key] for key in ['cp', 'city', 'key', 'scan_camera']}, conf_json)
+                json.dump({key: data[key] for key in ['cp', 'city', 'key', 'scan_camera', 'scan']}, conf_json)
             with open(settings.INSTALL_PATH + '/settings/docker.json', 'w') as docker_json:
                 json.dump({key: data[key] for key in ['tunnel_port', 'docker_version', 'reboot']}, docker_json)
                 logger.warning(f'Receiving  conf :  {r.text}')
@@ -87,6 +88,10 @@ def main():
 
         # retrieve cam
         cameras.get_cam()
+
+        # initial scan state :
+        if get_conf('scan'):
+            scan_state.set()
 
         # launch child processes
         process = {
