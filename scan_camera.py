@@ -210,7 +210,9 @@ def run(wait, scan_state):
                 detected_cam = ping_network()
             else:
                 detected_cam = ws_discovery(2, 20)
+                logger.debug(f'ws disvovery cam <-  {detected_cam}')
             detected_cam.update(cam_ip_dict)
+            logger.info(f'updated detected_cam <-  {detected_cam}')
             cam_ip_dict.update(detected_cam)
             dict_cam = check_cam(cam_ip_dict, users_dict)
             with open(settings.INSTALL_PATH+'/camera/camera_from_scan.json', 'w') as out:
