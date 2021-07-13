@@ -196,7 +196,7 @@ def check_cam(cam_ip_dict, users_dict):
                     logger.info(f'onvif OK for {ip} / {port} / {user} / {passwd} ')
                     dict_cam[ip]['brand'] = info['Manufacturer']
                     dict_cam[ip]['model'] = info['Model']
-                    # dict_cam[ip]['serial_number'] = info['SerialNumber']
+                    dict_cam[ip]['serial_number'] = info['SerialNumber']
                     for count, i in enumerate(uri):
                         dict_cam[ip]['uri'][count] = {'http': i[0], 'rtsp': i[1]}
                     auth = {'B': requests.auth.HTTPBasicAuth(user, passwd),
