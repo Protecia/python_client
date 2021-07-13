@@ -53,7 +53,7 @@ def ws_discovery(repeat, wait):
     try:
         ip_list = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
         logger.info(f'ip of the box is :{ip_list} ')
-        with open('soap.xml') as f:
+        with open('/NNvision/python_client/soap.xml') as f:
             soap_xml = f.read()
         mul_ip = "239.255.255.250"
         mul_port = 3702
@@ -93,7 +93,7 @@ def ws_discovery(repeat, wait):
                     dcam[ip] = {'port_onvif': port}
             if not i+1 == repeat:
                 time.sleep(wait)
-    except (KeyError, OSError):
+    except (KeyError, OSError) as ex:
         logger.error(f'exception in ws_discovery : except-->{ex} / name-->{type(ex).__name__}')
         return {}
     logger.info('scan camera : {}'.format(dcam))
