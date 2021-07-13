@@ -105,6 +105,8 @@ class Cameras(object):
                         if ping is False:
                             e_state.set() if state['rec'] else e_state.clear()
                             scan_state.set() if state['scan'] else scan_state.clear()
+                            logger.debug(f'scan state from server is -> {state["scan"]} / '
+                                         f'events is {scan_state.is_set()}')
                             # trigger to send real time image
                             on_camera = state['cam']
                             logger.warning(f'camera state is -> {on_camera} / events are {camera_state}')
