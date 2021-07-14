@@ -94,18 +94,17 @@ def main():
             scan_state.set()
 
         # launch child processes
-        process = {
-            'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,)),
+        process1 = {
             'image_upload': Process(target=up.upload_image, args=(Q_img,)),
             'image_upload_real_time': Process(target=up.uploadImageRealTime, args=(Q_img_real,)),
             'result_upload': Process(target=up.upload_result, args=(Q_result, E_video)),
             'serve_http': Process(target=http_serve, args=(2525,))}
-        for p in process.values():
+        for p in process1.values():
             p.start()
 
         # log the id of the process
         txt = f'PID of different processes : '
-        for key, value in process.items():
+        for key, value in process1.items():
             txt += f'{key}->{value.pid} / '
         logger.error(txt)
 
@@ -113,6 +112,10 @@ def main():
             # write the file for backup video
             cameras.write()
             logger.warning(f'Writing camera in json : {cameras.list_cam}')
+            # start the scan
+            process2 = {'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,)), }
+            for p in process2.values():
+                p.start()
 
             # set the video event
             E_video.set()
@@ -141,11 +144,11 @@ def main():
 
             # If camera change (websocket answer) -----------------------------
             stop(list_thread)
+            # stop the scan
+            for p in process2.values():
+                p.terminate()
             logger.error('Camera change restart !')
-            # write the file for backup video
-            cameras.write()
-            # launch a scan in case you need to update camera
-            scan_state.set()
+
     except KeyboardInterrupt:
         stop(list_thread)
         for p in process.values():
