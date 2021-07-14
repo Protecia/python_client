@@ -113,9 +113,9 @@ class Cameras(object):
                             # trigger to send real time image
                             on_camera = state['cam']
                             logger.warning(f'camera state is -> {on_camera} / events are {camera_state}')
-                            for pk, state in on_camera.items():
+                            for pk, value in on_camera.items():
                                 [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for
-                                 index, i in enumerate(state)]
+                                 index, i in enumerate(value)]
 
                             # write the change for reboot and docker version
                             with open(settings.INSTALL_PATH + '/settings/docker.json', 'w') as conf_json:
