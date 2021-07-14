@@ -180,7 +180,9 @@ def check_cam(cam_ip_dict, users_dict):
         http = cam.get('uri', None)
         if http:  # this is a known cam, so test
             logger.info(f'testing old cam with http:{http} user:{cam["username"]} pass:{cam["password"]}')
-            auth = {cam['auth_type']: requests.auth.HTTPBasicAuth(cam["username"], cam["password"])}
+            auth_dict = {'B': requests.auth.HTTPBasicAuth(cam["username"], cam["password"]),
+                         'D': requests.auth.HTTPDigestAuth(cam["username"], cam["password"])}
+            auth = {cam['auth_type']: auth_dict[cam['auth_type']]}
             check_auth(dict_cam[ip], cam["username"], cam["password"], auth)
         else:  # this is a new cam
             dict_cam[ip] = {'name': 'unknow', 'port_onvif': cam["port_onvif"],
