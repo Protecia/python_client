@@ -63,7 +63,7 @@ class RecCamera(object):
             if time.time()-self.cameras[cam_id]['rec_time'] > settings.VIDEO_REC_TIME or i > 3600:  # max 30mn per video
                 self.cameras[cam_id]['rec'] = False
                 logger.info('kill process {} for cam {}'.format(p, cam_id))
-                try :
+                try:
                     p.terminate()
                     time.sleep(2)
                     p.kill()
@@ -102,20 +102,23 @@ def rec_all_cam():
             with open('camera/camera_from_server.json', 'r') as json_file:
                 cameras = json.load(json_file)
                 list_rtsp = []
-                for cam in [v['uri'] for v in cameras.values() if v['active']]:
+                for cam in [(v['uri'], v['username'], v['password']) for v in cameras.values() if v['active']]:
                     # take the first rtsp as default
-                    list_rtsp.append((list(cam.values())[0]['id'], list(cam.values())[0]['rtsp']))
-                    for uri in cam.values():
+                    list_rtsp.append((list(cam[0].values())[0]['id'], list(cam[0].values())[0]['rtsp'], cam[1], cam[2]))
+                    for uri in cam[0].values():
                         if uri['use']:
-                            list_rtsp[-1] = (uri['id'], uri['rtsp'])
+                            list_rtsp[-1] = (uri['id'], uri['rtsp'], cam[1], cam[2])
                             break
             repeat = False
         except json.decoder.JSONDecodeError:
             i += 1
             repeat = False if i > 3 else True
     for rtsp in list_rtsp:
-        cmd = f'{settings.FFMPEG}  -nostats -loglevel 0 -y -i  {rtsp[1]} -vcodec copy' \
-              f' camera/secu/{"backup_"+datetime.now().strftime("%H:%m")+"_cam"+str(rtsp[0])+".mp4"}'
+        protocole = rtsp[1].split('//')[0] + "//"
+        credential = rtsp[2] + ":" + rtsp[3]
+        url = rtsp[1].split('//')[1]
+        cmd = f'{settings.FFMPEG}  -nostats -loglevel 0 -y -i  {protocole + credential + "@" + url} -vcodec copy' \
+              f' camera/secu/{"backup_" + datetime.now().strftime("%H:%m") + "_cam" + str(rtsp[0]) + ".mp4"}'
         Popen(shlex.split(cmd))
         logger.warning('ffmpeg rec on  {}'.format(cmd))
 
