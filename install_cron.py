@@ -18,7 +18,7 @@ def install_rec_backup_cron():
         cmd += settings.PYTHON+' '+os.path.join(settings.INSTALL_PATH, 'video.py')
         cmd += " > "+settings.INSTALL_PATH+"/camera/cron_video.log 2>&1&"
         job = cron.new(command=cmd)
-        job.every().hour()
+        job.minute.every(1)
         cron.write()
 
 
