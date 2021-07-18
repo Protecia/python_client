@@ -118,7 +118,7 @@ def rec_all_cam():
         credential = rtsp[2] + ":" + rtsp[3]
         url = rtsp[1].split('//')[1]
         cmd = f'{settings.FFMPEG}  -nostats -loglevel 0 -y -i  {protocole + credential + "@" + url} -vcodec copy' \
-              f' camera/secu/{"backup_" + datetime.now().strftime("%H:%m") + "_cam" + str(rtsp[0]) + ".mp4"}'
+              f' camera/secu/{"backup_" + datetime.now().strftime("%H:%M") + "_cam" + str(rtsp[0]) + ".mp4"}'
         Popen(shlex.split(cmd))
         logger.warning('ffmpeg rec on  {}'.format(cmd))
 
