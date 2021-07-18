@@ -50,6 +50,7 @@ VIDEO_REC_TIME = 10
 VIDEO_SPACE = 30  # Go
 QUEUE_SIZE = 10  # number of images to queue at max
 SCAN_INTERVAL = 60  # seconds between each scan of the network to find onvif camera
+RECORDED_DELAY = 2  # nb of days to store on backup video
 
 # remote conf
 SSH_SERVER_PORT = 2223
