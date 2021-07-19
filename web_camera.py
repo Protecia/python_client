@@ -106,7 +106,10 @@ class Cameras(object):
                         ping = state.get('ping', False)
                         logger.warning(f'Receive change state -> {state}')
                         if ping:
-                            pass
+                            if state['token1']:
+                                with open(settings.INSTALL_PATH + '/settings/video.json', 'w') as f:
+                                    json.dump({'token1': state['token1'], 'token2': state['token2']}, f)
+                                    logger.warning(f'Receiving  json docker :  {docker_json}')
                         else:
                             e_state.set() if state['rec'] else e_state.clear()
                             scan_state.set() if state['scan'] else scan_state.clear()
