@@ -105,7 +105,9 @@ class Cameras(object):
                         state = json.loads(await ws.recv())
                         ping = state.get('ping', False)
                         logger.warning(f'Receive change state -> {state}')
-                        if ping is False:
+                        if ping:
+                            pass
+                        else:
                             e_state.set() if state['rec'] else e_state.clear()
                             scan_state.set() if state['scan'] else scan_state.clear()
                             logger.debug(f'scan state from server is -> {state["scan"]} / '
