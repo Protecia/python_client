@@ -146,7 +146,7 @@ def check_auth(dict_cam_ip, user, passwd, auth):
                 http = url['http']
                 try:
                     logger.info(f'before request on {http}')
-                    r = requests.get(http, auth=a, stream=False, timeout=1)
+                    r = requests.get(http, auth=a, stream=True, timeout=10)
                     logger.info(f'after request on {http}')
                     logger.info(f'request  on camera is {r.ok} for {http} / {user} / {passwd} / {t}')
                     if r.ok:
@@ -181,7 +181,7 @@ def check_cam(cam_ip_dict, users_dict):
         if http:  # this is a known cam, so test
             logger.info(f'testing old cam with http:{http} user:{cam["username"]} pass:{cam["password"]}')
             auth = {'B': requests.auth.HTTPBasicAuth(cam["username"], cam["password"]),
-                         'D': requests.auth.HTTPDigestAuth(cam["username"], cam["password"])}
+                    'D': requests.auth.HTTPDigestAuth(cam["username"], cam["password"])}
             # auth = {cam['auth_type']: auth[cam['auth_type']]}
             check_auth(dict_cam[ip], cam["username"], cam["password"], auth)
         else:  # this is a new cam
