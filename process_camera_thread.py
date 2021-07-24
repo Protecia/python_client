@@ -181,7 +181,7 @@ class ProcessCamera(Thread):
                 self.request_OK = True
                 try:
                     t = time.time()
-                    r = requests.get(self.cam['http'], auth=self.auth, stream=False, timeout=4)
+                    r = requests.get(self.cam['http'], auth=self.auth, stream=True, timeout=10)
                     self.logger.info(f'get http image {self.cam["http"]} in  {time.time()-t}s')
                     if r.status_code == 200 and len(r.content) > 1000:
                         self.frame = cv2.imdecode(np.asarray(bytearray(r.content), dtype="uint8"), 1)
