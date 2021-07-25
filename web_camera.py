@@ -109,8 +109,8 @@ class Cameras(object):
                             if state['token1']:
                                 with open(settings.INSTALL_PATH + '/settings/video.json', 'w') as f:
                                     json.dump({'token1': state['token1'], 'token2': state['token2']}, f)
-                                    logger.warning(f"Receiving  json docker :"
-                                                   f"{'token1': state['token1'], 'token2': state['token2']}")
+                                    logger.warning(f"video.json has been written :"
+                                                   f"token1: {state['token1']}, token2: {state['token2']}")
                         else:
                             e_state.set() if state['rec'] else e_state.clear()
                             scan_state.set() if state['scan'] else scan_state.clear()
@@ -126,7 +126,7 @@ class Cameras(object):
                             # write the change for reboot and docker version
                             with open(settings.INSTALL_PATH + '/settings/docker.json', 'w') as conf_json:
                                 docker_json = {key: state[key] for key in ['tunnel_port', 'docker_version', 'reboot']}
-                                json.dump(docker_json , conf_json)
+                                json.dump(docker_json, conf_json)
                                 logger.warning(f'Receiving  json docker :  {docker_json}')
 
             except (websockets.exceptions.ConnectionClosedError, OSError):
