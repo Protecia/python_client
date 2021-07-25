@@ -208,7 +208,7 @@ def check_cam(cam_ip_dict, users_dict):
                             'D': requests.auth.HTTPDigestAuth(user, passwd)}
                     check_auth(dict_cam[ip], user, passwd, auth)
             if not onvif_answer:
-                dict_cam['ip']['active_automatic'] = False
+                dict_cam[ip]['active_automatic'] = False
     return dict_cam
 
 
