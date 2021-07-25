@@ -188,12 +188,14 @@ def check_cam(cam_ip_dict, users_dict):
             dict_cam[ip] = {'name': 'unknow', 'port_onvif': cam["port_onvif"],
                             'from_client': True, 'uri': {}}
             port = cam["port_onvif"]
+            onvif_answer = False
             for user, passwd in users_dict.items():
                 logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
                 loop = asyncio.get_event_loop()
                 onvif = loop.run_until_complete(get_onvif_uri(ip, port, user, passwd))
                 logger.info(f'onvif answer is {onvif}')
                 if onvif:
+                    onvif_answer = True
                     info, uri = onvif
                     logger.info(f'onvif OK for {ip} / {port} / {user} / {passwd} ')
                     dict_cam[ip]['brand'] = info['Manufacturer']
@@ -205,6 +207,8 @@ def check_cam(cam_ip_dict, users_dict):
                     auth = {'B': requests.auth.HTTPBasicAuth(user, passwd),
                             'D': requests.auth.HTTPDigestAuth(user, passwd)}
                     check_auth(dict_cam[ip], user, passwd, auth)
+            if not onvif_answer:
+                dict_cam['ip']['active_automatic'] = False
     return dict_cam
 
 
