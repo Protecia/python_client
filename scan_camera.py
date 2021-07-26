@@ -139,8 +139,8 @@ async def get_onvif_uri(ip, port, user, passwd):
 
 
 def check_auth(dict_cam_ip, user, passwd, auth):
+    check = False
     for t, a in auth.items():
-        check = False
         for i in range(4):
             for url in dict_cam_ip['uri'].values():
                 http = url['http']
@@ -152,13 +152,10 @@ def check_auth(dict_cam_ip, user, passwd, auth):
                     if r.ok:
                         dict_cam_ip['auth_type'] = t
                         dict_cam_ip['wait_for_set'] = False
-                        dict_cam_ip['active_automatic'] = True
                         dict_cam_ip['username'] = user
                         dict_cam_ip['password'] = passwd
                         check = True
                         break
-                    else:
-                        dict_cam_ip['active_automatic'] = False
                 except (requests.exceptions.ConnectionError, requests.Timeout,
                         requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema):
                     time.sleep(0.5)
@@ -167,7 +164,8 @@ def check_auth(dict_cam_ip, user, passwd, auth):
                 break
         if check:
             break
-
+    # result of the check chang the camera status
+    dict_cam_ip['active_automatic'] = True if check else False
 
 def check_cam(cam_ip_dict, users_dict):
     """Test connection for all ip/port.
