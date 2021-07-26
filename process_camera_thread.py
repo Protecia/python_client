@@ -131,7 +131,9 @@ class ProcessCamera(Thread):
             self.auth = requests.auth.HTTPDigestAuth(cam['username'], cam['password'])
 
     def grab(self):
-        self.vcap = cv2.VideoCapture(self.cam['rtsp'])
+        rtsp = self.cam['rtsp']
+        rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
+        self.vcap = cv2.VideoCapture(rtsp_login)
         self.running_rtsp = self.vcap.isOpened()
         self.logger.warning('openning videocapture {} is {}'.format(self.vcap, self.vcap.isOpened()))
         i = 15
@@ -154,7 +156,7 @@ class ProcessCamera(Thread):
                         self.request_OK = True
                     self.logger.debug("resultat de l'ecriture de la frame : {} en {} ".format(
                             self.request_OK,time.time()-t))
-                else :
+                else:
                     self.request_OK = False
                     self.logger.warning('Bad rtsp read on {} videocapture is {}'.format(self.cam['name'],
                                                                                         self.vcap.isOpened()))
