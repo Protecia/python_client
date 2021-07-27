@@ -155,7 +155,7 @@ class ProcessCamera(Thread):
                         self.frame = frame
                         self.request_OK = True
                     self.logger.debug("resultat de l'ecriture de la frame : {} en {} ".format(
-                            self.request_OK,time.time()-t))
+                            self.request_OK, time.time()-t))
                 else:
                     self.request_OK = False
                     self.logger.warning('Bad rtsp read on {} videocapture is {}'.format(self.cam['name'],
