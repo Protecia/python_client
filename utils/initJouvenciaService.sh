@@ -109,7 +109,6 @@ if str(n) != str(version):
     dockrun='docker run -d --restart unless-stopped --entrypoint /NNvision/python_client/start.sh --gpus=all --name nnvision --net=host -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video -v /home/nnvision/conf:/NNvision/python_client/settings -v /usr/src/jetson_multimedia_api:/usr/src/jetson_multimedia_api -v nn_camera:/NNvision/python_client/camera -v /proc/device-tree/chosen:/NNvision/uuid ' + str(pullName)
     subprocess.run(dockrun.split(' '))
     print('Container started')
-    subprocess.run(['rm', '/home/jouvencia/Documents/login'])
 " > /home/jouvencia/Documents/updateScript.py
 chmod +x /home/jouvencia/Documents/updateScript.py
 
