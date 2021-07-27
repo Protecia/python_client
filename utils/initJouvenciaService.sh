@@ -127,6 +127,7 @@ echo "
 
 reboot=$(jq -r .reboot /home/nnvision/conf/docker.json )
 if [[ reboot == 'true' ]]; then
+    sleep 200
     reboot
 
 fi" > /home/jouvencia/Documents/rebootScript
