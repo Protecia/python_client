@@ -11,7 +11,7 @@ with open('/home/nnvision/conf/docker.json') as nextVersion:
 
 n = update["'"'"docker_version"'"'"]
 pullName='roboticia/nnvision_jetson_nano:'+str(n)
-dockrun='docker run --entrypoint /NNvision/python_client/start.sh --gpus=all --name nnvision --net=host -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video -v /home/nnvision/conf:/NNvision/python_client/settings -v /usr/src/jetson_multimedia_api:/usr/src/jetson_multimedia_api -v nn_camera:/NNvision/python_client/camera -v /proc/device-tree/chosen:/NNvision/uuid --rm ' + str(pullName)
+dockrun='docker run -d --restart unless-stopped --entrypoint /NNvision/python_client/start.sh --gpus=all --name nnvision --net=host -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video -v /home/nnvision/conf:/NNvision/python_client/settings -v /usr/src/jetson_multimedia_api:/usr/src/jetson_multimedia_api -v nn_camera:/NNvision/python_client/camera -v /proc/device-tree/chosen:/NNvision/uuid ' + str(pullName)
 subprocess.run(dockrun.split(' '))
 print('Container started')" > /home/jouvencia/Documents/runOnStartup.py
 chmod +x /home/jouvencia/Documents/runOnStartup.py
@@ -34,14 +34,13 @@ else
     cat ~/pass.txt | docker login --username yayab42 --password-stdin
     rm pass.txt
     docker pull roboticia/nnvision_jetson_nano:0.2
-    docker run   --entrypoint /NNvision/python_client/start.sh --gpus=all --name nnvision --net=host \
+    docker run  -d --restart unless-stopped --entrypoint /NNvision/python_client/start.sh --gpus=all --name nnvision --net=host \
                 -e NVIDIA_VISIBLE_DEVICES=all \
                 -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video  \
                 -v /home/nnvision/conf:/NNvision/python_client/settings \
                 -v /usr/src/jetson_multimedia_api:/usr/src/jetson_multimedia_api\
                 -v nn_camera:/NNvision/python_client/camera \
                 -v /proc/device-tree/chosen:/NNvision/uuid \
-                --rm roboticia/nnvision_jetson_nano:0.2
 fi
 " > /home/jouvencia/Documents/initJouvenciaScript
 chmod +x initJouvenciaScript
@@ -107,7 +106,7 @@ if str(n) != str(version):
     print('login succeed')
     subprocess.run(['docker','pull', pullName])
     print('Pull succeed')
-    dockrun='docker run --entrypoint /NNvision/python_client/start.sh --gpus=all --name nnvision --net=host -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video -v /home/nnvision/conf:/NNvision/python_client/settings -v /usr/src/jetson_multimedia_api:/usr/src/jetson_multimedia_api -v nn_camera:/NNvision/python_client/camera -v /proc/device-tree/chosen:/NNvision/uuid --rm ' + str(pullName)
+    dockrun='docker run -d --restart unless-stopped --entrypoint /NNvision/python_client/start.sh --gpus=all --name nnvision --net=host -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video -v /home/nnvision/conf:/NNvision/python_client/settings -v /usr/src/jetson_multimedia_api:/usr/src/jetson_multimedia_api -v nn_camera:/NNvision/python_client/camera -v /proc/device-tree/chosen:/NNvision/uuid ' + str(pullName)
     subprocess.run(dockrun.split(' '))
     print('Container started')
     subprocess.run(['rm', '/home/jouvencia/Documents/login'])
@@ -130,7 +129,7 @@ echo "
 reboot=$(jq -r .reboot /home/nnvision/conf/docker.json )
 if [[ reboot == 'true' ]]; then
     reboot
-    
+
 fi" > /home/jouvencia/Documents/rebootScript
 
 echo "*/5 * * * *  root /home/jouvencia/Documents/rebootScript
