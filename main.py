@@ -141,9 +141,10 @@ def main():
                         logger.warning(f'starting process camera on  : {ready_cam}')
             # wait until a camera change
             cameras.connect(e_state, scan_state, cameras_state)
-
+            logger.debug('connect pass go on')
             # If camera change (websocket answer) -----------------------------
             stop(list_thread)
+            logger.debug('thread stopped')
             # stop the scan
             for p in process2.values():
                 p.terminate()

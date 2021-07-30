@@ -142,7 +142,7 @@ class ProcessCamera(Thread):
             if i == 15:
                 date = time.strftime("%Y-%m-%d-%H-%M-%S")
                 ret, frame = self.vcap.read()
-                self.logger.debug("resultat de la lecture rtsp : {} ".format(ret))
+                self.logger.debug(f"resultat de la lecture rtsp : {ret}  pour {self.cam['name']}")
                 self.logger.debug('*** {}'.format(date))
                 t = time.time()
                 if ret and len(frame) > 100:
@@ -230,8 +230,7 @@ class ProcessCamera(Thread):
                     result_darknet=[]
                 for key, partial_result in result_dict.items():
                     result_darknet += partial_result.result()
-                self.logger.info('get brut result from darknet in {}s : {} \n'.format(
-                                 time.time()-t, result_darknet))
+                self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
                 # get only result above trheshlod or previously valid
                 t = time.time()
                 result_filtered, result_filtered_true  = self.check_thresh(result_darknet)
@@ -242,7 +241,7 @@ class ProcessCamera(Thread):
                 img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
                 # if gueue free
                 if self.Q_img_real.qsize() < 1:
-                    self.logger.info(f'camera state : {self.camera_state} / cam : {self.cam}')
+                    self.logger.info(f'camera state : {self.camera_state.is_set()} / cam : {self.cam["name"]}')
                     # if on page camera HD
                     if EtoB(self.camera_state[self.cam['id']][1]):
                         resize_factor = self.cam['max_width_rtime_HD']/arr.shape[1]
