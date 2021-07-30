@@ -72,7 +72,7 @@ else
     echo 'aicnevuoj*26' > pass.txt
     cat ~/pass.txt | docker login --username yayab42 --password-stdin
     rm pass.txt
-    docker pull roboticia/nnvision_jetson_nano:0.2
+    docker pull roboticia/nnvision_jetson_nano:1.0
     docker run  -d --restart unless-stopped --entrypoint /NNvision/python_client/start.sh --gpus=all --name nnvision --net=host \
                 -e NVIDIA_VISIBLE_DEVICES=all \
                 -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video  \
