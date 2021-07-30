@@ -19,6 +19,23 @@ subprocess.run(['/usr/bin/chromium-browser', '--no-sandbox', '--kiosk', 'https:/
 " > /home/jouvencia/Documents/runUserInterface.py
 chmod +x /home/jouvencia/Documents/runUserInterface.py
 
+touch /home/jouvencia/Documents/runUserInterface.desktop
+
+echo "[Desktop Entry]
+Name=LXTerminal
+Type=Application
+Exec=/home/jouvencia/Documents/runUserInterface.py
+" > /home/jouvencia/Documents/runUserInterface.desktop
+
+cp /home/jouvencia/Documents/runUserInterface.desktop /etc/xdg/autostart/runUserInterface.desktop
+touch ~/.config/autostart
+echo "[Desktop Entry]
+Name=LXTerminal
+Type=Application
+Exec=/home/jouvencia/Documents/runUserInterface.py
+" > ~/.config/autostart
+
+
 #Creation du script lançant un container dans le cas d'un reboot
 
 touch /home/jouvencia/Documents/runOnStartup.py
@@ -46,7 +63,6 @@ touch initJouvenciaScript
 echo "#!/bin/bash
 if [[ '$(docker images -q roboticia/nnvision_jetson_nano 2> /dev/null)' ]]; then
     echo 'a new image already exists'
-    sleep 30
     python3 /home/jouvencia/Documents/runUserInterface.py
     python3 /home/jouvencia/Documents/runOnStartup.py
 else
