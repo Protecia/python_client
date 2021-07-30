@@ -1,3 +1,24 @@
+#Création d'un script lancant l'interface utilisateur
+
+touch /home/jouvencia/Documents/runUserInterface.py
+
+echo "#!/usr/bin/env python3
+import os
+import json
+import webbrowser
+import subprocess
+with open('/home/nnvision/conf/conf.json') as n:
+    keyLoader = json.load(n)
+
+firefox = '/usr/bin/firefox %s'
+key = keyLoader["'"'"key"'"'"]
+os.system('export DISPLAY=:1')
+subprocess.run(['/usr/bin/chromium-browser', '--no-sandbox', '--kiosk', 'https://mdm.jouvencia.net/profile/', key])
+
+
+" > /home/jouvencia/Documents/runUserInterface.py
+chmod +x /home/jouvencia/Documents/runUserInterface.py
+
 #Creation du script lançant un container dans le cas d'un reboot
 
 touch /home/jouvencia/Documents/runOnStartup.py
@@ -25,6 +46,8 @@ touch initJouvenciaScript
 echo "#!/bin/bash
 if [[ '$(docker images -q roboticia/nnvision_jetson_nano 2> /dev/null)' ]]; then
     echo 'a new image already exists'
+    sleep 30
+    python3 /home/jouvencia/Documents/runUserInterface.py
     python3 /home/jouvencia/Documents/runOnStartup.py
 else
     cd
@@ -122,15 +145,14 @@ echo "*/2 * * * *  root /home/jouvencia/Documents/updateScript.py > /home/jouven
 
 cd /home/jouvencia/Documents
 touch rebootScript
-echo "
-#!/bin/bash
+echo '#!/bin/bash
 
 reboot=$(jq -r .reboot /home/nnvision/conf/docker.json )
-if [[ reboot == 'true' ]]; then
+if [[ reboot == '"'"'true'"'"' ]]; then
     sleep 200
     reboot
 
-fi" > /home/jouvencia/Documents/rebootScript
+fi' > /home/jouvencia/Documents/rebootScript
 
 echo "*/5 * * * *  root /home/jouvencia/Documents/rebootScript
 #
@@ -143,6 +165,7 @@ echo $version
 echo $versionUpdate
 
 #Set up de l'UX/UI
-
-export DISPLAY=:1
+apt install crudini
+crudini --set /etc/gdm3/custom.conf daemon AutomaticLoginEnable true
+crudini --set /etc/gdm3/custom.conf daemon AutomaticLogin jouvencia
 gsettings set org.gnome.desktop.screensaver lock-enabled false
