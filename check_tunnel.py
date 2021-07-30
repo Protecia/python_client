@@ -6,7 +6,7 @@ Created on Fri Jun  5 19:31:50 2020
 """
 import socket
 import time
-import settings.settings as settings
+import settings
 import psutil
 import subprocess
 import json

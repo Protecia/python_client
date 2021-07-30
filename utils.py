@@ -1,4 +1,4 @@
-import settings.settings as settings
+import settings
 import json
 
 

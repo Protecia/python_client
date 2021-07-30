@@ -11,7 +11,7 @@ import requests
 import cv2
 import numpy as np
 from threading import Thread, Lock
-import settings.settings as settings
+import settings
 import os
 import darknet as dn
 from log import Logger

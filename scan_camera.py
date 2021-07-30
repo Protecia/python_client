@@ -6,7 +6,7 @@ Created on Sat Dec  7 11:48:41 2019
 """
 
 import json
-import settings.settings as settings
+import settings
 import requests
 from onvif import ONVIFCamera
 from onvif.exceptions import ONVIFError

@@ -5,7 +5,7 @@ Created on Tue Sep 15 11:37:59 2020
 @author: julien
 """
 import requests
-import settings.settings as settings
+import settings
 from log import Logger
 import time
 import json

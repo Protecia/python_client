@@ -13,7 +13,7 @@ import scan_camera as sc
 import upload as up
 from video import http_serve
 from install_cron import install_rec_backup_cron, install_check_tunnel_cron
-import settings.settings as settings
+import settings
 import requests
 import subprocess
 import web_camera
