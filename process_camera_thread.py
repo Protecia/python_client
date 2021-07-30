@@ -211,6 +211,7 @@ class ProcessCamera(Thread):
                         self.running_rtsp = True
             # *************************************************************************************
             t = time.time()
+            self.logger.debug(f'Q_img is  {self.Q_img.qsize()}')
             if self.request_OK and self.Q_img.qsize() < settings.QUEUE_SIZE:
                 with self.lock:
                     arr = self.frame.copy()
