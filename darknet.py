@@ -24,7 +24,7 @@ Original *nix 2.7: https://github.com/pjreddie/darknet/blob/0f110834f4e18b30d5f1
 from ctypes import *
 import random
 import os
-from settings import settings
+import settings
 
 
 class BOX(Structure):
