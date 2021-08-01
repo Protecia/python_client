@@ -12,7 +12,7 @@ import shlex
 import time
 import secrets
 from threading import Thread
-from settings import settings
+import settings
 from log import Logger
 import json
 import os

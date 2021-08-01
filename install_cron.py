@@ -6,7 +6,7 @@ Created on Sat Apr 11 17:56:13 2020
 """
 from crontab import CronTab
 import os
-from settings import settings
+import settings
 
 
 # install cron for backup rec

@@ -7,7 +7,7 @@ Created on Sun Dec 22 11:11:54 2019
 import logging
 from logging.handlers import RotatingFileHandler
 import os
-from settings import settings
+import settings
 import sys
 # ------------------------------------------------------------------------------
 # a simple config to create a file log - change the level to warning in
