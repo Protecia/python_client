@@ -237,12 +237,12 @@ class ProcessCamera(Thread):
                 result_filtered, result_filtered_true  = self.check_thresh(result_darknet)
                 # process image
                 if self.cam['reso']:
-                    if arr.shape[0] != self.cam['height'] or arr.shape[1]!=self.cam['width']:
+                    if arr.shape[0] != self.cam['height'] or arr.shape[1] != self.cam['width']:
                         arr = cv2.resize(arr, (self.cam['width'], self.cam['height']), interpolation = cv2.INTER_CUBIC)
                 img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
                 # if gueue free
                 if self.Q_img_real.qsize() < 1:
-                    self.logger.info(f'camera state : {self.camera_state.isSet()} / cam : {self.cam["name"]}')
+                    self.logger.info(f'camera state : {self.camera_state[self.cam["id"]]} / cam : {self.cam["name"]}')
                     # if on page camera HD
                     if EtoB(self.camera_state[self.cam['id']][1]):
                         resize_factor = self.cam['max_width_rtime_HD']/arr.shape[1]
