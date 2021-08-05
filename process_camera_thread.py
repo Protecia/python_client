@@ -228,7 +228,7 @@ class ProcessCamera(Thread):
                     result_darknet = [r for r in result_dict['all'].result() if r[0] not in self.black_list]
                     result_dict.pop('all')
                 else:
-                    result_darknet=[]
+                    result_darknet = []
                 for key, partial_result in result_dict.items():
                     result_darknet += partial_result.result()
                 self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
@@ -238,11 +238,11 @@ class ProcessCamera(Thread):
                 # process image
                 if self.cam['reso']:
                     if arr.shape[0] != self.cam['height'] or arr.shape[1]!=self.cam['width']:
-                        arr = cv2.resize(arr,(self.cam['width'], self.cam['height']), interpolation = cv2.INTER_CUBIC)
+                        arr = cv2.resize(arr, (self.cam['width'], self.cam['height']), interpolation = cv2.INTER_CUBIC)
                 img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
                 # if gueue free
                 if self.Q_img_real.qsize() < 1:
-                    self.logger.info(f'camera state : {self.camera_state.is_set()} / cam : {self.cam["name"]}')
+                    self.logger.info(f'camera state : {self.camera_state.isSet()} / cam : {self.cam["name"]}')
                     # if on page camera HD
                     if EtoB(self.camera_state[self.cam['id']][1]):
                         resize_factor = self.cam['max_width_rtime_HD']/arr.shape[1]
