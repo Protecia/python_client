@@ -124,7 +124,7 @@ class Cameras(object):
                                  index, i in enumerate(value)]
 
                             # write the change for reboot and docker version
-                            with open(settings.INSTALL_PATH + '/settings/docker.json', 'w') as conf_json:
+                            with open(settings.INSTALL_PATH + '/conf/docker.json', 'w') as conf_json:
                                 docker_json = {key: state[key] for key in ['tunnel_port', 'docker_version', 'reboot']}
                                 json.dump(docker_json, conf_json)
                                 logger.warning(f'Receiving  json docker :  {docker_json}')

@@ -42,9 +42,9 @@ def conf():
                           timeout=40)
         data = json.loads(r.text)
         if data.get('key', False):
-            with open(settings.INSTALL_PATH + '/settings/conf.json', 'w') as conf_json:
+            with open(settings.INSTALL_PATH + '/conf/conf.json', 'w') as conf_json:
                 json.dump({key: data[key] for key in ['cp', 'city', 'key', 'scan_camera', 'scan']}, conf_json)
-            with open(settings.INSTALL_PATH + '/settings/docker.json', 'w') as docker_json:
+            with open(settings.INSTALL_PATH + '/conf/docker.json', 'w') as docker_json:
                 json.dump({key: data[key] for key in ['tunnel_port', 'docker_version', 'reboot']}, docker_json)
                 logger.warning(f'Receiving  conf :  {r.text}')
             return True
