@@ -2,7 +2,7 @@ from ctypes import *
 import math
 import random
 import numpy as np
-from settings import settings
+import settings
 
 def sample(probs):
     s = sum(probs)

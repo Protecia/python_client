@@ -12,54 +12,58 @@ import shlex
 import time
 import secrets
 from threading import Thread
-from settings import settings
+import settings
 from log import Logger
 import json
 import os
 import cherrypy
 
-logger = Logger('video',settings.VIDEO_LOG).run()
+logger = Logger('video', settings.VIDEO_LOG).run()
 
 
 class RecCamera(object):
     def __init__(self, E_video):
         self.update = E_video
         Thread(target=self.update_cam).start()
+        self.cameras = None
+
     def update_cam(self):
-        while True :
+        while True:
             self.update.wait()
             with open('camera/camera.json', 'r') as json_file:
-               cameras = json.load(json_file)
+                cameras = json.load(json_file)
             self.cameras = dict((item['id'], item) for item in cameras if item['active'])
-            for k,v in self.cameras.items() :
-                if not 'rec' in v.keys():
+            for k, v in self.cameras.items():
+                if 'rec' not in v.keys():
                     v['rec'] = False
             logger.info('Update cameras')
             self.update.clear()
     
-    def rec_cam(self,cam_id):
+    def rec_cam(self, cam_id):
         if not self.cameras[cam_id]['rec']:
-            self.cameras[cam_id]['rec']=True
+            self.cameras[cam_id]['rec'] = True
             token = secrets.token_urlsafe()
-            cmd = 'ffmpeg  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/live/{}.mp4'.format(self.cameras[cam_id]['rtsp'], token )
+            cmd = 'ffmpeg  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/live/{}.mp4'.format(
+                self.cameras[cam_id]['rtsp'], token)
             p = Popen(shlex.split(cmd))
             logger.info('Send ffmpeg process with cmd {}'.format(cmd))
-            self.cameras[cam_id]['rec_time']=time.time()
+            self.cameras[cam_id]['rec_time'] = time.time()
             # thread to kill process
             t = Thread(target=self.kill_process, args=(cam_id, p))
             t.start()
-            self.cameras[cam_id]['token']=token
-        else :
-            self.cameras[cam_id]['rec_time']=time.time()
+            self.cameras[cam_id]['token'] = token
+        else:
+            self.cameras[cam_id]['rec_time'] = time.time()
         return self.cameras[cam_id]['token']
+
     def kill_process(self, cam_id, p):
         self.check_space(5)
-        i=0
-        while True :
-            if time.time()-self.cameras[cam_id]['rec_time'] > settings.VIDEO_REC_TIME or i > 3600 : #max 30 mn per video
-                self.cameras[cam_id]['rec'] =False
+        i = 0
+        while True:
+            if time.time()-self.cameras[cam_id]['rec_time'] > settings.VIDEO_REC_TIME or i > 3600:  # max 30mn per video
+                self.cameras[cam_id]['rec'] = False
                 logger.info('kill process {} for cam {}'.format(p, cam_id))
-                try :
+                try:
                     p.terminate()
                     time.sleep(2)
                     p.kill()
@@ -71,56 +75,69 @@ class RecCamera(object):
                     break
             i +=1
             time.sleep(0.5)
-    def check_space(self,G):
-    ##### check the space on disk to respect the quota #######
+
+    def check_space(self, G):
+        # check the space on disk to respect the quota
         path = os.path.join(settings.INSTALL_PATH,'camera/live')
         size = int(check_output(['du','-s', path]).split()[0].decode('utf-8'))
         logger.info('check size {} Go'.format(size/1000000))
         if size>settings.VIDEO_SPACE*1000000:
             files = [os.path.join(path, f) for f in os.listdir(path)] # add path to each file
             files.sort(key=lambda x: os.path.getmtime(x))
-            while settings.VIDEO_SPACE*1000000-int(check_output(['du','-s', path]).split()[0].decode('utf-8')) < G*1000000 :
+            while settings.VIDEO_SPACE*1000000-int(check_output(['du', '-s', path]).split()[0].decode('utf-8')) < G*1000000 :
                 os.remove(files[0])
                 del(files[0])
 
 
 def rec_all_cam():
     repeat = True
-    path = os.path.join(settings.INSTALL_PATH,'camera/secu')
-    files = [os.path.join(path,f) for f in os.listdir(path) if (time.time()-os.path.getmtime(os.path.join(path, f)))/3600/24 > 2 ]
+    path = os.path.join(settings.INSTALL_PATH, 'camera/secu')
+    files = [os.path.join(path, f) for f in os.listdir(path) if
+             (time.time()-os.path.getmtime(os.path.join(path, f)))/3600/24 > settings.RECORDED_DELAY]
     for f in files:
         os.remove(f)
-    while repeat :
+    while repeat:  # Try 3 times to open the rtsp in case the camera_from_server is writting
         i = 0
-        try :
-            with open('camera/camera.json', 'r') as json_file:
+        try:
+            with open('camera/camera_from_server.json', 'r') as json_file:
                 cameras = json.load(json_file)
-            cameras = dict((item['id'], item) for item in cameras if item['active'])
+                list_rtsp = []
+                for cam in [(v['uri'], v['username'], v['password']) for v in cameras.values() if v['active']]:
+                    # take the first rtsp as default
+                    list_rtsp.append((list(cam[0].values())[0]['id'], list(cam[0].values())[0]['rtsp'], cam[1], cam[2]))
+                    logger.info(f'list_rtsp -> {list_rtsp}')
+                    for uri in cam[0].values():
+                        logger.info(f'uri -> {uri}')
+                        if uri['use']:
+                            list_rtsp[-1] = (uri['id'], uri['rtsp'], cam[1], cam[2])
+                            break
             repeat = False
-        except json.decoder.JSONDecodeError :
-            pass
-            i+=1
-            if i > 3 :
-                break
-    for k,v in cameras.items():
-        cmd = '{}  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/secu/{}.mp4'.format(settings.FFMPEG, v['rtsp'], 'backup_'+datetime.now().strftime("%H")+'_cam'+str(k))
+        except json.decoder.JSONDecodeError:
+            i += 1
+            repeat = False if i > 3 else True
+    for rtsp in list_rtsp:
+        protocole = rtsp[1].split('//')[0] + "//"
+        credential = rtsp[2] + ":" + rtsp[3]
+        url = rtsp[1].split('//')[1]
+        cmd = f'{settings.FFMPEG}  -nostats -loglevel 0 -y -i  {protocole + credential + "@" + url} -vcodec copy' \
+              f' camera/secu/{"backup_" + datetime.now().strftime("%d:%m:%H:%M") + "_cam" + str(rtsp[0]) + ".mp4"}'
         Popen(shlex.split(cmd))
         logger.warning('ffmpeg rec on  {}'.format(cmd))
 
 
 def kill_ffmpeg_process():
     for p in ps.process_iter():
-        try :
+        try:
             cmd = ''.join(p.cmdline())
-            if 'ffmpeg' in cmd and 'backup' in cmd :
+            if 'ffmpeg' in cmd and 'backup' in cmd:
                 p.terminate()
                 logger.warning('terminate process {}'.format(cmd))
                 time.sleep(2)
                 p.kill()
-        except ps.AccessDenied :
+        except ps.AccessDenied:
             pass
             return False
-        except ps.NoSuchProcess :
+        except ps.NoSuchProcess:
             pass
     return True
 
@@ -131,16 +148,16 @@ def http_serve(port):
     
     def check_token(token):
         for i in range(2):
-            try :
-                with open(settings.INSTALL_PATH+'/token', 'r') as f:
+            try:
+                with open(settings.INSTALL_PATH+'/settings/video.json', 'r') as f:
                     data = json.load(f)
                 if token == data['token1'] or token == data['token2']:
                     return True
-                else :
+                else:
                     time.sleep(1)  
-            except (FileNotFoundError, json.JSONDecodeError) :
+            except (FileNotFoundError, json.JSONDecodeError):
                 pass
-                if i==1 :
+                if i == 1:
                     return False         
         return False
 
@@ -157,7 +174,7 @@ def http_serve(port):
                 return cherrypy.lib.static.serve_file(os.path.join(static_dir_secu, name))
 
         @cherrypy.expose
-        def video(self,v,l, token):
+        def video(self, v, l, token):
             page = v.split('.')
             video_link = page[0]+'?name='+page[1]+'.mp4&token='+token
             back = 'http://'+'/'.join(l.split('_')) 
@@ -235,9 +252,11 @@ def http_serve(port):
     
     cherrypy.quickstart(Root(), '/', config=conf)  # ..and LAUNCH ! :)
 
+
 def main():
     kill_ffmpeg_process()
     rec_all_cam()
+
 
 # start the threads
 if __name__ == '__main__':

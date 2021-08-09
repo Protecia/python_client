@@ -5,11 +5,12 @@ Created on Tue Sep 15 11:37:59 2020
 @author: julien
 """
 import requests
-import settings.settings as settings
+import settings
 from log import Logger
 import time
 import json
 import os
+from utils import get_conf
 
 
 logger = Logger(__name__, level=settings.PING_LOG).run()
@@ -21,7 +22,7 @@ def set_token(token1, token2):
 def getState(E, camera_state):
     while True:
         try :
-            r = requests.post(settings.SERVER+"getState", data = {'key': settings.KEY, }, timeout= 40 )
+            r = requests.post(settings.SERVER+"getState", data = {'key': get_conf('key') }, timeout= 40 )
             data = json.loads(r.text)
             logger.warning('getState answer : {}'.format(data))
             if data['reboot'] and settings.HARDWARE=='nano':
