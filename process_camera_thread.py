@@ -194,7 +194,7 @@ class ProcessCamera(Thread):
                         self.logger.debug(f'bytes1  {imgb}')
                         imgb = cv2.imdecode(imgb, 1)
                         self.logger.debug(f'bytes2  {imgb}')
-                        self.frame = imgb
+                        #self.frame = imgb
                         self.logger.info(f'frame with a len of {len(self.frame) if self.frame else "None"}')
                         if not self.frame:
                             self.request_OK = False
