@@ -189,7 +189,10 @@ class ProcessCamera(Thread):
                     if r.status_code == 200 and len(r.content) > 1000:
                         self.logger.info(f'content of request is len  {len(r.content)}')
                         self.frame = cv2.imdecode(np.asarray(bytearray(r.content), dtype="uint8"), 1)
-                        self.logger.info(f'frame with a len of {len(self.frame) if self.frame else "None" }')
+                        self.logger.info(f'frame with a len of {len(self.frame) if self.frame else "None"}')
+                        if not self.frame:
+                            self.request_OK = False
+                            self.logger.warning('bad camera download frame is None on {} \n'.format(self.cam['name']))
                     else:
                         self.request_OK = False
                         self.logger.warning('bad camera download on {} \n'.format(self.cam['name']))
