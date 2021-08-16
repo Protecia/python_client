@@ -110,7 +110,7 @@ class ProcessCamera(Thread):
         self.lock = Lock()
         self.tlock = tlock
         self.black_list = [i.encode() for i in settings.DARKNET_CONF['all']['RESTRICT']]
-        self.logger = Logger('process_camera_thread__'+self.cam["id"]+'--'+self.cam["name"],
+        self.logger = Logger('process_camera_thread__'+str(self.cam["id"])+'--'+self.cam["name"],
                              level=settings.PROCESS_CAMERA_LOG).run()
         self.Q_img = q_img
         self.Q_result = q_result
