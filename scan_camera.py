@@ -167,6 +167,7 @@ def check_auth(dict_cam_ip, user, passwd, auth):
     # result of the check chang the camera status
     dict_cam_ip['active_automatic'] = True if check else False
 
+
 def check_cam(cam_ip_dict, users_dict):
     """Test connection for all ip/port.
         Returns:

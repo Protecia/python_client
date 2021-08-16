@@ -18,7 +18,7 @@ from log import Logger
 import secrets
 import concurrent.futures
 
-logger = Logger('process_camera_thread', level=settings.PROCESS_CAMERA_LOG).run()
+
 
 threated_requests = settings.THREATED_REQUESTS
 path = settings.DARKNET_PATH
@@ -110,7 +110,8 @@ class ProcessCamera(Thread):
         self.lock = Lock()
         self.tlock = tlock
         self.black_list = [i.encode() for i in settings.DARKNET_CONF['all']['RESTRICT']]
-        self.logger = logger
+        self.logger = Logger('process_camera_thread__'+self.cam["id"]+'--'+self.cam["name"],
+                             level=settings.PROCESS_CAMERA_LOG).run()
         self.Q_img = q_img
         self.Q_result = q_result
         self.result_DB = []
