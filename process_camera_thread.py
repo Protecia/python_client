@@ -186,15 +186,15 @@ class ProcessCamera(Thread):
                     t = time.time()
                     r = requests.get(self.cam['http'], auth=self.auth, stream=True, timeout=10)
                     self.logger.info(f'get http image {self.cam["http"]} in  {time.time()-t}s')
-                    if r.status_code == 200 and len(r.content) > 1000:
+                    if r.status_code == 200 and len(r.content) > 11000:
                         self.logger.info(f'content of request is len  {len(r.content)}')
                         imgb = bytearray(r.content)
                         self.logger.debug(f'bytes0  {imgb}')
                         imgb = np.asarray(imgb, dtype="uint8")
                         self.logger.debug(f'bytes1  {imgb}')
                         imgb = cv2.imdecode(imgb, 1)
-                        self.logger.debug(f'bytes2  {imgb}')
-                        #self.frame = imgb
+                        #self.logger.debug(f'bytes2  {imgb}')
+                        self.frame = imgb
                         self.logger.info(f'frame with a len of {len(self.frame) if self.frame else "None"}')
                         if not self.frame:
                             self.request_OK = False
