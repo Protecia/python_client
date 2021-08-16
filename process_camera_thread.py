@@ -188,6 +188,7 @@ class ProcessCamera(Thread):
                     self.logger.info(f'get http image {self.cam["http"]} in  {time.time()-t}s')
                     if r.status_code == 200 and len(r.content) > 1000:
                         self.frame = cv2.imdecode(np.asarray(bytearray(r.content), dtype="uint8"), 1)
+                        self.logger.info(f'frame with a len of {len(self.frame)}')
                     else:
                         self.request_OK = False
                         self.logger.warning('bad camera download on {} \n'.format(self.cam['name']))
@@ -215,7 +216,7 @@ class ProcessCamera(Thread):
             self.logger.debug(f'Q_img is  {self.Q_img.qsize()}')
             if self.request_OK and self.Q_img.qsize() < settings.QUEUE_SIZE:
                 with self.lock:
-                    arr = self.frame.copy()
+                    arr = self.frame.copy() # this part is excepting when self.frame is None
                 th = self.cam['threshold']*(1-(float(self.cam['gap'])/100))
                 self.logger.debug('thresh set to {}'.format(th))
                 frame_rgb = cv2.cvtColor(arr, cv2.COLOR_BGR2RGB)
