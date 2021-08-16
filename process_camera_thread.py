@@ -187,8 +187,9 @@ class ProcessCamera(Thread):
                     r = requests.get(self.cam['http'], auth=self.auth, stream=True, timeout=10)
                     self.logger.info(f'get http image {self.cam["http"]} in  {time.time()-t}s')
                     if r.status_code == 200 and len(r.content) > 1000:
+                        self.logger.info(f'content of request is len  {len(r.content)}')
                         self.frame = cv2.imdecode(np.asarray(bytearray(r.content), dtype="uint8"), 1)
-                        self.logger.info(f'frame with a len of {len(self.frame)}')
+                        self.logger.info(f'frame with a len of {len(self.frame) if self.frame else "None" }')
                     else:
                         self.request_OK = False
                         self.logger.warning('bad camera download on {} \n'.format(self.cam['name']))
