@@ -185,3 +185,4 @@ apt install crudini
 crudini --set /etc/gdm3/custom.conf daemon AutomaticLoginEnable true
 crudini --set /etc/gdm3/custom.conf daemon AutomaticLogin jouvencia
 gsettings set org.gnome.desktop.screensaver lock-enabled false
+chmod -x $(type -p gnome-keyring-daemon)
