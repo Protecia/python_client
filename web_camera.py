@@ -107,7 +107,7 @@ class Cameras(object):
                         logger.warning(f'Receive change state -> {state}')
                         if ping:
                             if state['token1']:
-                                with open(settings.INSTALL_PATH + '/settings/video.json', 'w') as f:
+                                with open(settings.INSTALL_PATH + '/conf/video.json', 'w') as f:
                                     json.dump({'token1': state['token1'], 'token2': state['token2']}, f)
                                     logger.warning(f"video.json has been written :"
                                                    f"token1: {state['token1']}, token2: {state['token2']}")
