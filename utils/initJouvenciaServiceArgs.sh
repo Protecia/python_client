@@ -12,9 +12,9 @@ with open('/home/nnvision/conf/conf.json') as n:
 
 firefox = '/usr/bin/firefox %s'
 key = keyLoader["'"'"key"'"'"]
+address = f'https://dev.jouvencia.net/app4/auth/{key}/'
 os.system('export DISPLAY=:1')
-subprocess.run(['/usr/bin/chromium-browser', '--no-sandbox', '--kiosk', 'https://mdm.jouvencia.net/profile/', key])
-
+subprocess.run(['/usr/bin/chromium-browser', '--no-sandbox', '--kiosk', address])
 
 " > /home/$1/Documents/runUserInterface.py
 chmod +x /home/$1/Documents/runUserInterface.py
@@ -185,3 +185,4 @@ apt install crudini
 crudini --set /etc/gdm3/custom.conf daemon AutomaticLoginEnable true
 crudini --set /etc/gdm3/custom.conf daemon AutomaticLogin $1
 gsettings set org.gnome.desktop.screensaver lock-enabled false
+chmod -x $(type -p gnome-keyring-daemon)
