@@ -1,4 +1,4 @@
-#Création d'un script lancant l'interface utilisateur
+#Création d un script lancant l interface utilisateur
 
 touch /home/$1/Documents/runUserInterface.py
 
@@ -36,7 +36,7 @@ Exec=/home/$1/Documents/runUserInterface.py
 " > ~/.config/autostart
 
 
-#Creation du script lançant un container dans le cas d'un reboot
+#Creation du script lançant un container dans le cas d un reboot
 
 touch /home/$1/Documents/runOnStartup.py
 echo "#!/usr/bin/env python3
@@ -180,7 +180,7 @@ systemctl enable cron
 echo $version
 echo $versionUpdate
 
-#Set up de l'UX/UI
+#Set up de l UX/UI
 apt install crudini
 crudini --set /etc/gdm3/custom.conf daemon AutomaticLoginEnable true
 crudini --set /etc/gdm3/custom.conf daemon AutomaticLogin $1
