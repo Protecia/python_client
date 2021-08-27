@@ -1,6 +1,6 @@
 #Création d'un script lancant l'interface utilisateur
 
-touch /home/$1/Documents/runUserInterface.py
+touch /home/jouvencia/Documents/runUserInterface.py
 
 echo "#!/usr/bin/env python3
 import os
@@ -12,34 +12,33 @@ with open('/home/nnvision/conf/conf.json') as n:
 
 firefox = '/usr/bin/firefox %s'
 key = keyLoader["'"'"key"'"'"]
-address = f'https://dev.jouvencia.net/app4/auth/{key}/'
 os.system('export DISPLAY=:1')
-subprocess.run(['/usr/bin/chromium-browser', '--no-sandbox', '--kiosk', address])
+subprocess.run(['/usr/bin/chromium-browser', '--no-sandbox', '--kiosk', 'https://mdm.jouvencia.net/profile/', key])
 
 
-" > /home/$1/Documents/runUserInterface.py
-chmod +x /home/$1/Documents/runUserInterface.py
+" > /home/jouvencia/Documents/runUserInterface.py
+chmod +x /home/jouvencia/Documents/runUserInterface.py
 
-touch /home/$1/Documents/runUserInterface.desktop
+touch /home/jouvencia/Documents/runUserInterface.desktop
 
 echo "[Desktop Entry]
 Name=LXTerminal
 Type=Application
-Exec=/home/$1/Documents/runUserInterface.py
-" > /home/$1/Documents/runUserInterface.desktop
+Exec=/home/jouvencia/Documents/runUserInterface.py
+" > /home/jouvencia/Documents/runUserInterface.desktop
 
-cp /home/$1/Documents/runUserInterface.desktop /etc/xdg/autostart/runUserInterface.desktop
+cp /home/jouvencia/Documents/runUserInterface.desktop /etc/xdg/autostart/runUserInterface.desktop
 touch ~/.config/autostart
 echo "[Desktop Entry]
 Name=LXTerminal
 Type=Application
-Exec=/home/$1/Documents/runUserInterface.py
+Exec=/home/jouvencia/Documents/runUserInterface.py
 " > ~/.config/autostart
 
 
 #Creation du script lançant un container dans le cas d'un reboot
 
-touch /home/$1/Documents/runOnStartup.py
+touch /home/jouvencia/Documents/runOnStartup.py
 echo "#!/usr/bin/env python3
 import subprocess
 import json
@@ -52,20 +51,20 @@ n = update["'"'"docker_version"'"'"]
 pullName='roboticia/nnvision_jetson_nano:'+str(n)
 dockrun='docker run -d --restart unless-stopped --entrypoint /NNvision/python_client/start.sh --gpus=all --name nnvision --net=host -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video -v /home/nnvision/conf:/NNvision/python_client/settings -v /usr/src/jetson_multimedia_api:/usr/src/jetson_multimedia_api -v nn_camera:/NNvision/python_client/camera -v /proc/device-tree/chosen:/NNvision/uuid ' + str(pullName)
 subprocess.run(dockrun.split(' '))
-print('Container started')" > /home/$1/Documents/runOnStartup.py
-chmod +x /home/$1/Documents/runOnStartup.py
+print('Container started')" > /home/jouvencia/Documents/runOnStartup.py
+chmod +x /home/jouvencia/Documents/runOnStartup.py
 
 #Creation du script lancé par le service
 systemctl daemon-reload
 cd
-cd /home/$1/Documents/
+cd /home/jouvencia/Documents/
 rm initJouvenciaScript
 touch initJouvenciaScript
 echo "#!/bin/bash
 if [[ '$(docker images -q roboticia/nnvision_jetson_nano 2> /dev/null)' ]]; then
     echo 'a new image already exists'
-    python3 /home/$1/Documents/runUserInterface.py
-    python3 /home/$1/Documents/runOnStartup.py
+    python3 /home/jouvencia/Documents/runUserInterface.py
+    python3 /home/jouvencia/Documents/runOnStartup.py
 else
     cd
     rm pass.txt
@@ -82,7 +81,7 @@ else
                 -v nn_camera:/NNvision/python_client/camera \
                 -v /proc/device-tree/chosen:/NNvision/uuid \
 fi
-" > /home/$1/Documents/initJouvenciaScript
+" > /home/jouvencia/Documents/initJouvenciaScript
 chmod +x initJouvenciaScript
 
 #Creation du service qui lance le script
@@ -98,9 +97,9 @@ After=network-online.target
 
 [Service]
 Type=simple
-User=$1
-WorkingDirectory=/home/$1/Documents
-ExecStart=/home/$1/Documents/initJouvenciaScript
+User=jouvencia
+WorkingDirectory=/home/jouvencia/Documents
+ExecStart=/home/jouvencia/Documents/initJouvenciaScript
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/initJouvenciaService.service
@@ -112,7 +111,7 @@ systemctl enable initJouvenciaService.service
 #Initialisation du cron vérifiant la version actuelle avec la version à jour
 
 apt install jq
-cd /home/$1/Documents
+cd /home/jouvencia/Documents
 touch updateScript.py
 touch login
 echo "#!/bin/bash
@@ -121,8 +120,8 @@ rm pass.txt
 touch pass.txt
 echo 'aicnevuoj*26' > pass.txt
 cat ~/pass.txt | docker login --username yayab42 --password-stdin
-rm pass.txt" > /home/$1/Documents/login
-chmod +x /home/$1/Documents/login
+rm pass.txt" > /home/jouvencia/Documents/login
+chmod +x /home/jouvencia/Documents/login
 echo "#!/usr/bin/env python3
 import subprocess
 import json
@@ -142,25 +141,25 @@ if str(n) != str(version):
     print('Container stopped')
     subprocess.run(['docker', 'image', 'rm', name])
     print('Image rm')
-    subprocess.run(['/home/$1/Documents/login'])
+    subprocess.run(['/home/jouvencia/Documents/login'])
     print('login succeed')
     subprocess.run(['docker','pull', pullName])
     print('Pull succeed')
     dockrun='docker run -d --restart unless-stopped --entrypoint /NNvision/python_client/start.sh --gpus=all --name nnvision --net=host -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video -v /home/nnvision/conf:/NNvision/python_client/settings -v /usr/src/jetson_multimedia_api:/usr/src/jetson_multimedia_api -v nn_camera:/NNvision/python_client/camera -v /proc/device-tree/chosen:/NNvision/uuid ' + str(pullName)
     subprocess.run(dockrun.split(' '))
     print('Container started')
-" > /home/$1/Documents/updateScript.py
-chmod +x /home/$1/Documents/updateScript.py
+" > /home/jouvencia/Documents/updateScript.py
+chmod +x /home/jouvencia/Documents/updateScript.py
 
 
 
-echo "*/2 * * * *  root /home/$1/Documents/updateScript.py > /home/$1/Documents/logs.txt 2>&1&" >> /etc/crontab
+echo "*/2 * * * *  root /home/jouvencia/Documents/updateScript.py > /home/jouvencia/Documents/logs.txt 2>&1&" >> /etc/crontab
 
 
 
 #Initialisation du cron vérifiant si la jetson doit reboot
 
-cd /home/$1/Documents
+cd /home/jouvencia/Documents
 touch rebootScript
 echo '#!/bin/bash
 
@@ -169,13 +168,13 @@ if [[ reboot == '"'"'true'"'"' ]]; then
     sleep 200
     reboot
 
-fi' > /home/$1/Documents/rebootScript
+fi' > /home/jouvencia/Documents/rebootScript
 
-echo "*/5 * * * *  root /home/$1/Documents/rebootScript
+echo "*/5 * * * *  root /home/jouvencia/Documents/rebootScript
 #
 " >> /etc/crontab
 
-chmod +x /home/$1/Documents/rebootScript
+chmod +x /home/jouvencia/Documents/rebootScript
 
 systemctl enable cron
 echo $version
@@ -184,6 +183,6 @@ echo $versionUpdate
 #Set up de l'UX/UI
 apt install crudini
 crudini --set /etc/gdm3/custom.conf daemon AutomaticLoginEnable true
-crudini --set /etc/gdm3/custom.conf daemon AutomaticLogin $1
+crudini --set /etc/gdm3/custom.conf daemon AutomaticLogin jouvencia
 gsettings set org.gnome.desktop.screensaver lock-enabled false
 chmod -x $(type -p gnome-keyring-daemon)
