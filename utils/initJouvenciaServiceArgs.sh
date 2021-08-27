@@ -12,9 +12,9 @@ with open('/home/nnvision/conf/conf.json') as n:
 
 firefox = '/usr/bin/firefox %s'
 key = keyLoader["'"'"key"'"'"]
+address = f'https://dev.jouvencia.net/app4/auth/{key}/'
 os.system('export DISPLAY=:1')
-subprocess.run(['/usr/bin/chromium-browser', '--no-sandbox', '--kiosk', 'https://mdm.jouvencia.net/app4/auth/', key])
-
+subprocess.run(['/usr/bin/chromium-browser', '--no-sandbox', '--kiosk', address])
 
 " > /home/$1/Documents/runUserInterface.py
 chmod +x /home/$1/Documents/runUserInterface.py
