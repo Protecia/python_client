@@ -12,9 +12,9 @@ with open('/home/nnvision/conf/conf.json') as n:
 
 firefox = '/usr/bin/firefox %s'
 key = keyLoader["'"'"key"'"'"]
-address = f'https://dev.jouvencia.net/app4/auth/{key}/'
 os.system('export DISPLAY=:1')
-subprocess.run(['/usr/bin/chromium-browser', '--no-sandbox', '--kiosk', address])
+subprocess.run(['/usr/bin/chromium-browser', '--no-sandbox', '--kiosk', 'https://mdm.jouvencia.net/app4/auth/', key])
+
 
 " > /home/$1/Documents/runUserInterface.py
 chmod +x /home/$1/Documents/runUserInterface.py
@@ -72,7 +72,7 @@ else
     echo 'aicnevuoj*26' > pass.txt
     cat ~/pass.txt | docker login --username yayab42 --password-stdin
     rm pass.txt
-    docker pull roboticia/nnvision_jetson_nano:1.0
+    docker pull roboticia/nnvision_jetson_nano:0.2
     docker run  -d --restart unless-stopped --entrypoint /NNvision/python_client/start.sh --gpus=all --name nnvision --net=host \
                 -e NVIDIA_VISIBLE_DEVICES=all \
                 -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video  \
@@ -167,7 +167,7 @@ reboot=$(jq -r .reboot /home/nnvision/conf/docker.json )
 if [[ reboot == '"'"'true'"'"' ]]; then
     sleep 200
     reboot
-
+    
 fi' > /home/$1/Documents/rebootScript
 
 echo "*/5 * * * *  root /home/$1/Documents/rebootScript
