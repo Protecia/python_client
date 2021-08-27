@@ -1,7 +1,7 @@
 POUR UTILISER LE SCRIPT : 
 
 - Sudo chmod +x initJouvenciaService.sh
-- ./initJouvenciaService.sh {nom-de-la-machine}
+- sudo ./initJouvenciaService.sh {nom-de-la-machine}
 - Répondre oui aux demandes d'installation
 - Ignorer les erreurs
 - sudo reboot
