@@ -40,6 +40,7 @@ def conf():
         machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip('\x00')
         r = requests.post(settings.SERVER + "conf", data={'machine': machine_id, 'pass': settings.INIT_PASS},
                           timeout=40)
+        logger.warning(f'request :  {r.text}')
         data = json.loads(r.text)
         if data.get('key', False):
             with open(settings.INSTALL_PATH + '/conf/conf.json', 'w') as conf_json:
