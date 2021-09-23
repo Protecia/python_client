@@ -219,7 +219,9 @@ class ProcessCamera(Thread):
                             pass
                         self.logger.warning('rtsp not running on cam {}, so launch '.format(self.cam['name']))
                         self.thread_rtsp = Thread(target=self.grab)
+                        self.logger.warning(f'new thread define {self.thread_rtsp}')
                         self.thread_rtsp.start()
+                        self.logger.warning(f'new thread started')
                         self.running_rtsp = True
             # *************************************************************************************
             t = time.time()
