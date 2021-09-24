@@ -137,6 +137,7 @@ def main():
                         ready_cam = {**c, **uri}
                         cameras_state[c['id']] = [Event(), Event()]
                         p = pc.ProcessCamera(ready_cam, Q_result, Q_img, Q_img_real, tlock, cameras_state, e_state)
+                        p.daemon = True
                         list_thread.append(p)
                         p.start()
                         logger.warning(f'starting process camera on  : {ready_cam}')
