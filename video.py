@@ -102,14 +102,15 @@ def rec_all_cam():
             with open('camera/camera_from_server.json', 'r') as json_file:
                 cameras = json.load(json_file)
                 list_rtsp = []
-                for cam in [(v['uri'], v['username'], v['password']) for v in cameras.values() if v['active']]:
+                for cam in [(v['uri'], v['username'], v['password'], v['id']) for v in cameras.values() if v['active']]:
                     # take the first rtsp as default
-                    list_rtsp.append((list(cam[0].values())[0]['id'], list(cam[0].values())[0]['rtsp'], cam[1], cam[2]))
+                    list_rtsp.append((list(cam[0].values())[0]['id'], list(cam[0].values())[0]['rtsp'], cam[1], cam[2],
+                                      cam[3]))
                     logger.info(f'list_rtsp -> {list_rtsp}')
                     for uri in cam[0].values():
                         logger.info(f'uri -> {uri}')
                         if uri['use']:
-                            list_rtsp[-1] = (uri['id'], uri['rtsp'], cam[1], cam[2])
+                            list_rtsp[-1] = (uri['id'], uri['rtsp'], cam[1], cam[2], cam[3])
                             break
             repeat = False
         except json.decoder.JSONDecodeError:
@@ -120,7 +121,7 @@ def rec_all_cam():
         credential = rtsp[2] + ":" + rtsp[3]
         url = rtsp[1].split('//')[1]
         cmd = f'{settings.FFMPEG}  -nostats -loglevel 0 -y -i  {protocole + credential + "@" + url} -vcodec copy' \
-              f' camera/secu/{"backup_" + datetime.now().strftime("%d:%m:%H:%M") + "_cam" + str(rtsp[0]) + ".mp4"}'
+              f' camera/secu/{"backup_" + datetime.now().strftime("%d:%m:%H:%M") + "_cam" + str(rtsp[4]) + ".mp4"}'
         Popen(shlex.split(cmd))
         logger.warning('ffmpeg rec on  {}'.format(cmd))
 
@@ -177,7 +178,8 @@ def http_serve(port):
         def video(self, v, l, token):
             page = v.split('.')
             video_link = page[0]+'?name='+page[1]+'.mp4&token='+token
-            back = 'http://'+'/'.join(l.split('_')) 
+            back = 'http://'+'/'.join(l.split('_'))
+            back += '/'
             file = os.path.join(static_dir, 'camera', page[0], page[1]+'.mp4')
             if os.path.isfile(file):
                 return """
@@ -201,7 +203,7 @@ def http_serve(port):
                   </body>
                 </html>
 
-                """.format(back,video_link)
+                """.format(back, video_link)
             else:
                 return """
                 <!DOCTYPE html>
