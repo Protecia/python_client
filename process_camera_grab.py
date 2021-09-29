@@ -57,7 +57,7 @@ async def grab_http(cam, logger):
             frame = imgb
             logger.info(f'frame {frame}')
             #logger.info(f'frame with a len of {len(frame) if frame else "None"}')
-            if not frame:
+            if frame is None:
                 logger.warning('bad camera download frame is None on {} \n'.format(cam['name']))
                 return False
             else:
