@@ -55,7 +55,8 @@ async def grab_http(cam, logger):
             logger.debug(f'bytes1  {imgb}')
             imgb = cv2.imdecode(imgb, 1)
             frame = imgb
-            logger.info(f'frame with a len of {len(frame) if frame else "None"}')
+            logger.info(f'frame {frame}')
+            #logger.info(f'frame with a len of {len(frame) if frame else "None"}')
             if not frame:
                 logger.warning('bad camera download frame is None on {} \n'.format(cam['name']))
                 return False
