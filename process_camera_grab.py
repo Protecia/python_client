@@ -3,6 +3,8 @@ import requests
 import cv2
 import numpy as np
 from threading import Thread, Lock
+import httpx
+import aiohttp
 import settings
 import os
 import darknet as dn
@@ -34,15 +36,18 @@ class VideoCapture:
             return frame
 
 
-def grab_http(cam, logger):
+async def grab_http(cam, logger):
     if cam['auth_type'] == 'B':
-        auth = requests.auth.HTTPBasicAuth(cam['username'], cam['password'])
-    if cam['auth_type'] == 'D':
-        auth = requests.auth.HTTPDigestAuth(cam['username'], cam['password'])
+        auth = (cam['username'], cam['password'])
+    else:  # cam['auth_type'] == 'D'
+        auth = httpx.DigestAuth(cam['username'], cam['password'])
+    # A client with a 10s timeout for connecting, and a 10s timeout elsewhere.
+    timeout = httpx.Timeout(10.0, connect=10.0)
     try:
-        t = time.time()
-        r = requests.get(cam['http'], auth=auth, stream=True, timeout=10)
-        logger.info(f'get http image {cam["http"]} in  {time.time() - t}s')
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            t = time.time()
+            r = await client.get(cam['http'], auth=auth)
+            logger.info(f'get http image {cam["http"]} in  {time.time() - t}s')
         if r.status_code == 200 and len(r.content) > 11000:
             logger.info(f'content of request is len  {len(r.content)}')
             imgb = bytearray(r.content)
@@ -55,6 +60,8 @@ def grab_http(cam, logger):
             if not frame:
                 logger.warning('bad camera download frame is None on {} \n'.format(cam['name']))
                 return False
+            else:
+                return frame
         else:
             logger.warning('bad camera download on {} \n'.format(cam['name']))
             return False
