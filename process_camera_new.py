@@ -46,10 +46,13 @@ class ProcessCamera(Thread):
 
     async def task1(self):
         while self.running:
+            t = time.time()
             if self.cam['stream']:
                 self.frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
             else:
                 self.frame = await grab_http(self.cam, self.logger)
+            self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
+                             f" en {time.time() - t}s")
 
     async def task2(self):
         while self.running:
