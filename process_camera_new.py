@@ -30,16 +30,24 @@ class ProcessCamera(Thread):
         self.logger.info('running Thread')
         self.running = True
         asyncio.set_event_loop(self.loop)
-        if self.cam['stream']:
-            rtsp = self.cam['rtsp']
-            rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
-            self.vcap = cv2.VideoCapture(rtsp_login)
-        self.loop.run_until_complete(asyncio.gather(self.task1(), self.task2()))
+        while self.thread_running:
+            self.running = True
+            if self.cam['stream']:
+                if not self.vcap or not self.vcap.isOpened():
+                    rtsp = self.cam['rtsp']
+                    rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
+                    self.vcap = cv2.VideoCapture(rtsp_login)
+                task = [self.task1(), self.task2()]
+            else:
+                task = [self.task1()]
+            self.loop.run_until_complete(asyncio.gather(*task))
 
     async def task1(self):
         while self.running:
-            self.frame = await grab_http(self.cam, self.logger)
-            self.frame = await grab_rtsp(self.vcap, self.loop, self.logger)
+            if self.cam['stream']:
+                self.frame = await grab_rtsp(self.vcap, self.loop, self.logger)
+            else:
+                self.frame = await grab_http(self.cam, self.logger)
 
     async def task2(self):
         while self.running:
