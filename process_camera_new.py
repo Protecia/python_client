@@ -49,6 +49,7 @@ class ProcessCamera(Thread):
             t = time.time()
             if self.cam['stream']:
                 self.frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
+                await asyncio.sleep(1)
             else:
                 self.frame = await grab_http(self.cam, self.logger)
             self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
