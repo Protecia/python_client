@@ -39,7 +39,7 @@ class ProcessCamera(Thread):
     async def task1(self):
         while self.running:
             self.frame = await grab_http(self.cam, self.logger)
-            self.frame = await grab_rtsp(self.cam, self.logger)
+            self.frame = await grab_rtsp(self.vcap, self.loop, self.logger)
 
     async def task2(self):
         while self.running:
