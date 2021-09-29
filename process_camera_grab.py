@@ -36,9 +36,9 @@ class VideoCapture:
 
 
 # grab frames as soon as they are available
-async def rtsp_reader(cam, loop, logger):
+async def rtsp_reader(vcap, loop, logger):
     while True:
-        loop.run_in_executor(None, self.cap.grab())
+        loop.run_in_executor(None, vcap.grab())
         logger.info(f'grabbing rtsp')
 
 

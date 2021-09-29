@@ -42,4 +42,4 @@ class ProcessCamera(Thread):
 
     async def task2(self):
         while self.running:
-            await rtsp_reader(self.cam, self.loop, self.logger)
+            await rtsp_reader(self.vcap, self.loop, self.logger)
