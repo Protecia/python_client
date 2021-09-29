@@ -47,7 +47,12 @@ async def grab_rtsp(vcap, loop, logger, cam):
     ret, frame = await loop.run_in_executor(None, vcap.retrieve)
     logger.info(f"resultat de la lecture rtsp : {ret}  pour {cam['name']}")
     if ret and len(frame) > 100:
+        if cam['reso']:
+            if frame.shape[0] != cam['height'] or frame.shape[1] != cam['width']:
+                frame = cv2.resize(frame, (cam['width'], cam['height']), interpolation=cv2.INTER_CUBIC)
         return frame
+    else:
+        return False
 
 
 async def grab_http(cam, logger):

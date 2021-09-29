@@ -43,13 +43,24 @@ class ProcessCamera(Thread):
             else:
                 task = [self.task1()]
             self.loop.run_until_complete(asyncio.gather(*task))
+            if self.cam['stream']:
+                self.vcap.release()
+                self.logger.warning('VideoCapture close on {}'.format(self.cam['name']))
+            time.sleep(5)
 
     async def task1(self):
+        bad_read = 0
         while self.running:
             t = time.time()
             if self.cam['stream']:
                 self.frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
-                await asyncio.sleep(1)
+                if self.frame is False:
+                    self.logger.warning(f"Bad rtsp read on {self.cam['name']} videocapture is {self.vcap.isOpened()}")
+                    bad_read += 1
+                self.running = self.vcap.isOpened()
+                if bad_read > 10:
+                    self.running = False
+                await asyncio.sleep(0.5)
             else:
                 self.frame = await grab_http(self.cam, self.logger)
             self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
