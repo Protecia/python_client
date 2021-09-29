@@ -49,14 +49,8 @@ async def grab_http(cam, logger):
             logger.info(f'get http image {cam["http"]} in  {time.time() - t}s')
         if r.status_code == 200 and len(r.content) > 11000:
             logger.info(f'content of request is len  {len(r.content)}')
-            imgb = bytearray(r.content)
-            logger.debug(f'bytes0  {imgb}')
-            imgb = np.asarray(imgb, dtype="uint8")
-            logger.debug(f'bytes1  {imgb}')
-            imgb = cv2.imdecode(imgb, 1)
-            frame = imgb
-            logger.info(f'frame {frame}')
-            #logger.info(f'frame with a len of {len(frame) if frame else "None"}')
+            frame = cv2.imdecode(np.asarray(bytearray(r.content), dtype="uint8"), 1)
+            logger.info(f'frame with a len of {len(frame) if frame is not None else "None"}')
             if frame is None:
                 logger.warning('bad camera download frame is None on {} \n'.format(cam['name']))
                 return False
