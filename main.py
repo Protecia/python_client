@@ -4,7 +4,7 @@ Created on Sat Jun  1 07:34:04 2019
 
 @author: julien
 """
-import process_camera_thread as pc
+import process_camera_new as pc
 from threading import Lock as tLock, Event
 from multiprocessing import Process, Queue, Lock, Event as pEvent
 import json
