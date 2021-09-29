@@ -19,9 +19,9 @@ class ProcessCamera(Thread):
         Thread.__init__(self)
         self.a = []
         self.running = False
-        self.loop=asyncio.new_event_loop()
-        # self.logger = Logger('process_camera_thread__' + str(self.cam["id"]) + '--' + self.cam["name"],
-        #                    level=settings.PROCESS_CAMERA_LOG).run()
+        self.loop = asyncio.new_event_loop()
+        self.logger = Logger('process_camera_thread__' + str(self.cam["id"]) + '--' + self.cam["name"],
+                            level=settings.PROCESS_CAMERA_LOG).run()
         self.frame = None
 
     def run(self):
@@ -39,6 +39,4 @@ class ProcessCamera(Thread):
 
     async def task2(self, a):
         while self.running:
-            #self.a.append('tata')
-            #print(a)
             await asyncio.sleep(1)
