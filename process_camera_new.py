@@ -20,6 +20,7 @@ class ProcessCamera(Thread):
         self.a = []
         self.cam = cam
         self.running = False
+        self.thread_running = False
         self.loop = asyncio.new_event_loop()
         self.logger = Logger('process_camera_thread__' + str(self.cam["id"]) + '--' + self.cam["name"],
                              level=settings.PROCESS_CAMERA_LOG).run()
@@ -28,7 +29,7 @@ class ProcessCamera(Thread):
 
     def run(self):
         self.logger.info('running Thread')
-        self.running = True
+        self.thread_running = True
         asyncio.set_event_loop(self.loop)
         while self.thread_running:
             self.running = True
