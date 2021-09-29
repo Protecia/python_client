@@ -47,21 +47,23 @@ class Test(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.a = []
+        self.running = False
         self.loop=asyncio.new_event_loop()
 
     def run(self):
         print('ok')
+        self.running = True
         asyncio.set_event_loop(self.loop)
         self.loop.run_until_complete(asyncio.gather(self.task1(self.a), self.task2(self.a)))
 
     async def task1(self, a):
-        for _ in range(10):
+        while self.running:
             self.a.append('toto')
             print(a)
             await asyncio.sleep(1)
 
     async def task2(self, a):
-        for _ in range(10):
+        while self.running:
             self.a.append('tata')
             print(a)
             await asyncio.sleep(1)
