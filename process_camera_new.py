@@ -26,7 +26,7 @@ class ProcessCamera(Thread):
         self.frame = None
 
     def run(self):
-        print('ok')
+        self.logger.info('running Thread')
         self.running = True
         asyncio.set_event_loop(self.loop)
         self.loop.run_until_complete(asyncio.gather(self.task1(self.a), self.task2(self.a)))
@@ -35,7 +35,7 @@ class ProcessCamera(Thread):
         while self.running:
             self.frame = await grab_http(self.cam, self.logger)
             self.a.append('toto')
-            print(a)
+            self.logger.info(a)
             await asyncio.sleep(1)
 
     async def task2(self, a):
