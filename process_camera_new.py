@@ -18,6 +18,7 @@ class ProcessCamera(Thread):
     def __init__(self, cam, tlock):
         Thread.__init__(self)
         self.a = []
+        self.cam = cam
         self.running = False
         self.loop = asyncio.new_event_loop()
         self.logger = Logger('process_camera_thread__' + str(self.cam["id"]) + '--' + self.cam["name"],
