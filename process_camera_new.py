@@ -10,7 +10,7 @@ from log import Logger
 import secrets
 import concurrent.futures
 import asyncio
-from process_camera_grab import grab_http, rtsp_reader
+from process_camera_grab import grab_http, rtsp_reader, grab_rtsp
 
 
 class ProcessCamera(Thread):
@@ -39,6 +39,7 @@ class ProcessCamera(Thread):
     async def task1(self):
         while self.running:
             self.frame = await grab_http(self.cam, self.logger)
+            self.frame = await grab_rtsp(self.cam, self.logger)
 
     async def task2(self):
         while self.running:

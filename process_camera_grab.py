@@ -1,3 +1,4 @@
+import asyncio
 import time
 import requests
 import cv2
@@ -38,13 +39,14 @@ class VideoCapture:
 # grab frames as soon as they are available
 async def rtsp_reader(vcap, loop, logger):
     while True:
-        loop.run_in_executor(None, vcap.grab())
+        loop.run_in_executor(None, vcap.grab)
         logger.info(f'grabbing rtsp')
+        asyncio.sleep(1)
 
 
 # retrieve latest frame
-async def grab_rtsp(cam):
-    ret, frame = self.cap.retrieve()
+async def grab_rtsp(vcap, loop, logger):
+    ret, frame = loop.run_in_executor(None, vcap.retrieve)
     if ret and len(frame) > 100:
         return frame
 
