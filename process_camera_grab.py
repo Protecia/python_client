@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 from threading import Thread, Lock
 import httpx
-import aiohttp
 import settings
 import os
 import darknet as dn
