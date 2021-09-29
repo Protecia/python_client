@@ -35,6 +35,20 @@ class VideoCapture:
             return frame
 
 
+# grab frames as soon as they are available
+async def rtsp_reader(cam, loop, logger):
+    while True:
+        loop.run_in_executor(None, self.cap.grab())
+        logger.info(f'grabbing rtsp')
+
+
+# retrieve latest frame
+async def grab_rtsp(cam):
+    ret, frame = self.cap.retrieve()
+    if ret and len(frame) > 100:
+        return frame
+
+
 async def grab_http(cam, logger):
     if cam['auth_type'] == 'B':
         auth = (cam['username'], cam['password'])
@@ -59,7 +73,6 @@ async def grab_http(cam, logger):
         else:
             logger.warning('bad camera download on {} \n'.format(cam['name']))
             return False
-    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError,
-            requests.exceptions.ReadTimeout, requests.exceptions.MissingSchema):
+    except httpx.HTTPError:
         logger.warning('network error on {} \n'.format(cam['name']))
         return False

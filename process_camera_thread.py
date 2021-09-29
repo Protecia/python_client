@@ -202,7 +202,7 @@ class ProcessCamera(Thread):
                     else:
                         self.request_OK = False
                         self.logger.warning('bad camera download on {} \n'.format(self.cam['name']))
-                except (requests.exceptions.Timeout, requests.exceptions.ConnectionError,
+                except (requests.ConnectTimeout, requests.exceptions.ConnectionError,
                         requests.exceptions.ReadTimeout, requests.exceptions.MissingSchema):
                     self.request_OK = False
                     self.logger.warning('network error on {} \n'.format(self.cam['name']))
