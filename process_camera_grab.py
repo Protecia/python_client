@@ -43,9 +43,11 @@ async def rtsp_reader(vcap, loop, logger):
 
 
 # retrieve latest frame
-async def grab_rtsp(vcap, loop, logger):
+async def grab_rtsp(vcap, loop, logger, cam):
+    t = time.time()
     ret, frame = await loop.run_in_executor(None, vcap.retrieve)
-    logger.debug(f'grabbing last frame : {frame}')
+    logger.info(f"resultat de la lecture rtsp : {ret}  pour {cam['name']}")
+    logger.info(f'ecriture de la frame {time.strftime("%Y-%m-%d-%H-%M-%S")} en {time.time() - t}s')
     if ret and len(frame) > 100:
         return frame
 

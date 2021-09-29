@@ -38,6 +38,7 @@ class ProcessCamera(Thread):
                     rtsp = self.cam['rtsp']
                     rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
                     self.vcap = cv2.VideoCapture(rtsp_login)
+                    self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
                 task = [self.task1(), self.task2()]
             else:
                 task = [self.task1()]
@@ -46,7 +47,7 @@ class ProcessCamera(Thread):
     async def task1(self):
         while self.running:
             if self.cam['stream']:
-                self.frame = await grab_rtsp(self.vcap, self.loop, self.logger)
+                self.frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
             else:
                 self.frame = await grab_http(self.cam, self.logger)
 
