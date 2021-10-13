@@ -31,9 +31,10 @@ class ProcessCamera(Thread):
                              level=settings.PROCESS_CAMERA_LOG).run()
         self.frame = None
         self.vcap = None
-        self.queue = asyncio.Queue(maxsize=10)
+
 
     def run(self):
+        self.queue = asyncio.Queue(maxsize=10)
         self.logger.info('running Thread')
         self.thread_running = True
         asyncio.set_event_loop(self.loop)
@@ -45,9 +46,9 @@ class ProcessCamera(Thread):
                     rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
                     self.vcap = cv2.VideoCapture(rtsp_login)
                     self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
-                task = [self.task1(), self.task2(), self.task4(), ]
+                task = [self.task1(), self.task2(),  ]
             else:
-                task = [self.task1(), self.task4(), ]
+                task = [self.task1(),  ]
             self.loop.run_until_complete(asyncio.gather(*task))
             if self.cam['stream']:
                 self.vcap.release()
@@ -78,9 +79,9 @@ class ProcessCamera(Thread):
                 #     self.queue.put_nowait(img_bytes)
                 # except Queue.Full:
                 #     pass
-                asyncio.run_coroutine_threadsafe(self.queue.put(img_bytes), self.loop)
+                # asyncio.run_coroutine_threadsafe(self.queue.put(img_bytes), self.loop)
                 # self.loop.call_soon_threadsafe(self.queue.put, img_bytes)
-                #await self.queue.put(self.frame)
+                await self.queue.put(self.frame)
                 self.logger.warning(f"queue img bytes {self.queue.qsize()}")
 
     async def task2(self):
@@ -110,6 +111,6 @@ class ProcessCamera(Thread):
         while self.running:
             while True:
                 # img_bytes = self.queue.get()
-                img_bytes = await asyncio.run_coroutine_threadsafe(self.queue.get(), self.loop).result()
+                img_bytes = asyncio.run_coroutine_threadsafe(self.queue.get(), self.loop).result()
                 self.logger.warning(f'getting img_bytes size : {len(img_bytes)}')
 
