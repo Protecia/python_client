@@ -14,7 +14,7 @@ from process_camera_grab import grab_http, rtsp_reader, grab_rtsp
 import websockets
 import json
 from utils import get_conf
-from queue import Queue
+import queue
 
 
 class ProcessCamera(Thread):
@@ -31,10 +31,10 @@ class ProcessCamera(Thread):
                              level=settings.PROCESS_CAMERA_LOG).run()
         self.frame = None
         self.vcap = None
-
+        self.queue = queue.Queue(maxsize=10)
 
     def run(self):
-        self.queue = asyncio.Queue(maxsize=10)
+
         self.logger.info('running Thread')
         self.thread_running = True
         asyncio.set_event_loop(self.loop)
@@ -75,13 +75,13 @@ class ProcessCamera(Thread):
                              f" en {time.time() - t}s")
             if bad_read == 0:
                 img_bytes = cv2.imencode('.jpg', self.frame)[1].tobytes()
-                # try:
-                #     self.queue.put_nowait(img_bytes)
-                # except Queue.Full:
-                #     pass
+                try:
+                    self.queue.put_nowait(img_bytes)
+                except queue.Full:
+                    pass
                 # asyncio.run_coroutine_threadsafe(self.queue.put(img_bytes), self.loop)
                 # self.loop.call_soon_threadsafe(self.queue.put, img_bytes)
-                await self.queue.put(img_bytes)
+                # await self.queue.put(img_bytes)
                 self.logger.warning(f"queue img bytes {self.queue.qsize()}")
 
     async def task2(self):
