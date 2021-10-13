@@ -2,7 +2,7 @@ import time
 import requests
 import cv2
 import numpy as np
-from threading import Thread, Lock
+from threading import Thread, Lock, Queue
 import settings
 import os
 import darknet as dn
@@ -86,7 +86,8 @@ class ProcessCamera(Thread):
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while True:
-                        img_bytes = await self.queue.get()
+                        img_bytes = self.loop.call_soon_threadsafe(self.queue.get)
+                        #img_bytes = await self.queue.get()
                         await ws_cam.send(img_bytes)
                         self.logger.info(f'sending img bytes')
             except (websockets.exceptions.ConnectionClosedError, OSError, ConnectionResetError,
