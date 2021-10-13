@@ -45,9 +45,9 @@ class ProcessCamera(Thread):
                     rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
                     self.vcap = cv2.VideoCapture(rtsp_login)
                     self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
-                task = [self.task1(), self.task2(), ]
+                task = [self.task1(), self.task2(), self.task4()]
             else:
-                task = [self.task1(), ]
+                task = [self.task1(), self.task4() ]
             self.loop.run_until_complete(asyncio.gather(*task))
             if self.cam['stream']:
                 self.vcap.release()
@@ -74,7 +74,10 @@ class ProcessCamera(Thread):
                              f" en {time.time() - t}s")
             if bad_read == 0:
                 img_bytes = cv2.imencode('.jpg', self.frame)[1].tobytes()
-                self.queue.put_nowait(img_bytes)
+                try:
+                    self.queue.put_nowait(img_bytes)
+                except Queue.Full:
+                    pass
                 self.logger.warning(f"queue img bytes {self.queue.qsize()}")
                 #self.loop.call_soon_threadsafe(self.queue.put, img_bytes)
                 #await self.queue.put(self.frame)
@@ -102,5 +105,9 @@ class ProcessCamera(Thread):
                 await asyncio.sleep(1)
                 continue
 
-
+    async def task4(self):
+        while self.running:
+            while True:
+                img_bytes = self.queue.get()
+                self.logger.warning(f'getting img_bytes size : {len(img_bytes)}')
 
