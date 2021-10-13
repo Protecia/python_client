@@ -31,7 +31,7 @@ class ProcessCamera(Thread):
                              level=settings.PROCESS_CAMERA_LOG).run()
         self.frame = None
         self.vcap = None
-        self.queue = queue.Queue(maxsize=10)
+        self.queue = asyncio.Queue(maxsize=10)
 
     def run(self):
 
@@ -76,8 +76,8 @@ class ProcessCamera(Thread):
             if bad_read == 0:
                 img_bytes = cv2.imencode('.jpg', self.frame)[1].tobytes()
                 try:
-                    self.queue.put_nowait(img_bytes)
-                except queue.Full:
+                    asyncio.run_coroutine_threadsafe(self.queue.put(img_bytes), self.loop)
+                except asyncio.QueueFull:
                     pass
                 # asyncio.run_coroutine_threadsafe(self.queue.put(img_bytes), self.loop)
                 # self.loop.call_soon_threadsafe(self.queue.put, img_bytes)
@@ -112,8 +112,9 @@ class ProcessCamera(Thread):
             while True:
                 # img_bytes = self.queue.get()
                 try:
-                    img_bytes = self.queue.get_nowait()
-                except queue.Empty:
+                    img_bytes = asyncio.run_coroutine_threadsafe(self.queue.get_nowait(), self.loop).result()
+                    # img_bytes = self.queue.get_nowait()
+                except asyncio.QueueEmpty:
                     pass
                 else:
                     self.logger.warning(f'getting img_bytes size : {len(img_bytes)}')
