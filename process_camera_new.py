@@ -110,6 +110,6 @@ class ProcessCamera(Thread):
         while self.running:
             while True:
                 # img_bytes = self.queue.get()
-                img_bytes = asyncio.run_coroutine_threadsafe(self.queue.get(), self.loop).result()
+                img_bytes = asyncio.run_coroutine_threadsafe(self.queue.get_nowait(), self.loop).result()
                 self.logger.warning(f'getting img_bytes size : {len(img_bytes)}')
 
