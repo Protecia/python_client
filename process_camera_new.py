@@ -87,6 +87,7 @@ class ProcessCamera(Thread):
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while True:
                         img_bytes = self.loop.call_soon_threadsafe(self.queue.get)
+                        self.logger.debug(f'img_bytes is {img_bytes}')
                         #img_bytes = await self.queue.get()
                         await ws_cam.send(img_bytes)
                         self.logger.info(f'sending img bytes')
