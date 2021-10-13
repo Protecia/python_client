@@ -2,7 +2,7 @@ import time
 import requests
 import cv2
 import numpy as np
-from threading import Thread, Lock, Queue
+from threading import Thread, Lock
 import settings
 import os
 import darknet as dn
