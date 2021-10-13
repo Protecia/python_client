@@ -72,7 +72,8 @@ class ProcessCamera(Thread):
                              f" en {time.time() - t}s")
             if bad_read == 0:
                 img_bytes = cv2.imencode('.jpg', self.frame)[1].tobytes()
-                await self.queue.put(self.frame)
+                self.loop.call_soon_threadsafe(self.queue.put, img_bytes)
+                #await self.queue.put(self.frame)
 
     async def task2(self):
         while self.running:
