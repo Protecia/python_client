@@ -45,9 +45,9 @@ class ProcessCamera(Thread):
                     rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
                     self.vcap = cv2.VideoCapture(rtsp_login)
                     self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
-                task = [self.task1(), self.task2(), self.task3()]
+                task = [self.task1(), self.task2(), ]
             else:
-                task = [self.task1(), self.task3()]
+                task = [self.task1(), ]
             self.loop.run_until_complete(asyncio.gather(*task))
             if self.cam['stream']:
                 self.vcap.release()
@@ -74,7 +74,7 @@ class ProcessCamera(Thread):
                              f" en {time.time() - t}s")
             if bad_read == 0:
                 img_bytes = cv2.imencode('.jpg', self.frame)[1].tobytes()
-                self.queue.put_nowait(img_bytes)
+                # self.queue.put_nowait(img_bytes)
                 #self.loop.call_soon_threadsafe(self.queue.put, img_bytes)
                 #await self.queue.put(self.frame)
 
