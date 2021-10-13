@@ -81,7 +81,7 @@ class ProcessCamera(Thread):
                 #     pass
                 # asyncio.run_coroutine_threadsafe(self.queue.put(img_bytes), self.loop)
                 # self.loop.call_soon_threadsafe(self.queue.put, img_bytes)
-                await self.queue.put(self.frame)
+                await self.queue.put(img_bytes)
                 self.logger.warning(f"queue img bytes {self.queue.qsize()}")
 
     async def task2(self):
