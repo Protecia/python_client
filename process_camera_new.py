@@ -70,6 +70,7 @@ class ProcessCamera(Thread):
                     bad_read = 0
                 self.running = self.vcap.isOpened()
             else:
+                self.logger.debug(f"before grab_http on {self.cam['name']}")
                 frame = await grab_http(self.cam, self.logger)
             self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
                              f" en {time.time() - t}s")
