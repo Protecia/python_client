@@ -104,7 +104,7 @@ class ProcessCamera(Thread):
                         #     self.logger.debug(f'img_bytes is {len(img_bytes)}')
                         #     #img_bytes = await self.queue.get()
                         #     await ws_cam.send(img_bytes)
-                        self.logger.info(f'--------------------> sending img bytes in task 4')
+                        self.logger.info(f'--------------------> sending img bytes in task 3')
                         #     self.img_bytes = None
             except (websockets.exceptions.ConnectionClosedError, OSError, ConnectionResetError,
                     websockets.exceptions.InvalidMessage)as ex:
