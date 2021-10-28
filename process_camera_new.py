@@ -46,9 +46,9 @@ class ProcessCamera(Thread):
                     rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
                     self.vcap = cv2.VideoCapture(rtsp_login)
                     self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
-                task = [self.task1(), self.task2(),  self.task4()]
+                task = [self.task1(), self.task2(), self.task3(), self.task4()]
             else:
-                task = [self.task1(), self.task4() ]
+                task = [self.task1(), self.task3(), self.task4() ]
             self.loop.run_until_complete(asyncio.gather(*task))
             if self.cam['stream']:
                 self.vcap.release()
@@ -96,14 +96,15 @@ class ProcessCamera(Thread):
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while True:
-                        img_bytes = self.img_bytes
-                        if img_bytes:
-                            # img_bytes = self.loop.call_soon_threadsafe(self.queue.get)
-                            self.logger.debug(f'img_bytes is {len(img_bytes)}')
-                            #img_bytes = await self.queue.get()
-                            await ws_cam.send(img_bytes)
-                            self.logger.info(f'sending img bytes')
-                            self.img_bytes = None
+                        await asyncio.sleep(1)
+                        # img_bytes = self.img_bytes
+                        # if img_bytes:
+                        #     # img_bytes = self.loop.call_soon_threadsafe(self.queue.get)
+                        #     self.logger.debug(f'img_bytes is {len(img_bytes)}')
+                        #     #img_bytes = await self.queue.get()
+                        #     await ws_cam.send(img_bytes)
+                        #     self.logger.info(f'sending img bytes')
+                        #     self.img_bytes = None
             except (websockets.exceptions.ConnectionClosedError, OSError, ConnectionResetError,
                     websockets.exceptions.InvalidMessage)as ex:
                 self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
