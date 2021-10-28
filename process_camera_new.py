@@ -46,9 +46,9 @@ class ProcessCamera(Thread):
                     rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
                     self.vcap = cv2.VideoCapture(rtsp_login)
                     self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
-                task = [self.task1(), self.task2(), self.task3(), self.task4()]
+                task = [self.task1(), self.task2(), self.task3(), ]
             else:
-                task = [self.task1(), self.task3(), self.task4() ]
+                task = [self.task1(), self.task3(), ]
             self.loop.run_until_complete(asyncio.gather(*task))
             if self.cam['stream']:
                 self.vcap.release()
@@ -76,13 +76,6 @@ class ProcessCamera(Thread):
                              f" en {time.time() - t}s")
             if bad_read == 0:
                 self.img_bytes = cv2.imencode('.jpg', frame)[1].tobytes()
-                # try:
-                #     asyncio.run_coroutine_threadsafe(self.queue.put(img_bytes), self.loop)
-                # except asyncio.QueueFull:
-                #     pass
-                # asyncio.run_coroutine_threadsafe(self.queue.put(img_bytes), self.loop)
-                # self.loop.call_soon_threadsafe(self.queue.put, img_bytes)
-                # await self.queue.put(img_bytes)
                 self.logger.warning(f"queue img bytes {len(self.img_bytes)}")
 
     async def task2(self):
@@ -108,16 +101,10 @@ class ProcessCamera(Thread):
                 await asyncio.sleep(1)
                 continue
 
-    async def task4(self):
-        while self.running:
-            while True:
-                img_bytes = self.img_bytes
-                if img_bytes:
-                    self.logger.debug(f'>>>>>>>>>>>>>>>>>>>>  img_bytes in task 4 is {len(img_bytes)}')
-                await asyncio.sleep(2)
-                # img_bytes = asyncio.run_coroutine_threadsafe(self.queue.get_nowait(), self.loop).result()
-                    # img_bytes = self.queue.get_nowait()
-
-                # else:
-                #     self.logger.warning(f'getting img_bytes size : {len(img_bytes)}')
-
+    # async def task4(self):
+    #     while self.running:
+    #         while True:
+    #             img_bytes = self.img_bytes
+    #             if img_bytes:
+    #                 self.logger.debug(f'>>>>>>>>>>>>>>>>>>>>  img_bytes in task 4 is {len(img_bytes)}')
+    #             await asyncio.sleep(2)
