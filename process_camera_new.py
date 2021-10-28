@@ -99,7 +99,7 @@ class ProcessCamera(Thread):
                         await asyncio.sleep(1)
                         img_bytes = self.img_bytes
                         if img_bytes:
-                        #     await ws_cam.send(img_bytes)
+                            await ws_cam.send("toto")
                             self.logger.info(f'--------------------> sending img bytes in task 3 {len(img_bytes)}')
                         #     self.img_bytes = None
             except (websockets.exceptions.ConnectionClosedError, OSError, ConnectionResetError,
