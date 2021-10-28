@@ -114,7 +114,8 @@ class ProcessCamera(Thread):
         while self.running:
             while True:
                 img_bytes = self.img_bytes
-                self.logger.debug(f'>>>>>>>>>>>>>>>>>>>>  img_bytes in task 4 is {len(img_bytes)}')
+                if img_bytes:
+                    self.logger.debug(f'>>>>>>>>>>>>>>>>>>>>  img_bytes in task 4 is {len(img_bytes)}')
                 await asyncio.sleep(2)
                 # img_bytes = asyncio.run_coroutine_threadsafe(self.queue.get_nowait(), self.loop).result()
                     # img_bytes = self.queue.get_nowait()
