@@ -29,9 +29,9 @@ class ProcessCamera(Thread):
         self.loop = asyncio.new_event_loop()
         self.logger = Logger('process_camera_thread__' + str(self.cam["id"]) + '--' + self.cam["name"],
                              level=settings.PROCESS_CAMERA_LOG).run()
-        self.frame = None
+        self.img_bytes = None
         self.vcap = None
-        self.queue = asyncio.Queue(maxsize=10)
+        # self.queue = asyncio.Queue(maxsize=10)
 
     def run(self):
 
@@ -46,9 +46,9 @@ class ProcessCamera(Thread):
                     rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
                     self.vcap = cv2.VideoCapture(rtsp_login)
                     self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
-                task = [self.task1(), self.task2(), self.task4() ]
+                task = [self.task1(), self.task2(), self.task4()]
             else:
-                task = [self.task1(), self.task4(),  ]
+                task = [self.task1(), self.task4(), ]
             self.loop.run_until_complete(asyncio.gather(*task))
             if self.cam['stream']:
                 self.vcap.release()
@@ -60,8 +60,8 @@ class ProcessCamera(Thread):
         while self.running:
             t = time.time()
             if self.cam['stream']:
-                self.frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
-                if self.frame is False:
+                frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
+                if frame is False:
                     self.logger.warning(f"Bad rtsp read on {self.cam['name']} videocapture is {self.vcap.isOpened()}")
                     bad_read += 1
                     if bad_read > 10:
@@ -70,19 +70,19 @@ class ProcessCamera(Thread):
                     bad_read = 0
                 self.running = self.vcap.isOpened()
             else:
-                self.frame = await grab_http(self.cam, self.logger)
+                frame = await grab_http(self.cam, self.logger)
             self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
                              f" en {time.time() - t}s")
             if bad_read == 0:
-                img_bytes = cv2.imencode('.jpg', self.frame)[1].tobytes()
-                try:
-                    asyncio.run_coroutine_threadsafe(self.queue.put(img_bytes), self.loop)
-                except asyncio.QueueFull:
-                    pass
+                self.img_bytes = cv2.imencode('.jpg', frame)[1].tobytes()
+                # try:
+                #     asyncio.run_coroutine_threadsafe(self.queue.put(img_bytes), self.loop)
+                # except asyncio.QueueFull:
+                #     pass
                 # asyncio.run_coroutine_threadsafe(self.queue.put(img_bytes), self.loop)
                 # self.loop.call_soon_threadsafe(self.queue.put, img_bytes)
                 # await self.queue.put(img_bytes)
-                self.logger.warning(f"queue img bytes {self.queue.qsize()}")
+                self.logger.warning(f"queue img bytes {len(self.image)}")
 
     async def task2(self):
         while self.running:
@@ -95,26 +95,28 @@ class ProcessCamera(Thread):
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while True:
-                        img_bytes = self.queue.get()
-                        # img_bytes = self.loop.call_soon_threadsafe(self.queue.get)
-                        self.logger.debug(f'img_bytes is {len(img_bytes)}')
-                        #img_bytes = await self.queue.get()
-                        await ws_cam.send(img_bytes)
-                        self.logger.info(f'sending img bytes')
+                        img_bytes = self.img_bytes
+                        if img_bytes:
+                            # img_bytes = self.loop.call_soon_threadsafe(self.queue.get)
+                            self.logger.debug(f'img_bytes is {len(img_bytes)}')
+                            #img_bytes = await self.queue.get()
+                            await ws_cam.send(img_bytes)
+                            self.logger.info(f'sending img bytes')
+                            img_bytes = None
             except (websockets.exceptions.ConnectionClosedError, OSError, ConnectionResetError,
                     websockets.exceptions.InvalidMessage)as ex:
                 self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
                 await asyncio.sleep(1)
                 continue
 
-    async def task4(self):
-        while self.running:
-            while True:
-                # img_bytes = self.queue.get()
-                await asyncio.sleep(3)
-                img_bytes = asyncio.run_coroutine_threadsafe(self.queue.get_nowait(), self.loop).result()
-                    # img_bytes = self.queue.get_nowait()
-
-                # else:
-                #     self.logger.warning(f'getting img_bytes size : {len(img_bytes)}')
+    # async def task4(self):
+    #     while self.running:
+    #         while True:
+    #             # img_bytes = self.queue.get()
+    #             await asyncio.sleep(3)
+    #             img_bytes = asyncio.run_coroutine_threadsafe(self.queue.get_nowait(), self.loop).result()
+    #                 # img_bytes = self.queue.get_nowait()
+    #
+    #             # else:
+    #             #     self.logger.warning(f'getting img_bytes size : {len(img_bytes)}')
 
