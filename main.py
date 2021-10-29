@@ -143,7 +143,7 @@ def main():
                         # p.start()
                         logger.warning(f'starting process camera on  : {ready_cam}')
 
-            loop.run_until_complete(*list_thread)
+            loop.run_until_complete(asyncio.gather(*list_thread))
             # wait until a camera change
             cameras.connect(e_state, scan_state, cameras_state)
             logger.debug('connect pass go on')
