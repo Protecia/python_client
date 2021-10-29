@@ -94,16 +94,17 @@ class ProcessCamera(Thread):
         while self.running:
             t = time.time()
             if self.cam['stream']:
+                self.running = self.vcap.isOpened()
                 frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
                 if frame is False:
-                    self.logger.warning(f"Bad rtsp read on {self.cam['name']} videocapture is {self.vcap.isOpened()}"
+                    self.logger.warning(f"Bad rtsp read on {self.cam['name']} videocapture is {self.vcap.isOpened()} "
                                         f"bad_read is {bad_read}")
                     bad_read += 1
+                    await asyncio.sleep(0.1)
                     if bad_read > 10:
                         self.running = False
                 else:
                     bad_read = 0
-                self.running = self.vcap.isOpened()
             else:
                 self.logger.debug(f"before grab_http on {self.cam['name']}")
                 frame = await grab_http(self.cam, self.logger)
