@@ -62,17 +62,6 @@ def end(signum, frame):
     raise KeyboardInterrupt('Extern interrupt')
 
 
-def stop(list_thread):
-    for t in list_thread:
-        t.running_level2 = False
-        t.running_rtsp = False
-        try:
-            t.thread_rtsp.join()
-        except AttributeError:
-            pass
-        t.join()
-
-
 def main():
     signal.signal(signal.SIGTERM, end)
     list_tasks = []
@@ -143,16 +132,13 @@ def main():
             loop.run_until_complete(asyncio.gather(*total_tasks))
 
             logger.debug('connect pass go on')
-            # If camera change (websocket answer) -----------------------------
-            stop(list_tasks)
-            logger.debug('thread stopped')
+            logger.debug('tasks stopped')
             # stop the scan
             for p in process2.values():
                 p.terminate()
             logger.error('Camera change restart !')
 
     except KeyboardInterrupt:
-        stop(list_tasks)
         for p in process.values():
             p.terminate()
         logger.warning('Ctrl-c or SIGTERM')
