@@ -137,6 +137,7 @@ def main():
             for p in process2.values():
                 p.terminate()
             logger.error('Camera change restart !')
+            cameras.running_level1 = True
 
     except KeyboardInterrupt:
         for p in process.values():

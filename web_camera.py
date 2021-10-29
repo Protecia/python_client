@@ -12,7 +12,6 @@ logger = Logger(__name__, level=settings.SOCKET_LOG).run()
 
 class Client(object):
     def __init__(self):
-        self.running = True
         self.list_cam = None
         self.key = get_conf('key')
         self.E_state = None
