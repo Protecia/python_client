@@ -96,7 +96,8 @@ class ProcessCamera(Thread):
             if self.cam['stream']:
                 frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
                 if frame is False:
-                    self.logger.warning(f"Bad rtsp read on {self.cam['name']} videocapture is {self.vcap.isOpened()}")
+                    self.logger.warning(f"Bad rtsp read on {self.cam['name']} videocapture is {self.vcap.isOpened()}"
+                                        f"bad_read is {bad_read}")
                     bad_read += 1
                     if bad_read > 10:
                         self.running = False
