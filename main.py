@@ -58,12 +58,12 @@ def conf():
         return False
 
 
-def end(signum, frame):
-    raise KeyboardInterrupt('Extern interrupt')
+# def end(signum, frame):
+#     raise KeyboardInterrupt('Extern interrupt')
 
 
 def main():
-    signal.signal(signal.SIGTERM, end)
+    # signal.signal(signal.SIGTERM, end)
     list_tasks = []
     process = {}
     loop = asyncio.get_event_loop()
