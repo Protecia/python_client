@@ -44,7 +44,7 @@ class Client(object):
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_receive_cam') as ws:
                     await ws.send(json.dumps({'key': self.key, }))
-                    while True:
+                    while self.running_level1:
                         fname = pathlib.Path(settings.INSTALL_PATH + '/camera/camera_from_scan.json')
                         logger.debug(f'loop for sending new cam')
                         try:
@@ -79,7 +79,9 @@ class Client(object):
                     logger.warning(f'Receive cam from server -> {cam}')
                     self.list_cam = json.loads(cam)
                     await ws.send(json.dumps({'answer': True}))
+                    logger.warning(f'Running level 1 is -> {self.running_level1}')
                     self.running_level1 = False
+                    logger.warning(f'Running level 1 is now-> {self.running_level1}')
             except (websockets.exceptions.ConnectionClosedError, OSError):
                 logger.error(f'socket _reveive_cam disconnected !!')
                 await asyncio.sleep(1)
@@ -90,7 +92,7 @@ class Client(object):
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_get_state') as ws:
                     await ws.send(json.dumps({'key': self.key, }))
-                    while True:
+                    while self.running_level1:
                         state = json.loads(await ws.recv())
                         ping = state.get('ping', False)
                         logger.warning(f'Receive change state -> {state}')
@@ -103,11 +105,12 @@ class Client(object):
                         else:
                             e_state.set() if state['rec'] else e_state.clear()
                             scan_state.set() if state['scan'] else scan_state.clear()
-                            logger.debug(f'scan state from server is -> {state["scan"]} / '
-                                         f'events is {scan_state.is_set()}')
+                            logger.debug(f'scan state from server is -> {state["scan"]}'
+                                         f' / events is {scan_state.is_set()}')
                             # trigger to send real time image
                             on_camera = state['cam']
-                            logger.warning(f'camera state is -> {on_camera} / events are {camera_state}')
+                            logger.warning(f'camera state is -> {on_camera} / events are {camera_state}'
+                                           f' / running level 1 is{self.running_level1}')
                             for pk, value in on_camera.items():
                                 [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for
                                  index, i in enumerate(value)]
