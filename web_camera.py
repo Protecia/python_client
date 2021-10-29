@@ -10,46 +10,35 @@ from utils import get_conf
 logger = Logger(__name__, level=settings.SOCKET_LOG).run()
 
 
-class Cameras(object):
-    def __init__(self):
-        self.loop = asyncio.get_event_loop()
+class Client(object):
+    def __init__(self, loop):
+        self.loop = loop
         self.running = True
         self.list_cam = None
         self.key = get_conf('key')
         self.E_state = None
+        self.running_level1 = True
 
     def write(self):
         with open(settings.INSTALL_PATH + '/camera/camera_from_server.json', 'w') as cam:
             json.dump(self.list_cam, cam)
 
-    def get_cam(self):
-        return self.loop.run_until_complete(self._get_cam())
-
-    async def _get_cam(self):
+    async def get_cam(self):
         async with websockets.connect(settings.SERVER_WS + 'ws') as ws:
             await ws.send(json.dumps({'key': self.key}))
             cam = await ws.recv()
             self.list_cam = json.loads(cam)
             logger.warning(f' receive cam from server -> {self.list_cam}')
 
-    def connect(self, e_state, scan_state, camera_state):
+    async def connect(self, e_state, scan_state, camera_state):
         try:
-            task1 = asyncio.ensure_future(self._send_cam())
-            task2 = asyncio.ensure_future(self._receive_cam())
-            task3 = asyncio.ensure_future(self._get_state(e_state, scan_state, camera_state))
-            done, pending = self.loop.run_until_complete(asyncio.wait([task1, task2, task3],
-                                                                      return_when=asyncio.FIRST_COMPLETED, ))
-            for task in pending:
-                task.cancel()
-            for task in done:
-                cam = task.result()
+            await asyncio.gather(self.send_cam(), self.receive_cam(), self.get_state(e_state, scan_state, camera_state))
         except Exception as ex:
             logger.warning(f' exception in CONNECT**************** / except-->{ex} / name-->{type(ex).__name__}')
 
-    async def _send_cam(self):
-        finish = False
+    async def send_cam(self):
         t1 = time.time()
-        while not finish:
+        while self.running_level1:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_receive_cam') as ws:
                     await ws.send(json.dumps({'key': self.key, }))
@@ -79,9 +68,8 @@ class Cameras(object):
                 await asyncio.sleep(1)
                 continue
 
-    async def _receive_cam(self):
-        finish = False
-        while not finish:
+    async def receive_cam(self):
+        while self.running_level1:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_send_cam') as ws:
                     await ws.send(json.dumps({'key': self.key, }))
@@ -89,15 +77,14 @@ class Cameras(object):
                     logger.warning(f'Receive cam from server -> {cam}')
                     self.list_cam = json.loads(cam)
                     await ws.send(json.dumps({'answer': True}))
-                    finish = True
+                    self.running_level1 = False
             except (websockets.exceptions.ConnectionClosedError, OSError):
                 logger.error(f'socket _reveive_cam disconnected !!')
                 await asyncio.sleep(1)
                 continue
 
-    async def _get_state(self, e_state, scan_state, camera_state):
-        finish = False
-        while not finish:
+    async def get_state(self, e_state, scan_state, camera_state):
+        while self.running_level1:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_get_state') as ws:
                     await ws.send(json.dumps({'key': self.key, }))

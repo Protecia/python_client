@@ -27,10 +27,8 @@ from utils import get_conf
 # globals var
 logger = Logger(__name__, level=settings.MAIN_LOG).run()
 
-Q_img = Queue()
-Q_img_real = Queue()
-Q_result = Queue()
-lock = Lock()
+
+
 E_video = pEvent()
 tlock = asyncio.Lock()
 e_state = Event()
@@ -77,8 +75,9 @@ def stop(list_thread):
 
 def main():
     signal.signal(signal.SIGTERM, end)
-    list_thread = []
+    list_tasks = []
     process = {}
+    loop = asyncio.get_event_loop()
     try:
         while not conf():
             time.sleep(10)
@@ -87,10 +86,10 @@ def main():
         install_check_tunnel_cron()
 
         # Instanciate get_camera :
-        cameras = web_camera.Cameras()
+        cameras = web_camera.Client()
 
         # retrieve cam
-        cameras.get_cam()
+        loop.run_until_complete(cameras.get_cam())
 
         # initial scan state :
         if get_conf('scan'):
@@ -98,9 +97,6 @@ def main():
 
         # launch child processes
         process1 = {
-            'image_upload': Process(target=up.upload_image, args=(Q_img,)),
-            'image_upload_real_time': Process(target=up.uploadImageRealTime, args=(Q_img_real,)),
-            'result_upload': Process(target=up.upload_result, args=(Q_result, E_video)),
             'serve_http': Process(target=http_serve, args=(2525,))}
         for p in process1.values():
             p.start()
@@ -125,9 +121,8 @@ def main():
 
             # initialize the camera state event
             cameras_state = {}
-            loop = asyncio.get_event_loop()
             # launch the camera thread
-            list_thread = []
+            list_tasks = []
             for c in cameras.list_cam.values():
                 if c['active'] and c['active_automatic']:
                     uri = None
@@ -137,18 +132,18 @@ def main():
                     if uri:
                         uri.pop('id', None)
                         ready_cam = {**c, **uri}
-                        cameras_state[c['id']] = [Event(), Event()]
                         p = pc.ProcessCamera(ready_cam, loop, tlock)
-                        list_thread.append(p.run())
+                        list_tasks.append(p.run())
                         # p.start()
                         logger.warning(f'starting process camera on  : {ready_cam}')
 
-            loop.run_until_complete(asyncio.gather(*list_thread))
             # wait until a camera change
-            cameras.connect(e_state, scan_state, cameras_state)
+            list_tasks.append(cameras.connect(e_state, scan_state, cameras_state))
+            loop.run_until_complete(asyncio.gather(*list_tasks))
+
             logger.debug('connect pass go on')
             # If camera change (websocket answer) -----------------------------
-            stop(list_thread)
+            stop(list_tasks)
             logger.debug('thread stopped')
             # stop the scan
             for p in process2.values():
@@ -156,7 +151,7 @@ def main():
             logger.error('Camera change restart !')
 
     except KeyboardInterrupt:
-        stop(list_thread)
+        stop(list_tasks)
         for p in process.values():
             p.terminate()
         logger.warning('Ctrl-c or SIGTERM')
