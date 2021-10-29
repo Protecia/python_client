@@ -34,7 +34,7 @@ for key, values in settings.DARKNET_CONF.items():
     height[key] = dn.network_height(net[key])
 
 
-def detect_thread(my_net, my_class_names, frame, my_width, my_height, thresh):
+async def detect_thread(my_net, my_class_names, frame, my_width, my_height, thresh):
     frame_resized = cv2.resize(frame, (my_width, my_height), interpolation=cv2.INTER_LINEAR)
     darknet_image = dn.make_image(my_width, my_height, 3)
     dn.copy_image_from_bytes(darknet_image, frame_resized.tobytes())
@@ -110,12 +110,15 @@ class ProcessCamera(Thread):
                              f" en {time.time() - t}s")
             if bad_read == 0:
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                result_dict = {}
+                tasks = []
+                for nkey, network in net.items():
+                    tasks.append(detect_thread(network, class_names[nkey], frame_rgb, width[nkey],
+                                               height[nkey], self.th))
+                    result_dict[nkey] = None
                 with self.tlock:
-                    with concurrent.futures.ThreadPoolExecutor() as executor:
-                        result_dict = {}
-                        for nkey, network in net.items():
-                            result_dict[nkey] = executor.submit(detect_thread, network, class_names[nkey],
-                                                                frame_rgb, width[nkey], height[nkey], self.th)
+                    result_concurrent = await asyncio.gather(*tasks)
+                result_dict = dict(zip(result_dict, result_concurrent))
                 if 'all' in result_dict:
                     result_darknet = [r for r in result_dict['all'].result() if r[0] not in self.black_list]
                     result_dict.pop('all')
