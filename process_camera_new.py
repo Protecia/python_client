@@ -143,7 +143,7 @@ class ProcessCamera(Thread):
                 async with websockets.connect(settings.SERVER_WS + 'ws_run_cam') as ws_cam:
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
-                    while True:
+                    while self.running:
                         await asyncio.sleep(0.1)
                         img_bytes = self.img_bytes
                         if img_bytes:
