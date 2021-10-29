@@ -27,7 +27,7 @@ class Client(object):
             await ws.send(json.dumps({'key': self.key}))
             cam = await ws.recv()
             self.list_cam = json.loads(cam)
-            logger.warning(f' receive cam from server -> {self.list_cam}')
+            logger.warning(f' get cam receive cam from server -> {self.list_cam}')
 
     async def connect(self, e_state, scan_state, camera_state, extern_tasks):
         try:
