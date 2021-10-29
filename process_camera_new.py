@@ -83,7 +83,7 @@ class ProcessCamera(object):
             if self.cam['stream']:
                 self.vcap.release()
                 self.logger.warning('VideoCapture close on {}'.format(self.cam['name']))
-            time.sleep(5)
+            asyncio.time.sleep(5)
 
     async def task1(self):
         bad_read = 0
@@ -140,7 +140,7 @@ class ProcessCamera(object):
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level2:
-                        await asyncio.sleep(0.1)
+                        await asyncio.sleep(0.02)
                         img_bytes = self.img_bytes
                         if img_bytes:
                             await ws_cam.send(img_bytes)
