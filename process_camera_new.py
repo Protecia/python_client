@@ -110,6 +110,7 @@ class ProcessCamera(Thread):
             self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
                              f" en {time.time() - t}s")
             if bad_read == 0:
+                t = time.time()
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 result_dict = {}
                 tasks = []
