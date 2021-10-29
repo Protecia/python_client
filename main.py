@@ -4,6 +4,8 @@ Created on Sat Jun  1 07:34:04 2019
 
 @author: julien
 """
+import asyncio
+
 import process_camera_new as pc
 from threading import Lock as tLock, Event
 from multiprocessing import Process, Queue, Lock, Event as pEvent
@@ -30,7 +32,7 @@ Q_img_real = Queue()
 Q_result = Queue()
 lock = Lock()
 E_video = pEvent()
-tlock = tLock()
+tlock = asyncio.Lock()
 e_state = Event()
 scan_state = pEvent()
 
@@ -64,7 +66,7 @@ def end(signum, frame):
 
 def stop(list_thread):
     for t in list_thread:
-        t.running = False
+        t.running_level2 = False
         t.running_rtsp = False
         try:
             t.thread_rtsp.join()
@@ -123,7 +125,7 @@ def main():
 
             # initialize the camera state event
             cameras_state = {}
-
+            loop = asyncio.get_event_loop()
             # launch the camera thread
             list_thread = []
             for c in cameras.list_cam.values():
@@ -136,10 +138,12 @@ def main():
                         uri.pop('id', None)
                         ready_cam = {**c, **uri}
                         cameras_state[c['id']] = [Event(), Event()]
-                        p = pc.ProcessCamera(ready_cam, tlock)
-                        list_thread.append(p)
-                        p.start()
+                        p = pc.ProcessCamera(ready_cam, loop, tlock)
+                        list_thread.append(p.run())
+                        # p.start()
                         logger.warning(f'starting process camera on  : {ready_cam}')
+
+            loop.run_until_complete(*list_thread)
             # wait until a camera change
             cameras.connect(e_state, scan_state, cameras_state)
             logger.debug('connect pass go on')

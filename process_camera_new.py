@@ -48,16 +48,15 @@ async def detect_thread(my_net, my_class_names, frame, my_width, my_height, thre
     return detections
 
 
-class ProcessCamera(Thread):
+class ProcessCamera(object):
 
-    def __init__(self, cam, tlock):
-        Thread.__init__(self)
+    def __init__(self, cam, loop, tlock):
         self.a = []
         self.cam = cam
         self.key = get_conf('key')
-        self.running = False
-        self.thread_running = False
-        self.loop = asyncio.new_event_loop()
+        self.running_level2 = False
+        self.running_level1 = False
+        self.loop = loop
         self.logger = Logger('process_camera_thread__' + str(self.cam["id"]) + '--' + self.cam["name"],
                              level=settings.PROCESS_CAMERA_LOG).run()
         self.img_bytes = None
@@ -65,15 +64,12 @@ class ProcessCamera(Thread):
         self.tlock = tlock
         self.th = cam['threshold'] * (1 - (float(cam['gap']) / 100))
         self.black_list = [i.encode() for i in settings.DARKNET_CONF['all']['RESTRICT']]
-        # self.queue = asyncio.Queue(maxsize=10)
 
-    def run(self):
-
+    async def run(self):
         self.logger.info('running Thread')
-        self.thread_running = True
-        asyncio.set_event_loop(self.loop)
-        while self.thread_running:
-            self.running = True
+        self.running_level1 = True
+        while self.running_level1:
+            self.running_level2 = True
             if self.cam['stream']:
                 if not self.vcap or not self.vcap.isOpened():
                     rtsp = self.cam['rtsp']
@@ -83,7 +79,7 @@ class ProcessCamera(Thread):
                 task = [self.task1(), self.task2(), self.task3(), ]
             else:
                 task = [self.task1(), self.task3(), ]
-            self.loop.run_until_complete(asyncio.gather(*task))
+            await asyncio.gather(*task)
             if self.cam['stream']:
                 self.vcap.release()
                 self.logger.warning('VideoCapture close on {}'.format(self.cam['name']))
@@ -91,10 +87,10 @@ class ProcessCamera(Thread):
 
     async def task1(self):
         bad_read = 0
-        while self.running:
+        while self.running_level2:
             t = time.time()
             if self.cam['stream']:
-                self.running = self.vcap.isOpened()
+                self.running_level2 = self.vcap.isOpened()
                 frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
                 if frame is False:
                     self.logger.warning(f"Bad rtsp read on {self.cam['name']} videocapture is {self.vcap.isOpened()} "
@@ -102,7 +98,7 @@ class ProcessCamera(Thread):
                     bad_read += 1
                     await asyncio.sleep(0.1)
                     if bad_read > 10:
-                        self.running = False
+                        self.running_level2 = False
                 else:
                     bad_read = 0
             else:
@@ -134,16 +130,16 @@ class ProcessCamera(Thread):
                 self.logger.warning(f"queue img bytes {len(self.img_bytes)}")
 
     async def task2(self):
-        while self.running:
+        while self.running_level2:
             await rtsp_reader(self.vcap, self.loop, self.logger)
 
     async def task3(self):
-        while self.running:
+        while self.running_level2:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_run_cam') as ws_cam:
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
-                    while self.running:
+                    while self.running_level2:
                         await asyncio.sleep(0.1)
                         img_bytes = self.img_bytes
                         if img_bytes:
