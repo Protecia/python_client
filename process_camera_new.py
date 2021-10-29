@@ -83,7 +83,7 @@ class ProcessCamera(object):
             if self.cam['stream']:
                 self.vcap.release()
                 self.logger.warning('VideoCapture close on {}'.format(self.cam['name']))
-            asyncio.sleep(5)
+            asyncio.sleep(3)
 
     async def task1(self):
         bad_read = 0

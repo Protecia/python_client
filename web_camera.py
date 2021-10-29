@@ -29,11 +29,14 @@ class Client(object):
             self.list_cam = json.loads(cam)
             logger.warning(f' receive cam from server -> {self.list_cam}')
 
-    async def connect(self, e_state, scan_state, camera_state):
+    async def connect(self, e_state, scan_state, camera_state, extern_tasks):
         try:
             await asyncio.gather(self.send_cam(), self.receive_cam(), self.get_state(e_state, scan_state, camera_state))
         except Exception as ex:
             logger.warning(f' exception in CONNECT**************** / except-->{ex} / name-->{type(ex).__name__}')
+        for t in extern_tasks:
+            t.running_level1 = False
+            t.running_level2 = False
 
     async def send_cam(self):
         t1 = time.time()

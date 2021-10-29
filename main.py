@@ -133,13 +133,14 @@ def main():
                         uri.pop('id', None)
                         ready_cam = {**c, **uri}
                         p = pc.ProcessCamera(ready_cam, loop, tlock)
-                        list_tasks.append(p.run())
+                        list_tasks.append(p)
                         # p.start()
                         logger.warning(f'starting process camera on  : {ready_cam}')
 
             # wait until a camera change
-            list_tasks.append(cameras.connect(e_state, scan_state, cameras_state))
-            loop.run_until_complete(asyncio.gather(*list_tasks))
+            total_tasks = [cameras.connect(e_state, scan_state, cameras_state, list_tasks)] + \
+                          [t.run() for t in list_tasks]
+            loop.run_until_complete(asyncio.gather(*total_tasks))
 
             logger.debug('connect pass go on')
             # If camera change (websocket answer) -----------------------------
