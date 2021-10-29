@@ -115,7 +115,7 @@ class ProcessCamera(object):
                     tasks.append(detect_thread(network, class_names[nkey], frame_rgb, width[nkey],
                                                height[nkey], self.th))
                     result_dict[nkey] = None
-                with self.tlock:
+                async with self.tlock:
                     result_concurrent = await asyncio.gather(*tasks)
                 result_dict = dict(zip(result_dict, result_concurrent))
                 if 'all' in result_dict:
