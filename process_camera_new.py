@@ -120,12 +120,12 @@ class ProcessCamera(Thread):
                     result_concurrent = await asyncio.gather(*tasks)
                 result_dict = dict(zip(result_dict, result_concurrent))
                 if 'all' in result_dict:
-                    result_darknet = [r for r in result_dict['all'].result() if r[0] not in self.black_list]
+                    result_darknet = [r for r in result_dict['all'] if r[0] not in self.black_list]
                     result_dict.pop('all')
                 else:
                     result_darknet = []
-                for key, partial_result in result_dict.items():
-                    result_darknet += partial_result.result()
+                for partial_result in result_dict.values():
+                    result_darknet += partial_result
                 self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
                 self.img_bytes = cv2.imencode('.jpg', frame)[1].tobytes()
                 self.logger.warning(f"queue img bytes {len(self.img_bytes)}")
