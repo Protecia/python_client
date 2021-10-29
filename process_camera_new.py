@@ -16,6 +16,37 @@ import json
 from utils import get_conf
 import queue
 
+path = settings.DARKNET_PATH
+net = {}
+meta = {}
+width = {}
+height = {}
+class_names = {}
+
+for key, values in settings.DARKNET_CONF.items():
+    cfg = os.path.join(path, values['CFG']).encode()
+    weights = os.path.join(path, values['WEIGHTS']).encode()
+    data = os.path.join(path, values['DATA']).encode()
+    net[key] = dn.load_net_custom(cfg, weights, 0, 1)
+    meta[key] = dn.load_meta(data)
+    class_names[key] = [meta[key].names[i].decode() for i in range(meta[key].classes)]
+    width[key] = dn.network_width(net[key])
+    height[key] = dn.network_height(net[key])
+
+
+def detect_thread(my_net, my_class_names, frame, my_width, my_height, thresh):
+    frame_resized = cv2.resize(frame, (my_width, my_height), interpolation=cv2.INTER_LINEAR)
+    darknet_image = dn.make_image(my_width, my_height, 3)
+    dn.copy_image_from_bytes(darknet_image, frame_resized.tobytes())
+    detections = dn.detect_image(my_net, my_class_names, darknet_image, thresh=thresh)
+    # make coordinate function of initial size
+    height_factor = frame.shape[0] / my_height
+    width_factor = frame.shape[1] / my_width
+    detections = [(r[0], float(r[1]), (r[2][0]*width_factor, r[2][1]*height_factor,
+                                       r[2][2]*width_factor, r[2][3]*height_factor)) for r in detections]
+    dn.free_image(darknet_image)
+    return detections
+
 
 class ProcessCamera(Thread):
 
@@ -31,6 +62,9 @@ class ProcessCamera(Thread):
                              level=settings.PROCESS_CAMERA_LOG).run()
         self.img_bytes = None
         self.vcap = None
+        self.tlock = tlock
+        self.th = cam['threshold'] * (1 - (float(cam['gap']) / 100))
+        self.black_list = [i.encode() for i in settings.DARKNET_CONF['all']['RESTRICT']]
         # self.queue = asyncio.Queue(maxsize=10)
 
     def run(self):
@@ -75,6 +109,21 @@ class ProcessCamera(Thread):
             self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
                              f" en {time.time() - t}s")
             if bad_read == 0:
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                with self.tlock:
+                    with concurrent.futures.ThreadPoolExecutor() as executor:
+                        result_dict = {}
+                        for nkey, network in net.items():
+                            result_dict[nkey] = executor.submit(detect_thread, network, class_names[nkey],
+                                                                frame_rgb, width[nkey], height[nkey], self.th)
+                if 'all' in result_dict:
+                    result_darknet = [r for r in result_dict['all'].result() if r[0] not in self.black_list]
+                    result_dict.pop('all')
+                else:
+                    result_darknet = []
+                for key, partial_result in result_dict.items():
+                    result_darknet += partial_result.result()
+                self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
                 self.img_bytes = cv2.imencode('.jpg', frame)[1].tobytes()
                 self.logger.warning(f"queue img bytes {len(self.img_bytes)}")
 
