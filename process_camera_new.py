@@ -177,7 +177,7 @@ class ProcessCamera(object):
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_get_camera_state') as ws_get_state:
                     self.logger.debug(f'the key is {self.key}')
-                    await ws_get_state.send(json.dumps({'key': self.key}))
+                    await ws_get_state.send(json.dumps({'key': self.key, 'cam_id': self.cam["id"]}))
                     while self.running_level2:
                         await asyncio.sleep(0.02)
                         state = await ws_get_state.recv()
