@@ -39,3 +39,27 @@ def EtoB(E):
         return True
     else:
         return False
+
+
+class Result(object):
+
+    def __init__(self):
+        self.result_darknet = []
+        self.result_filtered = []
+        self.result_filtered_true = []
+        self.time_from_last_correction = 0
+        self.correction = False
+        self.img_bytes = None
+        self.upload = True
+
+    async def base_condition(self):
+        pass
+
+    async def check_tresh(self):
+        pass
+
+    async def search_result(self):
+        pass
+
+    async def get_lost(self):
+        pass

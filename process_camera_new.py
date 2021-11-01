@@ -11,6 +11,7 @@ import secrets
 import concurrent.futures
 import asyncio
 from process_camera_grab import grab_http, rtsp_reader, grab_rtsp
+from process_camera_utils import Result
 import websockets
 import json
 from utils import get_conf
@@ -51,7 +52,6 @@ async def detect_thread(my_net, my_class_names, frame, my_width, my_height, thre
 class ProcessCamera(object):
 
     def __init__(self, cam, loop, tlock):
-        self.a = []
         self.cam = cam
         self.key = get_conf('key')
         self.running_level2 = False
@@ -59,13 +59,16 @@ class ProcessCamera(object):
         self.loop = loop
         self.logger = Logger('process_camera_thread__' + str(self.cam["id"]) + '--' + self.cam["name"],
                              level=settings.PROCESS_CAMERA_LOG).run()
-        self.img_bytes = None
         self.vcap = None
         self.tlock = tlock
         self.th = cam['threshold'] * (1 - (float(cam['gap']) / 100))
         self.black_list = [i.encode() for i in settings.DARKNET_CONF['all']['RESTRICT']]
+        self.result = Result()
 
     async def run(self):
+        """
+        Top level task to instantiate cv2 and httpx reader
+        """
         self.logger.info('running Thread')
         self.running_level1 = True
         while self.running_level1:
@@ -86,6 +89,9 @@ class ProcessCamera(object):
             asyncio.sleep(3)
 
     async def task1(self):
+        """
+        Task to grab image and put informations in result
+        """
         bad_read = 0
         while self.running_level2:
             t = time.time()
@@ -125,15 +131,23 @@ class ProcessCamera(object):
                     result_darknet = []
                 for partial_result in result_dict.values():
                     result_darknet += partial_result
+                self.result.result_darknet = result_darknet
                 self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
-                self.img_bytes = cv2.imencode('.jpg', frame)[1].tobytes()
-                self.logger.warning(f"queue img bytes {len(self.img_bytes)}")
+                self.result.img_bytes = cv2.imencode('.jpg', frame)[1].tobytes()
+                self.result.upload = True
+                self.logger.warning(f"queue img bytes {len(self.result.img_bytes)}")
 
     async def task2(self):
+        """
+        task to empty the cv2 rtsp queue
+        """
         while self.running_level2:
             await rtsp_reader(self.vcap, self.loop, self.logger)
 
     async def task3(self):
+        """
+        Task to upload informations to server using websocket connection
+        """
         while self.running_level2:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_run_cam') as ws_cam:
@@ -141,11 +155,10 @@ class ProcessCamera(object):
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level2:
                         await asyncio.sleep(0.02)
-                        img_bytes = self.img_bytes
-                        if img_bytes:
-                            await ws_cam.send(img_bytes)
-                            self.logger.info(f'--------------------> sending img bytes in task 3 {len(img_bytes)}')
-                            self.img_bytes = None
+                        if self.result.upload:
+                            await ws_cam.send(self.result.img_bytes)
+                            self.logger.info(f'-------------> sending img bytes in task 3 {len(self.result.img_bytes)}')
+                            self.result.upload = False
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
                     websockets.exceptions.InvalidMessage)as ex:
@@ -153,10 +166,25 @@ class ProcessCamera(object):
                 await asyncio.sleep(1)
                 continue
 
-    # async def task4(self):
-    #     while self.running:
-    #         while True:
-    #             img_bytes = self.img_bytes
-    #             if img_bytes:
-    #                 self.logger.debug(f'>>>>>>>>>>>>>>>>>>>>  img_bytes in task 4 is {len(img_bytes)}')
-    #             await asyncio.sleep(2)
+    async def task4(self):
+        """
+        Task to retrieve informations from server :
+        _ sending image real time LD
+        _ sending image real time HD
+        _ sending analysed images
+        """
+        while self.running_level2:
+            try:
+                async with websockets.connect(settings.SERVER_WS + 'ws_get_camera_state') as ws_get_state:
+                    self.logger.debug(f'the key is {self.key}')
+                    await ws_get_state.send(json.dumps({'key': self.key}))
+                    while self.running_level2:
+                        await asyncio.sleep(0.02)
+                        state = await ws_get_state.recv()
+                        self.logger.info(f'receiving state for camera{self.cam["name"]} -> {state}')
+            except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
+                    OSError, ConnectionResetError,
+                    websockets.exceptions.InvalidMessage)as ex:
+                self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
+                await asyncio.sleep(1)
+                continue
