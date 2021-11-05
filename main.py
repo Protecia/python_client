@@ -109,7 +109,7 @@ def main():
             E_video.set()
 
             # initialize the camera state event
-            cameras_state = {}
+            cameras_state = {}  # to delete
             # launch the camera thread
             list_tasks = []
             for c in cameras.list_cam.values():
@@ -119,6 +119,7 @@ def main():
                         if uri['use']:
                             break
                     if uri:
+                        cameras_state[c['id']] = [Event(), Event()]  # to delete
                         uri.pop('id', None)
                         ready_cam = {**c, **uri}
                         p = pc.ProcessCamera(ready_cam, loop, tlock)
