@@ -108,7 +108,7 @@ class Client(object):
                             # trigger to send real time image
                             on_camera = state['cam']
                             logger.warning(f'camera state is -> {on_camera} / events are {camera_state}'
-                                           f' / running level 1 is{self.running_level1}')
+                                           f' / running level 1 is {self.running_level1}')
                             for pk, value in on_camera.items():
                                 [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for
                                  index, i in enumerate(value)]
