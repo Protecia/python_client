@@ -57,6 +57,7 @@ class ProcessCamera(object):
         self.running_level2 = False
         self.running_level1 = False
         self.loop = loop
+
         self.logger = Logger('process_camera_thread__' + str(self.cam["id"]) + '--' + self.cam["name"],
                              level=settings.PROCESS_CAMERA_LOG).run()
         self.vcap = None
