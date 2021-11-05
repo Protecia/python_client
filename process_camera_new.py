@@ -64,7 +64,10 @@ class ProcessCamera(object):
         self.tlock = tlock
         self.th = cam['threshold'] * (1 - (float(cam['gap']) / 100))
         self.black_list = [i.encode() for i in settings.DARKNET_CONF['all']['RESTRICT']]
-        self.result = Result()
+        self.result = Result(cam['pos_sensivity'], cam['threshold'], self.logger)
+        self.rec = False
+        self.HD = False
+        self.LD = False
 
     async def run(self):
         """
@@ -134,6 +137,10 @@ class ProcessCamera(object):
                     result_darknet += partial_result
                 self.result.result_darknet = result_darknet
                 self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
+                if self.cam['reso']:
+                    if frame.shape[0] != self.cam['height'] or frame.shape[1] != self.cam['width']:
+                        frame = cv2.resize(frame, (self.cam['width'], self.cam['height']),
+                                           interpolation=cv2.INTER_CUBIC)
                 self.result.img_bytes = cv2.imencode('.jpg', frame)[1].tobytes()
                 self.result.upload = True
                 self.logger.info(f"queue img bytes {len(self.result.img_bytes)}")
@@ -181,8 +188,11 @@ class ProcessCamera(object):
                     await ws_get_state.send(json.dumps({'key': self.key, 'cam_id': self.cam["id"]}))
                     while self.running_level2:
                         await asyncio.sleep(0.02)
-                        state = await ws_get_state.recv()
+                        state = json.loads(await ws_get_state.recv())
                         self.logger.warning(f'receiving state for camera{self.cam["name"]} -> {state}')
+                        self.rec = state["rec"]
+                        self.LD = state["on_camera_LD"]
+                        self.HD = state["on_camera_HD"]
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError, websockets.exceptions.InvalidMessage)as ex:
                 self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')

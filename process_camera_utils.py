@@ -43,7 +43,9 @@ def EtoB(E):
 
 class Result(object):
 
-    def __init__(self):
+    def __init__(self, pos_sensivity, threshold, logger):
+        self.pos_sensivity = pos_sensivity
+        self.threshold = threshold
         self.result_darknet = []
         self.result_filtered = []
         self.result_filtered_true = []
@@ -51,15 +53,71 @@ class Result(object):
         self.correction = False
         self.img_bytes = None
         self.upload = True
+        self.logger = logger
+        self.force_remove = {}
+        self.image_correction = [False, 0]
 
     async def base_condition(self):
         pass
 
-    async def check_tresh(self):
-        pass
+    async def process_result(self):
+        obj_last, obj_new = self.split_result()
+        self.logger.info('recovery objects from last detection :{} '.format(obj_last))
+        rp_last = self.result_above_treshold() + obj_last
+        rp_new = self.result_above_treshold() + obj_new
+        self.logger.info('the filtered list of detected objects is {}'.format(rp_last))
+        return rp_last, rp_new
 
-    async def search_result(self):
-        pass
+    async def split_result(self):
+        """
+        Return objects split in objects present on last detection and object new
+        """
+        result = self.result_darknet.copy()
+        obj_last = []
+        obj_new = []
+        for obj_lost in await self.result_lost():
+            find = None
+            diff_pos_sav = 10000
+            for obj_result in self.result_darknet:
+                diff_pos = (sum([abs(i - j) for i, j in zip(obj_lost[2], obj_result[2])])) / (
+                            obj_lost[2][2] + obj_lost[2][3]) \
+                           * 100
+                if diff_pos < self.pos_sensivity and diff_pos < diff_pos_sav:
+                    diff_pos_sav = diff_pos
+                    find = obj_result
+                    self.logger.debug('find object {} same as {}'.format(obj_result, obj_lost))
+                    if float(find[1]) > self.threshold:
+                        if find[0] not in self.force_remove:
+                            self.force_remove[find[0]] = 0
+                        if self.force_remove[find[0]] < 5:
+                            self.force_remove[find[0]] += 1
+                            try:
+                                rp = await self.result_above_treshold()
+                                rp.remove(find)
+                            except ValueError:
+                                pass
+                    else:
+                        self.force_remove[find[0]] = 0
+            if find:
+                result.remove(find)
+                self.logger.info('find an object {} at same position than {}'.format(find, obj_lost))
+                obj_new.append((obj_lost[0],) + find[1:])
+                obj_last.append(obj_lost)
+        if obj_last:
+            self.image_correction[0] = True
+        else:
+            self.image_correction[0] = False
+        return obj_last, obj_new
 
-    async def get_lost(self):
-        pass
+    async def result_above_treshold(self):
+        return [r for r in self.result_darknet if float(r[1]) >= self.threshold]
+
+    async def result_lost(self):
+        last = self.result_filtered.copy()
+        for obj_new in await self.result_above_treshold():
+            for obj_last in last:
+                if obj_last[0] == obj_new[0] and (sum([abs(i-j) for i, j in zip(obj_new[2], obj_last[2])])) / \
+                        (obj_last[2][2]+obj_last[2][3])*100 < self.pos_sensivity:
+                    last.remove(obj_last)
+                    break
+        return last
