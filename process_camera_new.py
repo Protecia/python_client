@@ -184,8 +184,7 @@ class ProcessCamera(object):
                         state = await ws_get_state.recv()
                         self.logger.warning(f'receiving state for camera{self.cam["name"]} -> {state}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
-                    OSError, ConnectionResetError,
-                    websockets.exceptions.InvalidMessage)as ex:
+                    OSError, ConnectionResetError, websockets.exceptions.InvalidMessage)as ex:
                 self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
                 await asyncio.sleep(1)
                 continue
