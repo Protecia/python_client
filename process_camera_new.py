@@ -135,7 +135,7 @@ class ProcessCamera(object):
                 self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
                 self.result.img_bytes = cv2.imencode('.jpg', frame)[1].tobytes()
                 self.result.upload = True
-                self.logger.warning(f"queue img bytes {len(self.result.img_bytes)}")
+                self.logger.info(f"queue img bytes {len(self.result.img_bytes)}")
 
     async def task2(self):
         """
@@ -181,7 +181,7 @@ class ProcessCamera(object):
                     while self.running_level2:
                         await asyncio.sleep(0.02)
                         state = await ws_get_state.recv()
-                        self.logger.info(f'receiving state for camera{self.cam["name"]} -> {state}')
+                        self.logger.warning(f'receiving state for camera{self.cam["name"]} -> {state}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
                     websockets.exceptions.InvalidMessage)as ex:
