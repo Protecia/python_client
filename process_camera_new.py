@@ -155,7 +155,7 @@ class ProcessCamera(object):
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level2:
                         await asyncio.sleep(0.02)
-                        if self.result.upload:
+                        if self.result.upload and self.result.img_bytes:
                             await ws_cam.send(self.result.img_bytes)
                             self.logger.info(f'-------------> sending img bytes in task 3 {len(self.result.img_bytes)}')
                             self.result.upload = False
