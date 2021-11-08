@@ -49,6 +49,7 @@ class Result(object):
         self.logger = logger
         self.force_remove = {}
         self.image_correction = False
+        self.result_json = {}
 
     async def base_condition(self):
         pass
@@ -59,7 +60,9 @@ class Result(object):
         rp_last = self.result_above_treshold() + obj_last
         rp_new = self.result_above_treshold() + obj_new
         self.logger.info('the filtered list of detected objects is {}'.format(rp_last))
-        return rp_last, rp_new
+        self.result_json['result_filtered'] = rp_last
+        self.result_json['result_filtered_True'] = rp_new
+
 
     async def split_result(self):
         """
