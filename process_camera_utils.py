@@ -57,8 +57,8 @@ class Result(object):
     async def process_result(self):
         obj_last, obj_new = await self.split_result()
         self.logger.info('recovery objects from last detection :{} '.format(obj_last))
-        rp_last = self.result_above_treshold() + obj_last
-        rp_new = self.result_above_treshold() + obj_new
+        rp_last = await self.result_above_treshold() + obj_last
+        rp_new = await self.result_above_treshold() + obj_new
         self.logger.info('the filtered list of detected objects is {}'.format(rp_last))
         self.result_json['result_filtered'] = rp_last
         self.result_json['result_filtered_True'] = rp_new
