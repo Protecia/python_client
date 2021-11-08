@@ -191,10 +191,11 @@ class ProcessCamera(object):
                     while self.running_level2:
                         await asyncio.sleep(0.02)
                         state = json.loads(await ws_get_state.recv())
-                        self.logger.warning(f'receiving state for camera{self.cam["name"]} -> {state}')
-                        self.rec = state["rec"]
-                        self.LD = state["on_camera_LD"]
-                        self.HD = state["on_camera_HD"]
+                        self.logger.warning(f'receiving state for camera {self.cam["name"]} -> {state}')
+                        if not state.get('ping'):
+                            self.rec = state["rec"]
+                            self.LD = state["on_camera_LD"]
+                            self.HD = state["on_camera_HD"]
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError, websockets.exceptions.InvalidMessage)as ex:
                 self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
