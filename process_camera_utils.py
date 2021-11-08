@@ -1,4 +1,5 @@
 import cv2
+import time
 
 
 def get_list_diff(l_new, l_old, thresh):
@@ -34,28 +35,20 @@ def read_write(rw, *args):
         return r
 
 
-def EtoB(E):
-    if E.is_set():
-        return True
-    else:
-        return False
-
-
 class Result(object):
 
-    def __init__(self, pos_sensivity, threshold, logger):
+    def __init__(self, pos_sensivity, threshold, logger, result_darknet):
         self.pos_sensivity = pos_sensivity
         self.threshold = threshold
-        self.result_darknet = []
+        self.result_darknet = result_darknet
         self.result_filtered = []
         self.result_filtered_true = []
-        self.time_from_last_correction = 0
+        self.time = time.time()
         self.correction = False
-        self.img_bytes = None
         self.upload = True
         self.logger = logger
         self.force_remove = {}
-        self.image_correction = [False, 0]
+        self.image_correction = False
 
     async def base_condition(self):
         pass
@@ -104,9 +97,9 @@ class Result(object):
                 obj_new.append((obj_lost[0],) + find[1:])
                 obj_last.append(obj_lost)
         if obj_last:
-            self.image_correction[0] = True
+            self.image_correction = True
         else:
-            self.image_correction[0] = False
+            self.image_correction = False
         return obj_last, obj_new
 
     async def result_above_treshold(self):
@@ -121,3 +114,12 @@ class Result(object):
                     last.remove(obj_last)
                     break
         return last
+
+
+class Img(object):
+
+    def __init__(self, name, img_bytes, result, resize_factor):
+        self.img_bytes = img_bytes
+        self.name = name
+        self.result = result
+        self.resize_factor = resize_factor

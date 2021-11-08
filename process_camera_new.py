@@ -11,11 +11,11 @@ import secrets
 import concurrent.futures
 import asyncio
 from process_camera_grab import grab_http, rtsp_reader, grab_rtsp
-from process_camera_utils import Result
+from process_camera_utils import Result, Img
 import websockets
 import json
 from utils import get_conf
-import queue
+
 
 path = settings.DARKNET_PATH
 net = {}
@@ -64,10 +64,12 @@ class ProcessCamera(object):
         self.tlock = tlock
         self.th = cam['threshold'] * (1 - (float(cam['gap']) / 100))
         self.black_list = [i.encode() for i in settings.DARKNET_CONF['all']['RESTRICT']]
-        self.result = Result(cam['pos_sensivity'], cam['threshold'], self.logger)
         self.rec = False
         self.HD = False
         self.LD = False
+        self.queue_img_real = asyncio.Queue(maxsize=settings.QUEUE_SIZE)
+        self.queue_img = asyncio.Queue(maxsize=settings.QUEUE_SIZE)
+        self.queue_result = asyncio.Queue(maxsize=settings.QUEUE_SIZE)
 
     async def run(self):
         """
@@ -135,15 +137,17 @@ class ProcessCamera(object):
                     result_darknet = []
                 for partial_result in result_dict.values():
                     result_darknet += partial_result
-                self.result.result_darknet = result_darknet
+                result = Result(self.cam['pos_sensivity'], self.cam['threshold'], self.logger, result_darknet)
                 self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
-                if self.cam['reso']:
-                    if frame.shape[0] != self.cam['height'] or frame.shape[1] != self.cam['width']:
-                        frame = cv2.resize(frame, (self.cam['width'], self.cam['height']),
-                                           interpolation=cv2.INTER_CUBIC)
-                self.result.img_bytes = cv2.imencode('.jpg', frame)[1].tobytes()
-                self.result.upload = True
-                self.logger.info(f"queue img bytes {len(self.result.img_bytes)}")
+                await self.queue_result.put(result)
+
+
+                if True:# if img
+                    if self.cam['reso']:
+                        if frame.shape[0] != self.cam['height'] or frame.shape[1] != self.cam['width']:
+                            frame = cv2.resize(frame, (self.cam['width'], self.cam['height']),
+                                               interpolation=cv2.INTER_CUBIC)
+                    await self.queue_img_real.put(Img('toto', cv2.imencode('.jpg', frame)[1].tobytes(), 'toto', 3))
 
     async def task2(self):
         """
@@ -154,7 +158,7 @@ class ProcessCamera(object):
 
     async def task3(self):
         """
-        Task to upload informations to server using websocket connection
+        Task to upload results to server using websocket connection
         """
         while self.running_level2:
             try:
@@ -162,11 +166,9 @@ class ProcessCamera(object):
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level2:
-                        await asyncio.sleep(0.02)
-                        if self.result.upload and self.result.img_bytes:
-                            await ws_cam.send(self.result.img_bytes)
-                            self.logger.info(f'-------------> sending img bytes in task 3 {len(self.result.img_bytes)}')
-                            self.result.upload = False
+                        result = await self.queue_result.get()
+                        # await ws_cam.send(json.dumps(result))
+                        self.logger.info(f'-------------> sending result in task 3 {result}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
                     websockets.exceptions.InvalidMessage)as ex:
