@@ -109,11 +109,13 @@ class ProcessCamera(object):
                     await asyncio.sleep(0.1)
                     if bad_read > 10:
                         self.running_level2 = False
+                        self.logger.warning(f'level2 False')
                 else:
                     bad_read = 0
                 if bad_read == 0:
                     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     await self.queue_frame.put(frame_rgb)
+            self.logger.warning(f'exit running level2')
             await self.loop.run_in_executor(None, self.vcap.release)
             self.logger.warning(f'VideoCapture close on {self.cam["name"]}')
 
@@ -138,6 +140,7 @@ class ProcessCamera(object):
         while self.running_level1:
             t = time.time()
             frame_rgb = await self.queue_frame.get()
+            self.logger.warning(f'frame length is {len(frame_rgb)}')
             result_dict = {}
             tasks = []
             for nkey, network in net.items():
