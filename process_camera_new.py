@@ -67,6 +67,7 @@ class ProcessCamera(object):
         self.rec = False
         self.HD = False
         self.LD = False
+        self.queue_frame = asyncio.Queue(maxsize=1)
         self.queue_img_real = asyncio.Queue(maxsize=settings.QUEUE_SIZE)
         self.queue_img = asyncio.Queue(maxsize=settings.QUEUE_SIZE)
         self.queue_result = asyncio.Queue(maxsize=settings.QUEUE_SIZE)
@@ -77,31 +78,28 @@ class ProcessCamera(object):
         """
         self.logger.info('running Thread')
         self.running_level1 = True
+        if self.cam['stream']:
+            task = [self.task1_rtsp(), self.task1_rtsp_flush(), self.task2(), self.task3(), self.task4(),
+                    self.task5()]
+        else:
+            task = [self.task1_http(), self.task2(), self.task3(), self.task4(), self.task5()]
+        await asyncio.gather(*task)
+        await asyncio.sleep(3)
+
+    async def task1_rtsp(self):
+        """
+        Task to grab image in rtsp and put informations in result
+        """
         while self.running_level1:
             self.running_level2 = True
-            if self.cam['stream']:
-                if not self.vcap or not self.vcap.isOpened():
-                    rtsp = self.cam['rtsp']
-                    rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
-                    self.vcap = cv2.VideoCapture(rtsp_login)
-                    self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
-                task = [self.task1(), self.task2(), self.task3(), self.task4(), self.task5()]
-            else:
-                task = [self.task1(), self.task3(), self.task4(), self.task5()]
-            await asyncio.gather(*task)
-            if self.cam['stream']:
-                self.vcap.release()
-                self.logger.warning('VideoCapture close on {}'.format(self.cam['name']))
-            await asyncio.sleep(3)
-
-    async def task1(self):
-        """
-        Task to grab image and put informations in result
-        """
-        bad_read = 0
-        while self.running_level2:
-            t = time.time()
-            if self.cam['stream']:
+            if not self.vcap or not self.vcap.isOpened():
+                rtsp = self.cam['rtsp']
+                rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
+                self.vcap = cv2.VideoCapture(rtsp_login)
+                self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
+            bad_read = 0
+            while self.running_level2:
+                t = time.time()
                 self.running_level2 = self.vcap.isOpened()
                 frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
                 if frame is False:
@@ -113,54 +111,70 @@ class ProcessCamera(object):
                         self.running_level2 = False
                 else:
                     bad_read = 0
-            else:
-                self.logger.debug(f"before grab_http on {self.cam['name']}")
-                frame = await grab_http(self.cam, self.logger)
-            self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
-                             f" en {time.time() - t}s")
-            if bad_read == 0:
-                t = time.time()
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                result_dict = {}
-                tasks = []
-                for nkey, network in net.items():
-                    tasks.append(detect_thread(network, class_names[nkey], frame_rgb, width[nkey],
-                                               height[nkey], self.th))
-                    result_dict[nkey] = None
-                async with self.tlock:
-                    result_concurrent = await asyncio.gather(*tasks)
-                result_dict = dict(zip(result_dict, result_concurrent))
-                if 'all' in result_dict:
-                    result_darknet = [r for r in result_dict['all'] if r[0] not in self.black_list]
-                    result_dict.pop('all')
-                else:
-                    result_darknet = []
-                for partial_result in result_dict.values():
-                    result_darknet += partial_result
-                result = Result(self.cam['pos_sensivity'], self.cam['threshold'], self.logger, result_darknet)
-                self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
-                await result.process_result()
-                await self.queue_result.put(result.result_json)
+                if bad_read == 0:
+                    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    await self.queue_frame.put(frame_rgb)
+            self.vcap.release()
+            self.logger.warning('VideoCapture close on {}'.format(self.cam['name']))
 
-                if self.HD or self.LD:
-                    if self.cam['reso']:
-                        if frame.shape[0] != self.cam['height'] or frame.shape[1] != self.cam['width']:
-                            frame = cv2.resize(frame, (self.cam['width'], self.cam['height']),
-                                               interpolation=cv2.INTER_CUBIC)
-                    if self.LD:
-                        resize_factor = self.cam['max_width_rtime'] / frame.shape[1]
-                        frame = cv2.resize(frame, (self.cam['max_width_rtime'], int(frame.shape[0] * resize_factor)),
-                                           interpolation=cv2.INTER_CUBIC)
-                        await self.queue_img_real.put((self.cam['id'], result.result_json['result_filtered_true'],
-                                                      cv2.imencode('.jpg', frame)[1].tobytes(), resize_factor))
-                        self.logger.warning(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
-
-    async def task2(self):
+    async def task1_rtsp_flush(self):
         """
         task to empty the cv2 rtsp queue
         """
         while self.running_level2:
             await rtsp_reader(self.vcap, self.loop, self.logger)
+
+    async def task1_http(self):
+        while self.running_level1:
+            t = time.time()
+            self.logger.debug(f"before grab_http on {self.cam['name']}")
+            frame = await grab_http(self.cam, self.logger)
+            self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
+                             f" en {time.time() - t}s")
+            await self.queue_frame.put(frame)
+
+    async def task2(self):
+        while self.running_level1:
+            t = time.time()
+            frame_rgb = await self.queue_frame.get(frame_rgb)
+            result_dict = {}
+            tasks = []
+            for nkey, network in net.items():
+                tasks.append(detect_thread(network, class_names[nkey], frame_rgb, width[nkey],
+                                           height[nkey], self.th))
+                result_dict[nkey] = None
+            async with self.tlock:
+                result_concurrent = await asyncio.gather(*tasks)
+            result_dict = dict(zip(result_dict, result_concurrent))
+            if 'all' in result_dict:
+                result_darknet = [r for r in result_dict['all'] if r[0] not in self.black_list]
+                result_dict.pop('all')
+            else:
+                result_darknet = []
+            for partial_result in result_dict.values():
+                result_darknet += partial_result
+            result = Result(self.cam['pos_sensivity'], self.cam['threshold'], self.logger, result_darknet)
+            self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
+            await result.process_result()
+            await self.queue_result.put(result.result_json)
+
+            if self.HD or self.LD:
+                if self.cam['reso']:
+                    if frame.shape[0] != self.cam['height'] or frame.shape[1] != self.cam['width']:
+                        frame = cv2.resize(frame, (self.cam['width'], self.cam['height']),
+                                           interpolation=cv2.INTER_CUBIC)
+                if self.LD:
+                    resize_factor = self.cam['max_width_rtime'] / frame.shape[1]
+                    frame = cv2.resize(frame, (self.cam['max_width_rtime'], int(frame.shape[0] * resize_factor)),
+                                       interpolation=cv2.INTER_CUBIC)
+                    await self.queue_img_real.put((self.cam['id'], result.result_json['result_filtered_true'],
+                                                  cv2.imencode('.jpg', frame)[1].tobytes(), resize_factor))
+                    self.logger.warning(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
+
+
+
+
+
 
     async def task3(self):
         """
@@ -192,7 +206,7 @@ class ProcessCamera(object):
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level2:
-                        img = await self.queue_result.get()
+                        img = await self.queue_img_real.get()
                         # await ws_cam.send(json.dumps(result))
                         self.logger.info(f'-------------> sending images in task 4 {img}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
@@ -227,3 +241,14 @@ class ProcessCamera(object):
                 self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
                 await asyncio.sleep(1)
                 continue
+
+    async def stop(self):
+        """
+        Function to stop all the loop and exit asyncio.gather
+        """
+        self.running_level1 = False
+        self.running_level_2 = False
+        self.queue_frame.put('stop')
+        self.queue_result.put('stop')
+        self.queue_image_real.put('stop')
+        self.queue_img.put('stop')
