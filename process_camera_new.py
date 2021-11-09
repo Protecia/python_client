@@ -180,12 +180,12 @@ class ProcessCamera(object):
         """
         Task to upload results to server using websocket connection
         """
-        while self.running_level2:
+        while self.running_level1:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_run_cam') as ws_cam:
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
-                    while self.running_level2:
+                    while self.running_level1:
                         result = await self.queue_result.get()
                         # await ws_cam.send(json.dumps(result))
                         self.logger.info(f'-------------> sending result in task 3 {result}')
@@ -200,12 +200,12 @@ class ProcessCamera(object):
         """
         Task to upload images real time to server using websocket connection
         """
-        while self.running_level2:
+        while self.running_level1:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_run_cam') as ws_cam:
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
-                    while self.running_level2:
+                    while self.running_level1:
                         img = await self.queue_img_real.get()
                         # await ws_cam.send(json.dumps(result))
                         self.logger.info(f'-------------> sending images in task 4 {img}')
@@ -223,12 +223,12 @@ class ProcessCamera(object):
         _ sending image real time HD
         _ sending analysed images
         """
-        while self.running_level2:
+        while self.running_level1:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_get_camera_state') as ws_get_state:
                     self.logger.debug(f'the key is {self.key}')
                     await ws_get_state.send(json.dumps({'key': self.key, 'cam_id': self.cam["id"]}))
-                    while self.running_level2:
+                    while self.running_level1:
                         await asyncio.sleep(0.02)
                         state = json.loads(await ws_get_state.recv())
                         self.logger.warning(f'receiving state for camera {self.cam["name"]} -> {state}')
@@ -247,8 +247,8 @@ class ProcessCamera(object):
         Function to stop all the loop and exit asyncio.gather
         """
         self.running_level1 = False
-        self.running_level_2 = False
-        self.queue_frame.put('stop')
-        self.queue_result.put('stop')
-        self.queue_image_real.put('stop')
-        self.queue_img.put('stop')
+        self.running_level2 = False
+        await self.queue_frame.put('stop')
+        await self.queue_result.put('stop')
+        await self.queue_img_real.put('stop')
+        await self.queue_img.put('stop')
