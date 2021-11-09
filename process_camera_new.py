@@ -117,6 +117,7 @@ class ProcessCamera(object):
                     await self.queue_frame.put(frame_rgb)
             await self.loop.run_in_executor(None, self.vcap.release)
             self.logger.warning('VideoCapture close on {}'.format(self.cam['name']))
+            self.running_level2 = False
 
     async def task1_rtsp_flush(self):
         """
