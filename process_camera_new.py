@@ -99,8 +99,9 @@ class ProcessCamera(object):
                 self.vcap = await self.loop.run_in_executor(None, partial(cv2.VideoCapture, rtsp_login))
                 self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
             bad_read = 0
-            # while self.running_level2:
-            for i in range(20):
+            while self.running_level2:
+                z = 0
+            # for i in range(20):
                 self.running_level2 = self.vcap.isOpened()
                 frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
                 if frame is False:
@@ -114,11 +115,13 @@ class ProcessCamera(object):
                     bad_read = 0
                 if bad_read == 0:
                     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    await asyncio.sleep(3)
                     await self.queue_frame.put(frame_rgb)
+                    z += 1
+                    if z>20:
+                        self.running_level2 = False
             await self.loop.run_in_executor(None, self.vcap.release)
             self.logger.warning('VideoCapture close on {}'.format(self.cam['name']))
-            self.running_level2 = False
+
 
     async def task1_rtsp_flush(self):
         """
