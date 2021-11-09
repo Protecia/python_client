@@ -98,7 +98,8 @@ class ProcessCamera(object):
                 self.vcap = cv2.VideoCapture(rtsp_login)
                 self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
             bad_read = 0
-            while self.running_level2:
+            # while self.running_level2:
+            for i in range(20):
                 self.running_level2 = self.vcap.isOpened()
                 frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
                 if frame is False:
