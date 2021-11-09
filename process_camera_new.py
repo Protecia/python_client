@@ -99,7 +99,6 @@ class ProcessCamera(object):
                 self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
             bad_read = 0
             while self.running_level2:
-                t = time.time()
                 self.running_level2 = self.vcap.isOpened()
                 frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
                 if frame is False:
@@ -121,7 +120,7 @@ class ProcessCamera(object):
         """
         task to empty the cv2 rtsp queue
         """
-        while self.running_level2:
+        while self.running_level1:
             await rtsp_reader(self.vcap, self.loop, self.logger)
 
     async def task1_http(self):
