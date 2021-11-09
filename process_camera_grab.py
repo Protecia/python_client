@@ -2,6 +2,7 @@ import time
 import cv2
 import numpy as np
 import httpx
+from functools import partial
 
 
 # grab frames as soon as they are available
@@ -23,7 +24,7 @@ async def grab_rtsp(vcap, loop, logger, cam):
         return False
 
 
-async def grab_http(cam, logger):
+async def grab_http(cam, logger, loop):
     if cam['auth_type'] == 'B':
         auth = (cam['username'], cam['password'])
     else:  # cam['auth_type'] == 'D'
@@ -37,7 +38,8 @@ async def grab_http(cam, logger):
             logger.info(f'get http image {cam["http"]} in  {time.time() - t}s')
         if r.status_code == 200 and len(r.content) > 11000:
             logger.info(f'content of request is len  {len(r.content)}')
-            frame = cv2.imdecode(np.asarray(bytearray(r.content), dtype="uint8"), 1)
+            array_np = await loop.run_in_executor(None, partial(np.asarray, bytearray(r.content), dtype="uint8"))
+            frame = await loop.run_in_executor(None, partial(cv2.imdecode, array_np , 1))
             logger.info(f'frame with a len of {len(frame) if frame is not None else "None"}')
             if frame is None:
                 logger.warning('bad camera download frame is None on {} \n'.format(cam['name']))

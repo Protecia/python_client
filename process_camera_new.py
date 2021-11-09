@@ -125,7 +125,7 @@ class ProcessCamera(object):
             else:
                 bad_read = 0
             if bad_read == 0:
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                frame_rgb = await self.loop.run_in_executor(None, partial(cv2.cvtColor, frame, cv2.COLOR_BGR2RGB))
                 await self.queue_frame.put(frame_rgb)
                 self.logger.info(f"queue frame is {self.queue_frame.qsize()}")
 
@@ -141,7 +141,7 @@ class ProcessCamera(object):
         while self.running_level1:
             t = time.time()
             self.logger.debug(f"before grab_http on {self.cam['name']}")
-            frame = await grab_http(self.cam, self.logger)
+            frame = await grab_http(self.cam, self.logger, self. loop)
             self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
                              f" en {time.time() - t}s")
             await self.queue_frame.put(frame)
@@ -164,7 +164,6 @@ class ProcessCamera(object):
                 result_dict[nkey] = None
             async with self.tlock:
                 result_concurrent = await asyncio.gather(*tasks)
-                # result_concurrent = [[('person', 0.06, (1265.2903395432693, 17.24791123316838, 24.11708391629733, 32.872575979966385))]]
             self.logger.info(f'>>>>>>>>>>>>>>>>>>>>>  result conccurent {result_concurrent}\n')
             result_dict = dict(zip(result_dict, result_concurrent))
             if 'all' in result_dict:
