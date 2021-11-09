@@ -145,6 +145,7 @@ class ProcessCamera(object):
         Task to analyse image with the neural network
         Multi NN can run in parallel, the limit is given by the amount of GPU RAM
         """
+        i=0
         while self.running_level1:
             t = time.time()
             frame_rgb = await self.queue_frame.get()
@@ -170,7 +171,9 @@ class ProcessCamera(object):
             self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
             await result.process_result()
             await self.queue_result.put(result.result_json)
-
+            # test the NN
+            cv2.imwrite('./img/test'+i+'.jpg', frame)
+            i +=1
             if self.HD or self.LD:
                 if self.cam['reso']:
                     if frame.shape[0] != self.cam['height'] or frame.shape[1] != self.cam['width']:
