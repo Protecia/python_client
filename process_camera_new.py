@@ -114,6 +114,7 @@ class ProcessCamera(object):
                     bad_read = 0
                 if bad_read == 0:
                     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    await asyncio.sleep(3)
                     await self.queue_frame.put(frame_rgb)
             await self.loop.run_in_executor(None, self.vcap.release)
             self.logger.warning('VideoCapture close on {}'.format(self.cam['name']))
@@ -124,7 +125,7 @@ class ProcessCamera(object):
         task to empty the cv2 rtsp queue
         """
         while self.running_level1:
-            await asyncio.sleep(0.001)
+            await asyncio.sleep(0.005)
             await rtsp_reader(self.vcap, self.loop, self.logger)
 
     async def task1_http(self):
