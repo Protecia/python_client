@@ -116,7 +116,7 @@ class ProcessCamera(object):
                     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     await self.queue_frame.put(frame_rgb)
             self.logger.warning(f'exit running level2')
-            await self.loop.run_in_executor(None, self.vcap.release)
+            #await self.loop.run_in_executor(None, self.vcap.release)
             self.logger.warning(f'VideoCapture close on {self.cam["name"]}')
 
     async def task1_rtsp_flush(self):
@@ -137,6 +137,10 @@ class ProcessCamera(object):
             await self.queue_frame.put(frame)
 
     async def task2(self):
+        """
+        Task to analyse image with the neural network
+        Multi NN can run in parallel, the limit is given by the amount of GPU RAM
+        """
         while self.running_level1:
             t = time.time()
             frame_rgb = await self.queue_frame.get()
