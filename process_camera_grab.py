@@ -2,14 +2,12 @@ import time
 import cv2
 import numpy as np
 import httpx
-import asyncio
 
 
 # grab frames as soon as they are available
 async def rtsp_reader(vcap, loop, logger):
-    loop2 = asyncio.get_event_loop()
     try:
-        await loop2.run_in_executor(None, vcap.grab)
+        await loop.run_in_executor(None, vcap.grab)
         logger.error(f'grabbing rtsp')
     except AttributeError:
         pass

@@ -158,7 +158,8 @@ class ProcessCamera(object):
                                            height[nkey], self.th))
                 result_dict[nkey] = None
             async with self.tlock:
-                result_concurrent = await asyncio.gather(*tasks)
+                # result_concurrent = await asyncio.gather(*tasks)
+                result_concurrent = [[('person', 0.06, (1265.2903395432693, 17.24791123316838, 24.11708391629733, 32.872575979966385))]]
             self.logger.info(f'>>>>>>>>>>>>>>>>>>>>>  result conccurent {result_concurrent}\n')
             result_dict = dict(zip(result_dict, result_concurrent))
             if 'all' in result_dict:
