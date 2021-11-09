@@ -36,7 +36,12 @@ for key, values in settings.DARKNET_CONF.items():
     height[key] = dn.network_height(net[key])
 
 
-async def detect_thread(my_net, my_class_names, frame, my_width, my_height, thresh):
+async def detect_thread(my_net, my_class_names, frame, my_width, my_height, thresh, loop):
+    return await loop.run_in_executor(None, partial(detect_block, my_net, my_class_names, frame, my_width, my_height,
+                                                    thresh))
+
+
+def detect_block(my_net, my_class_names, frame, my_width, my_height, thresh):
     frame_resized = cv2.resize(frame, (my_width, my_height), interpolation=cv2.INTER_LINEAR)
     darknet_image = dn.make_image(my_width, my_height, 3)
     dn.copy_image_from_bytes(darknet_image, frame_resized.tobytes())
@@ -129,7 +134,7 @@ class ProcessCamera(object):
         task to empty the cv2 rtsp queue
         """
         while self.running_level2:
-            await asyncio.sleep(0.001)
+            # await asyncio.sleep(0.001)
             await rtsp_reader(self.vcap, self.loop, self.logger)
 
     async def task1_http(self):
@@ -158,8 +163,8 @@ class ProcessCamera(object):
                                            height[nkey], self.th))
                 result_dict[nkey] = None
             async with self.tlock:
-                # result_concurrent = await asyncio.gather(*tasks)
-                result_concurrent = [[('person', 0.06, (1265.2903395432693, 17.24791123316838, 24.11708391629733, 32.872575979966385))]]
+                result_concurrent = await asyncio.gather(*tasks)
+                # result_concurrent = [[('person', 0.06, (1265.2903395432693, 17.24791123316838, 24.11708391629733, 32.872575979966385))]]
             self.logger.info(f'>>>>>>>>>>>>>>>>>>>>>  result conccurent {result_concurrent}\n')
             result_dict = dict(zip(result_dict, result_concurrent))
             if 'all' in result_dict:
