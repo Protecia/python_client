@@ -160,7 +160,7 @@ class ProcessCamera(object):
             tasks = []
             for nkey, network in net.items():
                 tasks.append(detect_thread(network, class_names[nkey], frame_rgb, width[nkey],
-                                           height[nkey], self.th))
+                                           height[nkey], self.th, self.loop))
                 result_dict[nkey] = None
             async with self.tlock:
                 result_concurrent = await asyncio.gather(*tasks)
