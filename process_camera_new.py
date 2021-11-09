@@ -122,6 +122,7 @@ class ProcessCamera(object):
             if bad_read == 0:
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 await self.queue_frame.put(frame_rgb)
+                self.logger.info(f"queue frame is {self.queue_frame.qsize()}")
 
     async def task1_rtsp_flush(self):
         """
