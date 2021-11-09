@@ -182,7 +182,7 @@ class ProcessCamera(object):
         """
         while self.running_level1:
             try:
-                async with websockets.connect(settings.SERVER_WS + 'ws_run_cam') as ws_cam:
+                async with websockets.connect(settings.SERVER_WS + 'ws_run_cam_result') as ws_cam:
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level1:
@@ -202,7 +202,7 @@ class ProcessCamera(object):
         """
         while self.running_level1:
             try:
-                async with websockets.connect(settings.SERVER_WS + 'ws_run_cam') as ws_cam:
+                async with websockets.connect(settings.SERVER_WS + 'ws_run_cam_img') as ws_cam:
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level1:
