@@ -15,6 +15,7 @@ from process_camera_utils import Result, Img
 import websockets
 import json
 from utils import get_conf
+from functools import partial
 
 
 path = settings.DARKNET_PATH
@@ -95,7 +96,7 @@ class ProcessCamera(object):
             if not self.vcap or not self.vcap.isOpened():
                 rtsp = self.cam['rtsp']
                 rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
-                self.vcap = await self.loop.run_in_executor(None, cv2.VideoCapture(rtsp_login))
+                self.vcap = await self.loop.run_in_executor(None, partial(cv2.VideoCapture, rtsp_login))
                 self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
             bad_read = 0
             # while self.running_level2:
@@ -114,7 +115,7 @@ class ProcessCamera(object):
                 if bad_read == 0:
                     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     await self.queue_frame.put(frame_rgb)
-            await self.loop.run_in_executor(None, self.vcap.release())
+            await self.loop.run_in_executor(None, self.vcap.release)
             self.logger.warning('VideoCapture close on {}'.format(self.cam['name']))
 
     async def task1_rtsp_flush(self):
