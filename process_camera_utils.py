@@ -2,7 +2,20 @@ import cv2
 import time
 
 
-def get_list_diff(l_new, l_old, thresh):
+async def base_condition(self, old, pos_sensivity, time_from_last_correction, result):
+    new, lost = get_list_diff(new, old, pos_sensivity)
+    if len(new) == 0 and len(lost) == 0:
+        if self.image_correction[0] and time.time() - time_from_last_correction[1] > 60 * 10:
+            self.image_correction[1] = time.time()
+            return True
+        return False
+    else:
+        self.image_correction = [False, 0]
+        self.logger.info('Change in objects detected : new={new} lost={old}')
+        return True
+
+
+async def get_list_diff(l_new, l_old, thresh):
     new_copy = l_new[:]
     old_copy = l_old[:]
     for e_new in l_new:
