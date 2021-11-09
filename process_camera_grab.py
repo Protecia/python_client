@@ -38,8 +38,11 @@ class VideoCapture:
 
 # grab frames as soon as they are available
 async def rtsp_reader(vcap, loop, logger):
-    await loop.run_in_executor(None, vcap.grab)
-    logger.debug(f'grabbing rtsp')
+    try:
+        await loop.run_in_executor(None, vcap.grab)
+        logger.debug(f'grabbing rtsp')
+    except AttributeError:
+        pass
 
 
 # retrieve latest frame
