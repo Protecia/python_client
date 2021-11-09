@@ -157,6 +157,7 @@ class ProcessCamera(object):
                 result_dict[nkey] = None
             async with self.tlock:
                 result_concurrent = await asyncio.gather(*tasks)
+            self.logger.info(f'>>>>>>>>>>>>>>>>>>>>>  result conccurent {result_concurrent}\n')
             result_dict = dict(zip(result_dict, result_concurrent))
             if 'all' in result_dict:
                 result_darknet = [r for r in result_dict['all'] if r[0] not in self.black_list]
@@ -182,11 +183,6 @@ class ProcessCamera(object):
                     await self.queue_img_real.put((self.cam['id'], result.result_json['result_filtered_true'],
                                                   cv2.imencode('.jpg', frame)[1].tobytes(), resize_factor))
                     self.logger.warning(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
-
-
-
-
-
 
     async def task3(self):
         """

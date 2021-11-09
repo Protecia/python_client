@@ -1,39 +1,7 @@
-import asyncio
 import time
-import requests
 import cv2
 import numpy as np
-from threading import Thread, Lock
 import httpx
-import settings
-import os
-import darknet as dn
-from log import Logger
-import secrets
-import concurrent.futures
-
-
-# bufferless VideoCapture
-class VideoCapture:
-
-    def __init__(self, name):
-        self.cap = cv2.VideoCapture(name)
-        self.t = Thread(target=self._reader)
-        self.t.daemon = True
-        self.t.start()
-
-    # grab frames as soon as they are available
-    def _reader(self):
-        while True:
-            ret = self.cap.grab()
-            if not ret:
-                break
-
-    # retrieve latest frame
-    def read(self):
-        ret, frame = self.cap.retrieve()
-        if ret and len(frame) > 100:
-            return frame
 
 
 # grab frames as soon as they are available
