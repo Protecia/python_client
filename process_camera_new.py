@@ -136,7 +136,7 @@ class ProcessCamera(object):
     async def task2(self):
         while self.running_level1:
             t = time.time()
-            frame_rgb = await self.queue_frame.get(frame_rgb)
+            frame_rgb = await self.queue_frame.get()
             result_dict = {}
             tasks = []
             for nkey, network in net.items():
