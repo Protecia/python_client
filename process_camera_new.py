@@ -172,7 +172,7 @@ class ProcessCamera(object):
             await result.process_result()
             await self.queue_result.put(result.result_json)
             # test the NN
-            cv2.imwrite('./img/test'+str(i)+'.jpg', frame_rgb)
+            cv2.imwrite('./img/test'+str(i)+self.cam["name"]+'.jpg', frame_rgb)
             i +=1
             if self.HD or self.LD:
                 if self.cam['reso']:
