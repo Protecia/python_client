@@ -96,7 +96,7 @@ class ProcessCamera(object):
                 rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
                 self.vcap = await self.loop.run_in_executor(None, partial(cv2.VideoCapture, rtsp_login))
                 self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
-            self.running_level1 = True
+            self.running_level2 = True
             await asyncio.gather(self.task1_rtsp_read(), self.task1_rtsp_flush())
             await asyncio.sleep(1)
             await self.loop.run_in_executor(None, self.vcap.release)
