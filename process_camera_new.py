@@ -80,8 +80,7 @@ class ProcessCamera(object):
         self.logger.info('running Thread')
         self.running_level1 = True
         if self.cam['stream']:
-            task = [self.task1_rtsp(), self.task1_rtsp_flush(), self.task2(), self.task3(), self.task4(),
-                    self.task5()]
+            task = [self.task1_rtsp(), self.task2(), self.task3(), self.task4(), self.task5()]
         else:
             task = [self.task1_http(), self.task2(), self.task3(), self.task4(), self.task5()]
         await asyncio.gather(*task)
@@ -89,43 +88,45 @@ class ProcessCamera(object):
 
     async def task1_rtsp(self):
         """
-        Task to grab image in rtsp and put informations in result
+        Task to open rtsp flux
         """
         while self.running_level1:
-            self.running_level2 = True
-            try:
-                await self.loop.run_in_executor(None, self.vcap.release)
-                self.logger.warning(f'VideoCapture close on {self.cam["name"]}')
-            except AttributeError:
-                pass
             if not self.vcap or not self.vcap.isOpened():
                 rtsp = self.cam['rtsp']
                 rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
                 self.vcap = await self.loop.run_in_executor(None, partial(cv2.VideoCapture, rtsp_login))
                 self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
-            bad_read = 0
-            while self.running_level2:
-                self.running_level2 = self.vcap.isOpened()
-                frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
-                if frame is False:
-                    self.logger.warning(f"Bad rtsp read on {self.cam['name']} videocapture is {self.vcap.isOpened()} "
-                                        f"bad_read is {bad_read}")
-                    bad_read += 1
-                    await asyncio.sleep(0.1)
-                    if bad_read > 10:
-                        self.running_level2 = False
-                else:
-                    bad_read = 0
-                if bad_read == 0:
-                    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    await self.queue_frame.put(frame_rgb)
+            await asyncio.gather(self.task1_rtsp_read(), self.task1_rtsp_flush())
+            await asyncio.sleep(1)
+            await self.loop.run_in_executor(None, self.vcap.release)
+            self.logger.warning(f'VideoCapture close on {self.cam["name"]}')
 
+    async def task1_rtsp_read(self):
+        """
+        Task to grab image in rtsp
+        """
+        bad_read = 0
+        while self.running_level2:
+            self.running_level2 = self.vcap.isOpened()
+            frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
+            if frame is False:
+                self.logger.warning(f"Bad rtsp read on {self.cam['name']} videocapture is {self.vcap.isOpened()} "
+                                    f"bad_read is {bad_read}")
+                bad_read += 1
+                await asyncio.sleep(0.1)
+                if bad_read > 10:
+                    self.running_level2 = False
+            else:
+                bad_read = 0
+            if bad_read == 0:
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                await self.queue_frame.put(frame_rgb)
 
     async def task1_rtsp_flush(self):
         """
         task to empty the cv2 rtsp queue
         """
-        while self.running_level1:
+        while self.running_level2:
             await asyncio.sleep(0.005)
             await rtsp_reader(self.vcap, self.loop, self.logger)
 
