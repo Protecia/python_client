@@ -9,7 +9,7 @@ from functools import partial
 async def rtsp_reader(vcap, loop, logger):
     try:
         await loop.run_in_executor(None, vcap.grab)
-        logger.error(f'grabbing rtsp')
+        logger.debug(f'grabbing rtsp')
     except AttributeError:
         pass
 

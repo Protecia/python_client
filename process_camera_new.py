@@ -134,7 +134,7 @@ class ProcessCamera(object):
         task to empty the cv2 rtsp queue
         """
         while self.running_level2:
-            # await asyncio.sleep(0.001)
+            await asyncio.sleep(0.001)
             await rtsp_reader(self.vcap, self.loop, self.logger)
 
     async def task1_http(self):
@@ -164,7 +164,6 @@ class ProcessCamera(object):
                 result_dict[nkey] = None
             async with self.tlock:
                 result_concurrent = await asyncio.gather(*tasks)
-            self.logger.info(f'>>>>>>>>>>>>>>>>>>>>>  result conccurent {result_concurrent}\n')
             result_dict = dict(zip(result_dict, result_concurrent))
             if 'all' in result_dict:
                 result_darknet = [r for r in result_dict['all'] if r[0] not in self.black_list]
