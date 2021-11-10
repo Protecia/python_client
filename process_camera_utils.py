@@ -1,18 +1,7 @@
 import cv2
 import time
-
-
-async def base_condition(self, old, pos_sensivity, time_from_last_correction, result):
-    new, lost = get_list_diff(new, old, pos_sensivity)
-    if len(new) == 0 and len(lost) == 0:
-        if self.image_correction[0] and time.time() - time_from_last_correction[1] > 60 * 10:
-            self.image_correction[1] = time.time()
-            return True
-        return False
-    else:
-        self.image_correction = [False, 0]
-        self.logger.info('Change in objects detected : new={new} lost={old}')
-        return True
+import secrets
+from functools import partial
 
 
 async def get_list_diff(l_new, l_old, thresh):
@@ -48,21 +37,39 @@ def read_write(rw, *args):
         return r
 
 
+class Img(object):
+
+    def __init__(self, frame, loop):
+        self.frame = frame
+        self.loop = loop
+
+    async def resize_img(self, width, height):
+        return await self.loop.run_in_executor(None, cv2.resize, partial(self.frame, (width, height),
+                                                                         interpolation=cv2.INTER_CUBIC))
+
+    async def bytes_LD(self):
+        pass
+
+    async def bytes_HD(self):
+        pass
+
+
 class Result(object):
 
-    def __init__(self, pos_sensivity, threshold, logger, result_darknet):
-        self.pos_sensivity = pos_sensivity
-        self.threshold = threshold
-        self.result_darknet = result_darknet
-        self.result_filtered = []
-        self.result_filtered_true = []
+    def __init__(self, cam, logger, result_darknet):
+        self.darknet = result_darknet
+        self.filtered = []
+        self.filtered_true = []
         self.time = time.time()
         self.correction = False
         self.upload = True
         self.logger = logger
         self.force_remove = {}
-        self.image_correction = False
-        self.result_json = {}
+        self.correction = False
+        self.json = {}
+        self.cam = cam
+        self.img = None
+        self.token = None
 
     async def base_condition(self):
         pass
@@ -73,28 +80,31 @@ class Result(object):
         rp_last = await self.result_above_treshold() + obj_last
         rp_new = await self.result_above_treshold() + obj_new
         self.logger.info('the filtered list of detected objects is {}'.format(rp_last))
-        self.result_json['result_filtered'] = rp_last
-        self.result_json['result_filtered_True'] = rp_new
+        self.json['result_filtered'] = rp_last
+        self.json['result_filtered_True'] = rp_new
+        self.filtered_true = rp_last
+        self.filtered = rp_new
+        self.token = secrets.token_urlsafe(6)
 
     async def split_result(self):
         """
         Return objects split in objects present on last detection and object new
         """
-        result = self.result_darknet.copy()
+        result = self.darknet.copy()
         obj_last = []
         obj_new = []
         for obj_lost in await self.result_lost():
             find = None
             diff_pos_sav = 10000
-            for obj_result in self.result_darknet:
+            for obj_result in self.darknet:
                 diff_pos = (sum([abs(i - j) for i, j in zip(obj_lost[2], obj_result[2])])) / (
                             obj_lost[2][2] + obj_lost[2][3]) \
                            * 100
-                if diff_pos < self.pos_sensivity and diff_pos < diff_pos_sav:
+                if diff_pos < self.cam['pos_sensivity'] and diff_pos < diff_pos_sav:
                     diff_pos_sav = diff_pos
                     find = obj_result
                     self.logger.debug('find object {} same as {}'.format(obj_result, obj_lost))
-                    if float(find[1]) > self.threshold:
+                    if float(find[1]) > self.cam['threshold']:
                         if find[0] not in self.force_remove:
                             self.force_remove[find[0]] = 0
                         if self.force_remove[find[0]] < 5:
@@ -112,29 +122,30 @@ class Result(object):
                 obj_new.append((obj_lost[0],) + find[1:])
                 obj_last.append(obj_lost)
         if obj_last:
-            self.image_correction = True
+            self.correction = True
         else:
-            self.image_correction = False
+            self.correction = False
         return obj_last, obj_new
 
     async def result_above_treshold(self):
-        return [r for r in self.result_darknet if float(r[1]) >= self.threshold]
+        return [r for r in self.darknet if float(r[1]) >= self.cam['threshold']]
 
     async def result_lost(self):
-        last = self.result_filtered.copy()
+        last = self.filtered.copy()
         for obj_new in await self.result_above_treshold():
             for obj_last in last:
                 if obj_last[0] == obj_new[0] and (sum([abs(i-j) for i, j in zip(obj_new[2], obj_last[2])])) / \
-                        (obj_last[2][2]+obj_last[2][3])*100 < self.pos_sensivity:
+                        (obj_last[2][2]+obj_last[2][3])*100 < self.cam['pos_sensivity']:
                     last.remove(obj_last)
                     break
         return last
 
+    async def img_name(self):
+        date = time.strftime("%Y-%m-%d-%H-%M-%S")
+        return date + '_' + self.token
 
-class Img(object):
-
-    def __init__(self, name, img_bytes, result, resize_factor):
-        self.img_bytes = img_bytes
-        self.name = name
-        self.result = result
-        self.resize_factor = resize_factor
+    async def resize_reso_max(self):
+        if self.cam['reso']:
+            return await self.img.resize(self.cam['height'], self.cam['width'])
+        else:
+            return False

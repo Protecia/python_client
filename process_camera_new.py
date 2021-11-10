@@ -11,11 +11,12 @@ import secrets
 import concurrent.futures
 import asyncio
 from process_camera_grab import grab_http, rtsp_reader, grab_rtsp
-from process_camera_utils import Result, Img
+from process_camera_utils import Result, Img, get_list_diff
 import websockets
 import json
 from utils import get_conf
 from functools import partial
+import datetime
 
 
 path = settings.DARKNET_PATH
@@ -77,7 +78,7 @@ class ProcessCamera(object):
         self.queue_img_real = asyncio.Queue(maxsize=settings.QUEUE_SIZE)
         self.queue_img = asyncio.Queue(maxsize=settings.QUEUE_SIZE)
         self.queue_result = asyncio.Queue(maxsize=settings.QUEUE_SIZE)
-        self.time_from_last_correction = 0
+        self.time_of_last_correction = 0
         self.last_result = []
 
     async def run(self):
@@ -173,22 +174,29 @@ class ProcessCamera(object):
                 result_darknet = []
             for partial_result in result_dict.values():
                 result_darknet += partial_result
-            result = Result(self.cam['pos_sensivity'], self.cam['threshold'], self.logger, result_darknet)
-            self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
+
+            result = Result(self.cam, self.logger, result_darknet)
+            result.img = Img(frame_rgb)
             await result.process_result()
-            await self.queue_result.put(result.result_json)
-            if self.HD or self.LD:
-                if self.cam['reso']:
-                    if frame.shape[0] != self.cam['height'] or frame.shape[1] != self.cam['width']:
-                        frame = cv2.resize(frame, (self.cam['width'], self.cam['height']),
-                                           interpolation=cv2.INTER_CUBIC)
-                if self.LD:
-                    resize_factor = self.cam['max_width_rtime'] / frame.shape[1]
-                    frame = cv2.resize(frame, (self.cam['max_width_rtime'], int(frame.shape[0] * resize_factor)),
-                                       interpolation=cv2.INTER_CUBIC)
-                    await self.queue_img_real.put((self.cam['id'], result.result_json['result_filtered_true'],
-                                                  cv2.imencode('.jpg', frame)[1].tobytes(), resize_factor))
-                    self.logger.warning(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
+            self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
+
+            # --------------- check the base condition for the result to queue --------------------------------
+            if self.rec:
+                if self.base_condition(result):
+                    self.logger.debug('>>> Result have changed <<< ')
+                    await self.queue_img.put(result)
+                    self.logger.warning(f'queue_img size : {self.queue_img.qsize()}')
+                    await self.queue_result.put(result)
+                    self.logger.warning('queue result size : {self.queue_result.qsize()}')
+                    self.logger.warning('>>>>>>>>>>>>>>>--------- Result change send to queue '
+                                        '-------------<<<<<<<<<<<<<<<<<<<<<\n')
+                    self.last_result = result.filtered
+                self.logger.info('brut result process in {}s '.format(time.time() - t))
+
+            # ---------------- if real time visualization active, queue the image ------------------------------
+            if self.LD or self.HD:
+                await self.queue_img_real.put(result)
+                self.logger.warning(f'Q_img_real on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
 
     async def task3(self):
         """
@@ -266,3 +274,18 @@ class ProcessCamera(object):
         await self.queue_result.put('stop')
         await self.queue_img_real.put('stop')
         await self.queue_img.put('stop')
+
+    async def base_condition(self, result):
+        """
+        return True if the result has really change or if there is a correction and a time gap from last correction
+        """
+        new, lost = get_list_diff(result.filtered, self.last_result, self.cam['pos_sensivity'])
+        if len(new) == 0 and len(lost) == 0:
+            if result.correction and time.time() - self.time_of_last_correction > 60 * 10:
+                self.time_of_last_correction = time.time()
+                return True
+            return False
+        else:
+            self.time_of_last_correction = 0
+            self.logger.info('Change in objects detected : new={new} lost={old}')
+            return True
