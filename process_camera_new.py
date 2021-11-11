@@ -176,7 +176,7 @@ class ProcessCamera(object):
                 result_darknet += partial_result
 
             result = Result(self.cam, self.logger, result_darknet)
-            result.img = Img(frame_rgb)
+            result.img = Img(frame_rgb, self.loop)
             await result.process_result()
             self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
 
