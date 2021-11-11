@@ -87,10 +87,12 @@ class ProcessCamera(object):
         """
         self.logger.info('running Thread')
         self.running_level1 = True
+        # task = [self.task2(), self.task3_result(), self.task3_img(), self.task4(), self.task5()]
+        task = []
         if self.cam['stream']:
-            task = [self.task1_rtsp(), self.task2(), self.task3(), self.task4(), self.task5()]
+            task.append(self.task1_rtsp())
         else:
-            task = [self.task1_http(), self.task2(), self.task3(), self.task4(), self.task5()]
+            task.append(self.task1_http())
         await asyncio.gather(*task)
         await asyncio.sleep(3)
 
@@ -198,7 +200,7 @@ class ProcessCamera(object):
                 await self.queue_img_real.put(result)
                 self.logger.warning(f'Q_img_real on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
 
-    async def task3(self):
+    async def task3_result(self):
         """
         Task to upload results to server using websocket connection
         """
@@ -218,13 +220,33 @@ class ProcessCamera(object):
                 await asyncio.sleep(1)
                 continue
 
+    async def task3_img(self):
+        """
+        Task to upload images to server using websocket connection
+        """
+        while self.running_level1:
+            try:
+                async with websockets.connect(settings.SERVER_WS + 'ws_run_cam_result_img') as ws_cam:
+                    self.logger.debug(f'the key is {self.key}')
+                    await ws_cam.send(json.dumps({'key': self.key}))
+                    while self.running_level1:
+                        result = await self.queue_result.get()
+                        # await ws_cam.send(json.dumps(result))
+                        self.logger.info(f'-------------> sending result in task 3 {result}')
+            except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
+                    OSError, ConnectionResetError,
+                    websockets.exceptions.InvalidMessage)as ex:
+                self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
+                await asyncio.sleep(1)
+                continue
+
     async def task4(self):
         """
         Task to upload images real time to server using websocket connection
         """
         while self.running_level1:
             try:
-                async with websockets.connect(settings.SERVER_WS + 'ws_run_cam_img') as ws_cam:
+                async with websockets.connect(settings.SERVER_WS + 'ws_run_cam_img_real') as ws_cam:
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level1:
