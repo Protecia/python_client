@@ -182,10 +182,10 @@ class ProcessCamera(object):
 
             # --------------- check the base condition for the result to queue --------------------------------
             if self.rec:
-                if self.base_condition(result):
+                if await self.base_condition(result):
                     self.logger.debug('>>> Result have changed <<< ')
                     await self.queue_img.put(result)
-                    self.logger.warning(f'queue_img size : {self.queue_img.qsize()}')
+                    self.logger.warning(f'queue img size : {self.queue_img.qsize()}')
                     await self.queue_result.put(result)
                     self.logger.warning(f'queue result size : {self.queue_result.qsize()}')
                     self.logger.warning('>>>>>>>>>>>>>>>--------- Result change send to queue '
