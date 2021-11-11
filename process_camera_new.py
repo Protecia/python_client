@@ -187,7 +187,7 @@ class ProcessCamera(object):
                     await self.queue_img.put(result)
                     self.logger.warning(f'queue_img size : {self.queue_img.qsize()}')
                     await self.queue_result.put(result)
-                    self.logger.warning('queue result size : {self.queue_result.qsize()}')
+                    self.logger.warning(f'queue result size : {self.queue_result.qsize()}')
                     self.logger.warning('>>>>>>>>>>>>>>>--------- Result change send to queue '
                                         '-------------<<<<<<<<<<<<<<<<<<<<<\n')
                     self.last_result = result.filtered
