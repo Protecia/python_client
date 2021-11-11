@@ -279,7 +279,7 @@ class ProcessCamera(object):
         """
         return True if the result has really change or if there is a correction and a time gap from last correction
         """
-        new, lost = get_list_diff(result.filtered, self.last_result, self.cam['pos_sensivity'])
+        new, lost = await get_list_diff(result.filtered, self.last_result, self.cam['pos_sensivity'])
         if len(new) == 0 and len(lost) == 0:
             if result.correction and time.time() - self.time_of_last_correction > 60 * 10:
                 self.time_of_last_correction = time.time()
