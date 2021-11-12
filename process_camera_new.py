@@ -153,7 +153,7 @@ class ProcessCamera(object):
         task to empty the cv2 rtsp queue
         """
         while self.running_level2:
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.5)
             try:
                 await self.loop.run_in_executor(None, self.vcap.grab)
                 self.logger.error(f'grabbing rtsp2')
