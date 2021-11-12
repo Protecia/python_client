@@ -10,7 +10,7 @@ from log import Logger
 import secrets
 import concurrent.futures
 import asyncio
-from process_camera_grab import grab_http, rtsp_reader, grab_rtsp
+from process_camera_grab import grab_http, grab_rtsp
 from process_camera_utils import Result, Img, get_list_diff
 import websockets
 import json
