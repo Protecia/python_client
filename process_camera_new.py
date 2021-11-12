@@ -108,7 +108,7 @@ class ProcessCamera(object):
                 video_opened = await self.loop.run_in_executor(None, self.vcap.isOpened)
                 self.logger.warning(f'openning videocapture {self.vcap} is {video_opened}')
             self.running_level2 = True
-            await asyncio.gather(self.task1_rtsp_read(), self.task1_rtsp_flush(), self.task1_rtsp_flush2())
+            await asyncio.gather(self.task1_rtsp_read(), self.task1_rtsp_flush())
             await asyncio.sleep(1)
             await self.loop.run_in_executor(None, self.vcap.release)
             self.logger.warning(f'VideoCapture close on {self.cam["name"]}')
