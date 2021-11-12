@@ -140,16 +140,10 @@ class ProcessCamera(object):
         """
         task to empty the cv2 rtsp queue
         """
-        self.loop.run_in_executor(None, self.rtsp_reader2)
-
-    def rtsp_reader2(self):
+        self.loop.run_in_executor(None, rtsp_reader, partial(self.vcap, self.logger))
         while self.running_level2:
-            time.sleep(0.001)
-            try:
-                self.vcap.grab()
-                self.logger.error(f'grabbing rtsp')
-            except AttributeError:
-                pass
+            await asyncio.sleep(0.001)
+            await self.rtsp_reader(self.vcap, self.loop, self.logger)
 
     async def task1_http(self):
         while self.running_level1:
