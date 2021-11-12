@@ -5,15 +5,6 @@ import httpx
 from functools import partial
 
 
-# grab frames as soon as they are available
-async def rtsp_reader(vcap, loop, logger):
-    try:
-        await loop.run_in_executor(None, vcap.grab)
-        logger.error(f'grabbing rtsp')
-    except AttributeError:
-        pass
-
-
 # retrieve latest frame
 async def grab_rtsp(vcap, loop, logger, cam):
     ret, frame = await loop.run_in_executor(None, vcap.retrieve)
