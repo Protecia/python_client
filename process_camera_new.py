@@ -140,9 +140,9 @@ class ProcessCamera(object):
         """
         task to empty the cv2 rtsp queue
         """
-        self.loop.run_in_executor(None, rtsp_reader)
+        self.loop.run_in_executor(None, self.rtsp_reader2)
 
-    def rtsp_reader(self):
+    def rtsp_reader2(self):
         while self.running_level2:
             time.sleep(0.001)
             try:
