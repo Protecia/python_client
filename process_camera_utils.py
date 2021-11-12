@@ -146,11 +146,11 @@ class Result(object):
         date = time.strftime("%Y-%m-%d-%H-%M-%S")
         return date + '_' + self.token
 
-    async def resize_reso_max(self):
-        if self.cam['reso']:
-            return await self.img.resize(self.cam['height'], self.cam['width'])
-        else:
-            return False
+    # async def resize_reso_max(self):
+    #     if self.cam['reso']:
+    #         return await self.img.resize(self.cam['height'], self.cam['width'])
+    #     else:
+    #         return False
 
     async def result_to_send(self):
         return self.img_name, self.cam['id'], self.json['result_filtered_True'], self.darknet, self.correction

@@ -87,8 +87,7 @@ class ProcessCamera(object):
         """
         self.logger.info('running Thread')
         self.running_level1 = True
-        # task = [self.task2(), self.task3_result(), self.task3_img(), self.task4(), self.task5()]
-        task = []
+        task = [self.task2(), self.task3_result(), self.task3_img(), self.task4(), self.task5()]
         if self.cam['stream']:
             task.append(self.task1_rtsp())
         else:
