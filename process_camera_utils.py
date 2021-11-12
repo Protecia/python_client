@@ -53,6 +53,11 @@ class Img(object):
     async def bytes_HD(self):
         pass
 
+    async def bytes_img(self, frame):
+        img_bytes = await self.loop.run_in_executor(None, cv2.imencode, partial('.jpg', frame))
+        img_bytes = img_bytes[1]
+        return await self.loop.run_in_executor(None, img_bytes.to_bytes)
+
 
 class Result(object):
 
@@ -70,9 +75,6 @@ class Result(object):
         self.cam = cam
         self.img = None
         self.token = None
-
-    async def base_condition(self):
-        pass
 
     async def process_result(self):
         obj_last, obj_new = await self.split_result()
@@ -149,3 +151,13 @@ class Result(object):
             return await self.img.resize(self.cam['height'], self.cam['width'])
         else:
             return False
+
+    async def result_to_send(self):
+        return self.img_name, self.cam['id'], self.json['result_filtered_True'], self.darknet, self.correction
+
+    async def img_to_send(self):
+        if self.cam['reso']:
+            frame = self.img.resize_img(self.cam['width'], self.cam['height'])
+        else:
+            frame = self.img.frame
+        return self.img.bytes_img(frame)
