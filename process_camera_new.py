@@ -101,8 +101,7 @@ class ProcessCamera(object):
         Task to open rtsp flux
         """
         while self.running_level1:
-            video_opened = await self.loop.run_in_executor(None, self.vcap.isOpened)
-            if not self.vcap or not video_opened:
+            if not self.vcap or not await self.loop.run_in_executor(None, self.vcap.isOpened):
                 rtsp = self.cam['rtsp']
                 rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
                 self.vcap = await self.loop.run_in_executor(None, partial(cv2.VideoCapture, rtsp_login))
