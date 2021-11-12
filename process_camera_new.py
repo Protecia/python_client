@@ -134,7 +134,7 @@ class ProcessCamera(object):
             if bad_read == 0:
                 frame_rgb = await self.loop.run_in_executor(None, partial(cv2.cvtColor, frame, cv2.COLOR_BGR2RGB))
                 await self.queue_frame.put(frame_rgb)
-                self.logger.error(f"queue frame is {self.queue_frame.qsize()}")
+                self.logger.info(f"queue frame is {self.queue_frame.qsize()}")
 
     async def task1_rtsp_flush(self):
         """
@@ -143,20 +143,7 @@ class ProcessCamera(object):
         while self.running_level2:
             try:
                 await self.loop.run_in_executor(None, self.vcap.grab)
-                self.logger.error(f'grabbing rtsp')
-            except AttributeError:
-                pass
-            await asyncio.sleep(0.001)
-
-    async def task1_rtsp_flush2(self):
-        """
-        task to empty the cv2 rtsp queue
-        """
-        while self.running_level2:
-            await asyncio.sleep(0.5)
-            try:
-                await self.loop.run_in_executor(None, self.vcap.grab)
-                self.logger.error(f'grabbing rtsp2')
+                self.logger.debug(f'grabbing rtsp')
             except AttributeError:
                 pass
             await asyncio.sleep(0.001)
