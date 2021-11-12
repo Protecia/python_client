@@ -108,7 +108,7 @@ class ProcessCamera(object):
                 video_opened = await self.loop.run_in_executor(None, self.vcap.isOpened)
                 self.logger.warning(f'openning videocapture {self.vcap} is {video_opened}')
             self.running_level2 = True
-            await asyncio.gather(self.task1_rtsp_read(), self.task1_rtsp_flush())
+            await asyncio.gather(self.task1_rtsp_read(), self.task1_rtsp_flush(), self.task1_rtsp_flush2())
             await asyncio.sleep(1)
             await self.loop.run_in_executor(None, self.vcap.release)
             self.logger.warning(f'VideoCapture close on {self.cam["name"]}')
@@ -137,6 +137,18 @@ class ProcessCamera(object):
                 self.logger.error(f"queue frame is {self.queue_frame.qsize()}")
 
     async def task1_rtsp_flush(self):
+        """
+        task to empty the cv2 rtsp queue
+        """
+        while self.running_level2:
+            try:
+                await self.loop.run_in_executor(None, self.vcap.grab)
+                self.logger.error(f'grabbing rtsp')
+            except AttributeError:
+                pass
+            await asyncio.sleep(0.001)
+
+    async def task1_rtsp_flush2(self):
         """
         task to empty the cv2 rtsp queue
         """
