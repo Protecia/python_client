@@ -101,11 +101,13 @@ class ProcessCamera(object):
         Task to open rtsp flux
         """
         while self.running_level1:
-            if not self.vcap or not self.vcap.isOpened():
+            video_opened = await self.loop.run_in_executor(None, self.vcap.isOpened)
+            if not self.vcap or not video_opened:
                 rtsp = self.cam['rtsp']
                 rtsp_login = 'rtsp://' + self.cam['username'] + ':' + self.cam['password'] + '@' + rtsp.split('//')[1]
                 self.vcap = await self.loop.run_in_executor(None, partial(cv2.VideoCapture, rtsp_login))
-                self.logger.warning(f'openning videocapture {self.vcap} is {self.vcap.isOpened()}')
+                self.logger.warning(f'openning videocapture {self.vcap} is'
+                                    f' {await self.loop.run_in_executor(None,self.vcap.isOpened)}')
             self.running_level2 = True
             await asyncio.gather(self.task1_rtsp_read(), self.task1_rtsp_flush())
             await asyncio.sleep(1)
@@ -118,10 +120,11 @@ class ProcessCamera(object):
         """
         bad_read = 0
         while self.running_level2:
-            self.running_level2 = await self.loop.run_in_executor(None, self.vcap.isOpened)
+            video_live = await self.loop.run_in_executor(None, self.vcap.isOpened)
+            self.running_level2 = video_live
             frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
             if frame is False:
-                self.logger.warning(f"Bad rtsp read on {self.cam['name']} videocapture is {self.vcap.isOpened()} "
+                self.logger.warning(f"Bad rtsp read on {self.cam['name']} videocapture is {video_live} "
                                     f"bad_read is {bad_read}")
                 bad_read += 1
                 await asyncio.sleep(0.1)
