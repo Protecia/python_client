@@ -118,7 +118,7 @@ class ProcessCamera(object):
         """
         bad_read = 0
         while self.running_level2:
-            self.running_level2 = self.vcap.isOpened()
+            self.running_level2 = await self.loop.run_in_executor(None, self.vcap.isOpened)
             frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
             if frame is False:
                 self.logger.warning(f"Bad rtsp read on {self.cam['name']} videocapture is {self.vcap.isOpened()} "
@@ -132,7 +132,7 @@ class ProcessCamera(object):
             if bad_read == 0:
                 frame_rgb = await self.loop.run_in_executor(None, partial(cv2.cvtColor, frame, cv2.COLOR_BGR2RGB))
                 await self.queue_frame.put(frame_rgb)
-                self.logger.info(f"queue frame is {self.queue_frame.qsize()}")
+                self.logger.error(f"queue frame is {self.queue_frame.qsize()}")
 
     async def task1_rtsp_flush(self):
         """
