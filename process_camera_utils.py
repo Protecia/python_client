@@ -56,7 +56,8 @@ class Img(object):
     async def bytes_img(self, frame):
         img_bytes = await self.loop.run_in_executor(None, cv2.imencode, partial('.jpg', frame))
         img_bytes = img_bytes[1]
-        return await self.loop.run_in_executor(None, img_bytes.to_bytes)
+        img_bytes = await self.loop.run_in_executor(None, img_bytes.to_bytes)
+        return img_bytes
 
 
 class Result(object):
