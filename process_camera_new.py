@@ -242,7 +242,8 @@ class ProcessCamera(object):
                         self.logger.info(f'-------------> sending img name in task 3 {name}')
                         img = await result.img_to_send()
                         # await ws_cam.send(img)
-                        self.logger.info(f'-------------> sending img bytes in task 3 {len(img)}')
+                        self.logger.info(f'-------------> sending img bytes in task 3 for cam {self.cam["name"]}'
+                                         f' {len(img)}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
                     websockets.exceptions.InvalidMessage)as ex:

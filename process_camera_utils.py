@@ -161,4 +161,4 @@ class Result(object):
             frame = self.img.resize_img(self.cam['width'], self.cam['height'])
         else:
             frame = self.img.frame
-        return self.img.bytes_img(frame)
+        return await self.img.bytes_img(frame)
