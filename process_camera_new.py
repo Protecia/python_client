@@ -216,7 +216,8 @@ class ProcessCamera(object):
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level1:
                         result = await self.queue_result.get()
-                        await ws_cam.send(json.dumps(await result.result_to_send()))
+                        result = await result.result_to_send()
+                        await ws_cam.send(json.dumps(result))
                         self.logger.info(f'-------------> sending result in task 3 {result}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
