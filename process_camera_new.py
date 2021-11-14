@@ -143,7 +143,7 @@ class ProcessCamera(object):
             try:
                 t = time.time()
                 r = await self.loop.run_in_executor(None, self.vcap.grab)
-                self.logger.debug(f'grabbing rtsp {i} {r} {time.time() - t}')
+                self.logger.debug(f'grabbing rtsp {r} {time.time() - t}')
             except AttributeError:
                 pass
             # await asyncio.sleep(0.001)
