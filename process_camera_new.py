@@ -66,7 +66,7 @@ class ProcessCamera(object):
         self.loop = loop
 
         self.logger = Logger('process_camera_thread__' + str(self.cam["id"]) + '--' + self.cam["name"],
-                             level=settings.PROCESS_CAMERA_LOG).run()
+                             level=settings.PROCESS_CAMERA_LOG, file=True).run()
         self.vcap = None
         self.tlock = tlock
         self.th = cam['threshold'] * (1 - (float(cam['gap']) / 100))
