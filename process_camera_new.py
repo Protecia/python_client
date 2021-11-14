@@ -165,7 +165,7 @@ class ProcessCamera(object):
         """
         while self.running_level1:
             t = time.time()
-            self.logger.errorg(f'before get frame frame length is {len(frame_rgb)}')
+            self.logger.error(f'before get frame frame length is {len(frame_rgb)}')
             frame_rgb = await self.queue_frame.get()
             self.logger.error(f'frame length is {len(frame_rgb)}')
             result_dict = {}
