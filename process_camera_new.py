@@ -145,7 +145,11 @@ class ProcessCamera(object):
                 t = time.time()
                 i+=1
                 r = await self.loop.run_in_executor(None, self.vcap.grab)
-                self.logger.error(f'grabbing rtsp {i} {r} {time.time()-t}')
+                d = time.time()-t
+                if d<0.2:
+                    self.logger.error(f'grabbing rtsp {i} {r} {time.time()-t}')
+                else:
+                    self.logger.error(f'WARNING -------------> grabbing rtsp {i} {r} {time.time() - t}')
             except AttributeError:
                 pass
             # await asyncio.sleep(0.001)
