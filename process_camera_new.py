@@ -240,7 +240,7 @@ class ProcessCamera(object):
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level1:
-                        result = await self.queue_result.get()
+                        result = await self.queue_img.get()
                         name = await result.img_name()
                         # await ws_cam.send(json.dumps(name))
                         self.logger.info(f'-------------> sending img name in task 3 {name}')
