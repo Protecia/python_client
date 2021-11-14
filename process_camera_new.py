@@ -165,8 +165,9 @@ class ProcessCamera(object):
         """
         while self.running_level1:
             t = time.time()
+            self.logger.errorg(f'before get frame frame length is {len(frame_rgb)}')
             frame_rgb = await self.queue_frame.get()
-            self.logger.warning(f'frame length is {len(frame_rgb)}')
+            self.logger.error(f'frame length is {len(frame_rgb)}')
             result_dict = {}
             tasks = []
             for nkey, network in net.items():
@@ -200,7 +201,7 @@ class ProcessCamera(object):
                     self.logger.warning('>>>>>>>>>>>>>>>--------- Result change send to queue '
                                         '-------------<<<<<<<<<<<<<<<<<<<<<\n')
                     self.last_result = result.filtered
-                self.logger.info('brut result process in {}s '.format(time.time() - t))
+                self.logger.error('brut result process in {}s '.format(time.time() - t))
 
             # ---------------- if real time visualization active, queue the image ------------------------------
             if self.LD or self.HD:
