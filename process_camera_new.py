@@ -139,17 +139,11 @@ class ProcessCamera(object):
         """
         task to empty the cv2 rtsp queue
         """
-        i = 0
         while self.running_level2:
             try:
                 t = time.time()
-                i+=1
                 r = await self.loop.run_in_executor(None, self.vcap.grab)
-                d = time.time()-t
-                if d<0.2:
-                    self.logger.error(f'grabbing rtsp {i} {r} {time.time()-t}')
-                else:
-                    self.logger.error(f'WARNING -------------> grabbing rtsp {i} {r} {time.time() - t}')
+                self.logger.debug(f'grabbing rtsp {i} {r} {time.time() - t}')
             except AttributeError:
                 pass
             # await asyncio.sleep(0.001)
@@ -192,7 +186,7 @@ class ProcessCamera(object):
             result = Result(self.cam, self.logger, result_darknet)
             result.img = Img(frame_rgb, self.loop)
             await result.process_result()
-            self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
+            self.logger.error(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
 
             # --------------- check the base condition for the result to queue --------------------------------
             if self.rec:

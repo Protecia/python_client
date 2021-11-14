@@ -16,7 +16,7 @@ import sys
 
 
 class Logger(object):
-    def __init__(self, name, level=logging.ERROR, file=True):
+    def __init__(self, name, level=logging.ERROR, file=False):
         self.logger = logging.getLogger(name)
         if not len(self.logger.handlers):
             self.logger.setLevel(level)
