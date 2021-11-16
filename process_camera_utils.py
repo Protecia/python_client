@@ -155,7 +155,8 @@ class Result(object):
     #         return False
 
     async def result_to_send(self):
-        result_json = {'img': await self.img_name(), 'cam': self.cam['id'],
+        img_json = await self.img_name()
+        result_json = {'img': img_json['name'], 'cam': self.cam['id'],
                        'result_filtered': self.filtered_true, 'result_darknet': self.darknet,
                        'correction': self.correction}
         return result_json
