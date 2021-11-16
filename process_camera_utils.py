@@ -72,7 +72,7 @@ class Result(object):
         self.logger = logger
         self.force_remove = {}
         self.correction = False
-        self.json = {}
+        # self.json = {}
         self.cam = cam
         self.img = None
         self.token = None
@@ -83,8 +83,8 @@ class Result(object):
         rp_last = await self.result_above_treshold() + obj_last
         rp_new = await self.result_above_treshold() + obj_new
         self.logger.info('the filtered list of detected objects is {}'.format(rp_last))
-        self.json['result_filtered'] = rp_last
-        self.json['result_filtered_True'] = rp_new
+        # self.json['result_filtered'] = rp_last
+        # self.json['result_filtered_True'] = rp_new
         self.filtered_true = rp_last
         self.filtered = rp_new
         self.token = secrets.token_urlsafe(6)
@@ -145,7 +145,8 @@ class Result(object):
 
     async def img_name(self):
         date = time.strftime("%Y-%m-%d-%H-%M-%S")
-        return date + '_' + self.token
+        result_json = {'name': date + '_' + self.token, 'cam': self.cam['id'], 'result': self.filtered_true}
+        return result_json
 
     # async def resize_reso_max(self):
     #     if self.cam['reso']:
@@ -155,7 +156,7 @@ class Result(object):
 
     async def result_to_send(self):
         result_json = {'img': await self.img_name(), 'cam': self.cam['id'],
-                       'result_filtered': self.json['result_filtered_True'], 'result_darknet': self.darknet,
+                       'result_filtered': self.filtered_true, 'result_darknet': self.darknet,
                        'correction': self.correction}
         return result_json
 
