@@ -131,7 +131,7 @@ class ProcessCamera(object):
             else:
                 bad_read = 0
             if bad_read == 0:
-                frame_rgb = await self.loop.run_in_executor(None, partial(cv2.cvtColor, frame, cv2.COLOR_BGR2RGB))
+                # frame_rgb = await self.loop.run_in_executor(None, partial(cv2.cvtColor, frame, cv2.COLOR_BGR2RGB))
                 await self.queue_frame.put(frame)
                 self.logger.info(f"queue frame is {self.queue_frame.qsize()}")
 
