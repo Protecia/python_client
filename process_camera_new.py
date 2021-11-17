@@ -165,9 +165,9 @@ class ProcessCamera(object):
         """
         while self.running_level1:
             t = time.time()
-            self.logger.error(f'before get frame queue is {self.queue_frame.qsize()}')
+            self.logger.debug(f'before get frame queue is {self.queue_frame.qsize()}')
             frame_rgb = await self.queue_frame.get()
-            self.logger.error(f'frame length is {len(frame_rgb)}')
+            self.logger.debug(f'frame length is {len(frame_rgb)}')
             result_dict = {}
             tasks = []
             for nkey, network in net.items():
@@ -188,30 +188,30 @@ class ProcessCamera(object):
             result = Result(self.cam, self.logger, result_darknet)
             result.img = Img(frame_rgb, self.loop)
             await result.process_result()
-            self.logger.error(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
+            self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
 
             # --------------- check the base condition for the result to queue --------------------------------
             if self.rec:
                 if await self.base_condition(result):
-                    self.logger.error('>>> Result have changed <<< ')
+                    self.logger.debug('>>> Result have changed <<< ')
                     await self.queue_img.put(result)
-                    self.logger.error(f'queue img size : {self.queue_img.qsize()}')
+                    self.logger.debug(f'queue img size : {self.queue_img.qsize()}')
                     await self.queue_result.put(result)
-                    self.logger.error(f'queue result size : {self.queue_result.qsize()}')
+                    self.logger.debug(f'queue result size : {self.queue_result.qsize()}')
                     self.logger.warning('>>>>>>>>>>>>>>>--------- Result change send to queue '
                                         '-------------<<<<<<<<<<<<<<<<<<<<<\n')
                     self.last_result = result.filtered
-                self.logger.error('brut result process in {}s '.format(time.time() - t))
+                self.logger.debug('brut result process in {}s '.format(time.time() - t))
 
             # ---------------- if real time visualization active, queue the image ------------------------------
             if self.LD:
                 result.resolution = 'LD'
                 await self.queue_img_real.put(result)
-                self.logger.warning(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
+                self.logger.error(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
             if self.HD:
                 result.resolution = 'HD'
                 await self.queue_img_real.put(result)
-                self.logger.warning(f'Q_img_real HD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
+                self.logger.error(f'Q_img_real HD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
 
     async def task3_result(self):
         """
@@ -276,7 +276,7 @@ class ProcessCamera(object):
                         self.logger.info(f'-------------> sending img name in task 4 {name}')
                         img = await result.img_to_send()
                         await ws_cam.send(img)
-                        self.logger.info(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
+                        self.logger.error(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
                                          f' {len(img)}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
