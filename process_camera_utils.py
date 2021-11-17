@@ -44,8 +44,8 @@ class Img(object):
         self.loop = loop
 
     async def resize_img(self, width, height):
-        return await self.loop.run_in_executor(None, cv2.resize, partial(self.frame, (width, height),
-                                                                         interpolation=cv2.INTER_CUBIC))
+        return await self.loop.run_in_executor(None, partial(cv2.resize, self.frame, (width, height),
+                                                             interpolation=cv2.INTER_CUBIC))
 
     async def bytes_LD(self):
         pass
