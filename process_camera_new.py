@@ -271,6 +271,7 @@ class ProcessCamera(object):
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level1:
                         result = await self.queue_img_real.get()
+                        result.resolution = 'rec'
                         name = await result.img_name()
                         await ws_cam.send(json.dumps(name))
                         self.logger.info(f'-------------> sending img name in task 4 {name}')
