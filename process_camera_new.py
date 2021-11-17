@@ -204,9 +204,14 @@ class ProcessCamera(object):
                 self.logger.error('brut result process in {}s '.format(time.time() - t))
 
             # ---------------- if real time visualization active, queue the image ------------------------------
-            if self.LD or self.HD:
+            if self.LD:
+                result.resolution = 'LD'
                 await self.queue_img_real.put(result)
-                self.logger.warning(f'Q_img_real on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
+                self.logger.warning(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
+            if self.HD:
+                result.resolution = 'HD'
+                await self.queue_img_real.put(result)
+                self.logger.warning(f'Q_img_real HD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
 
     async def task3_result(self):
         """
@@ -265,8 +270,15 @@ class ProcessCamera(object):
                     self.logger.debug(f'the key is {self.key}')
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level1:
-                        img = await self.queue_img_real.get()
-                        # await ws_cam.send(json.dumps(result))
+                        result = await self.queue_img_real.get()
+                        name = await result.img_name()
+                        await ws_cam.send(json.dumps(name))
+                        self.logger.info(f'-------------> sending img name in task 4 {name}')
+                        img = await result.img_to_send()
+                        await ws_cam.send(img)
+                        self.logger.info(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
+                                         f' {len(img)}')
+                        await ws_cam.send(img)
                         self.logger.info(f'-------------> sending images in task 4 {img}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,

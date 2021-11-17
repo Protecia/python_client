@@ -76,6 +76,7 @@ class Result(object):
         self.cam = cam
         self.img = None
         self.token = None
+        self.resolution = 'rec'
 
     async def process_result(self):
         obj_last, obj_new = await self.split_result()
@@ -145,7 +146,12 @@ class Result(object):
 
     async def img_name(self):
         date = time.strftime("%Y-%m-%d-%H-%M-%S")
-        result_json = {'name': date + '_' + self.token, 'cam': self.cam['id'], 'result': self.filtered_true}
+        if self.resolution == 'rec':
+            name = date + '_' + self.token
+        else:
+            name = 'temp_img_cam_' + str(self.cam['id'])
+        result_json = {'name': name, 'cam': self.cam['id'], 'result': self.filtered_true,
+                       'resize_factor': await self.resize_factor(), }
         return result_json
 
     # async def resize_reso_max(self):
@@ -162,8 +168,26 @@ class Result(object):
         return result_json
 
     async def img_to_send(self):
-        if self.cam['reso']:
-            frame = self.img.resize_img(self.cam['width'], self.cam['height'])
+        if self.resolution == 'HD':
+            frame = await self.img.resize_img(self.cam['max_width_rtime_HD'],
+                                              int(self.img.frame.shape[0] * await self.resize_factor()))
+        elif self.resolution == 'LD':
+            frame = await self.img.resize_img(self.cam['max_width_rtime'],
+                                              int(self.img.frame.shape[0] * await self.resize_factor()))
         else:
-            frame = self.img.frame
+            if self.cam['reso']:
+                frame = await self.img.resize_img(self.cam['width'], self.cam['height'])
+            else:
+                frame = self.img.frame
         return await self.img.bytes_img(frame)
+
+    async def resize_factor(self):
+        if self.resolution == 'HD':
+            resize_factor = self.cam['max_width_rtime_HD'] / self.img.frame.shape[1]
+        elif self.resolution == 'LD':
+            resize_factor = self.cam['max_width_rtime'] / self.img.frame.shape[1]
+        else:
+            resize_factor = 1
+        return resize_factor
+
+
