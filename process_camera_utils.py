@@ -47,12 +47,6 @@ class Img(object):
         return await self.loop.run_in_executor(None, partial(cv2.resize, self.frame, (width, height),
                                                              interpolation=cv2.INTER_CUBIC))
 
-    async def bytes_LD(self):
-        pass
-
-    async def bytes_HD(self):
-        pass
-
     async def bytes_img(self, frame):
         img_bytes = await self.loop.run_in_executor(None, cv2.imencode, '.jpg', frame)
         img_bytes = img_bytes[1]
