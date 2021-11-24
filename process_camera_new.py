@@ -207,11 +207,11 @@ class ProcessCamera(object):
             if self.LD:
                 result.resolution = 'LD'
                 await self.queue_img_real.put(result)
-                self.logger.error(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
+                self.logger.info(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
             if self.HD:
                 result.resolution = 'HD'
                 await self.queue_img_real.put(result)
-                self.logger.error(f'Q_img_real HD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
+                self.logger.info(f'Q_img_real HD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
 
     async def task3_result(self):
         """
@@ -276,7 +276,7 @@ class ProcessCamera(object):
                         self.logger.info(f'-------------> sending img name in task 4 {name}')
                         img = await result.img_to_send()
                         await ws_cam.send(img)
-                        self.logger.error(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
+                        self.logger.info(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
                                          f' {len(img)}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
@@ -300,7 +300,7 @@ class ProcessCamera(object):
                     while self.running_level1:
                         await asyncio.sleep(0.02)
                         state = json.loads(await ws_get_state.recv())
-                        self.logger.error(f'receiving state for camera {self.cam["name"]} -> {state}')
+                        self.logger.info(f'receiving state for camera {self.cam["name"]} -> {state}')
                         if not state.get('ping'):
                             self.rec = state["rec"]
                             self.LD = state["on_camera_LD"]
