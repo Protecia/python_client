@@ -36,7 +36,6 @@ class Client(object):
             t.stop()
             logger.warning(f'shutting down externe task {t}')
 
-
     async def send_cam(self):
         t1 = time.time()
         while self.running_level1:
