@@ -300,7 +300,7 @@ class ProcessCamera(object):
                     while self.running_level1:
                         await asyncio.sleep(0.02)
                         state = json.loads(await ws_get_state.recv())
-                        self.logger.info(f'receiving state for camera {self.cam["name"]} -> {state}')
+                        self.logger.error(f'receiving state for camera {self.cam["name"]} -> {state}')
                         if not state.get('ping'):
                             self.rec = state["rec"]
                             self.LD = state["on_camera_LD"]
