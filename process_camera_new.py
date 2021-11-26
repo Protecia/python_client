@@ -168,6 +168,8 @@ class ProcessCamera(object):
             t = time.time()
             self.logger.debug(f'before get frame queue is {self.queue_frame.qsize()}')
             frame_rgb = await self.queue_frame.get()
+            if frame_rgb == 'stop':
+                break
             self.logger.debug(f'frame length is {len(frame_rgb)}')
             result_dict = {}
             tasks = []
@@ -225,6 +227,8 @@ class ProcessCamera(object):
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level1:
                         result = await self.queue_result.get()
+                        if result == 'stop':
+                            break
                         result = await result.result_to_send()
                         self.logger.info(f'result is {result}')
                         await ws_cam.send(json.dumps(result))
@@ -247,6 +251,8 @@ class ProcessCamera(object):
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level1:
                         result = await self.queue_img.get()
+                        if result == 'stop':
+                            break
                         name = await result.img_name()
                         await ws_cam.send(json.dumps(name))
                         self.logger.error(f'-------------> sending img name in task 3 {name}')
@@ -272,6 +278,8 @@ class ProcessCamera(object):
                     await ws_cam.send(json.dumps({'key': self.key}))
                     while self.running_level1:
                         result = await self.queue_img_real.get()
+                        if result == 'stop':
+                            break
                         name = await result.img_name()
                         await ws_cam.send(json.dumps(name))
                         self.logger.error(f'-------------> sending img name in task 4 {name}')
