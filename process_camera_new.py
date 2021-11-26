@@ -208,7 +208,7 @@ class ProcessCamera(object):
                 result.resolution = 'LD'
                 await self.queue_img_real.put(result)
                 self.logger.info(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
-            if self.HD:
+            elif self.HD:
                 result.resolution = 'HD'
                 await self.queue_img_real.put(result)
                 self.logger.info(f'Q_img_real HD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
@@ -227,7 +227,7 @@ class ProcessCamera(object):
                         result = await result.result_to_send()
                         self.logger.info(f'result is {result}')
                         await ws_cam.send(json.dumps(result))
-                        self.logger.info(f'-------------> sending result in task 3 {result}')
+                        self.logger.error(f'-------------> sending result in task 3 {result}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
                     websockets.exceptions.InvalidMessage)as ex:
@@ -248,10 +248,10 @@ class ProcessCamera(object):
                         result = await self.queue_img.get()
                         name = await result.img_name()
                         await ws_cam.send(json.dumps(name))
-                        self.logger.info(f'-------------> sending img name in task 3 {name}')
+                        self.logger.error(f'-------------> sending img name in task 3 {name}')
                         img = await result.img_to_send()
                         await ws_cam.send(img)
-                        self.logger.info(f'-------------> sending img bytes in task 3 for cam {self.cam["name"]}'
+                        self.logger.error(f'-------------> sending img bytes in task 3 for cam {self.cam["name"]}'
                                          f' {len(img)}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
@@ -273,10 +273,10 @@ class ProcessCamera(object):
                         result = await self.queue_img_real.get()
                         name = await result.img_name()
                         await ws_cam.send(json.dumps(name))
-                        self.logger.info(f'-------------> sending img name in task 4 {name}')
+                        self.logger.error(f'-------------> sending img name in task 4 {name}')
                         img = await result.img_to_send()
                         await ws_cam.send(img)
-                        self.logger.info(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
+                        self.logger.error(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
                                          f' {len(img)}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
