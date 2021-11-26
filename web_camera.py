@@ -33,8 +33,9 @@ class Client(object):
         # except Exception as ex:
         #     logger.warning(f' exception in CONNECT**************** / except-->{ex} / name-->{type(ex).__name__}')
         for t in extern_tasks:
-            t.running_level1 = False
-            t.running_level2 = False
+            t.stop()
+            logger.warning(f'shutting down externe task {t}')
+
 
     async def send_cam(self):
         t1 = time.time()
