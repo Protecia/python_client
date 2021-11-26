@@ -155,7 +155,7 @@ class ProcessCamera(object):
     async def task1_http(self):
         while self.running_level1:
             t = time.time()
-            self.logger.error(f"before grab_http on {self.cam['name']}")
+            self.logger.info(f"before grab_http on {self.cam['name']}")
             frame = await grab_http(self.cam, self.logger, self.loop)
             self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
                              f" en {time.time() - t}s")
@@ -334,7 +334,7 @@ class ProcessCamera(object):
         Function to stop all the loop and exit asyncio.gather
         """
         self.running_level1 = False
-        self.logger.error(f'running false on cam {self.cam["name"]} ')
+        self.logger.info(f'running false on cam {self.cam["name"]} ')
         await asyncio.sleep(1)
         if self.queue_frame.empty():
             await self.queue_frame.put('stop')
