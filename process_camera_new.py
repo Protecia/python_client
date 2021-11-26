@@ -117,7 +117,7 @@ class ProcessCamera(object):
         Task to grab image in rtsp
         """
         bad_read = 0
-        while self.running_level2:
+        while self.running_level2 and self.running_level1:
             video_live = await self.loop.run_in_executor(None, self.vcap.isOpened)
             self.running_level2 = video_live
             frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
@@ -139,7 +139,7 @@ class ProcessCamera(object):
         """
         task to empty the cv2 rtsp queue
         """
-        while self.running_level2:
+        while self.running_level2 and self.running_level1:
             try:
                 t = time.time()
                 r = await self.loop.run_in_executor(None, self.vcap.grab)
@@ -316,8 +316,7 @@ class ProcessCamera(object):
         Function to stop all the loop and exit asyncio.gather
         """
         self.running_level1 = False
-        self.running_level2 = False
-        self.logger.error(f'running false on cam {self.cam["name"]}')
+        self.logger.error(f'running false on cam {self.cam["name"]} ')
         await self.queue_frame.put('stop')
         await self.queue_result.put('stop')
         await self.queue_img_real.put('stop')
