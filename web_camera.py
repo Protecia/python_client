@@ -28,8 +28,8 @@ class Client(object):
             self.list_cam = json.loads(cam)
             logger.warning(f' get cam receive cam from server -> {self.list_cam}')
 
-    async def connect(self, e_state, scan_state, camera_state, extern_tasks):
-        await asyncio.gather(self.send_cam(), self.receive_cam(), self.get_state(e_state, scan_state, camera_state))
+    async def connect(self, scan_state, extern_tasks):
+        await asyncio.gather(self.send_cam(), self.receive_cam(), self.get_state(scan_state))
         # except Exception as ex:
         #     logger.warning(f' exception in CONNECT**************** / except-->{ex} / name-->{type(ex).__name__}')
         for t in extern_tasks:
@@ -85,7 +85,7 @@ class Client(object):
                 await asyncio.sleep(1)
                 continue
 
-    async def get_state(self, e_state, scan_state, camera_state):
+    async def get_state(self, scan_state):
         while self.running_level1:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_get_state') as ws:
@@ -101,18 +101,8 @@ class Client(object):
                                     logger.warning(f"video.json has been written :"
                                                    f"token1: {state['token1']}, token2: {state['token2']}")
                         else:
-                            e_state.set() if state['rec'] else e_state.clear()
                             scan_state.set() if state['scan'] else scan_state.clear()
-                            logger.debug(f'scan state from server is -> {state["scan"]}'
-                                         f' / events is {scan_state.is_set()}')
-                            # trigger to send real time image
-                            on_camera = state['cam']
-                            logger.warning(f'camera state is -> {on_camera} / events are {camera_state}'
-                                           f' / running level 1 is {self.running_level1}')
-                            for pk, value in on_camera.items():
-                                [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for
-                                 index, i in enumerate(value)]
-
+                            logger.debug(f'scan state from server is -> {state["scan"]}')
                             # write the change for reboot and docker version
                             with open(settings.INSTALL_PATH + '/conf/docker.json', 'w') as conf_json:
                                 docker_json = {key: state[key] for key in ['tunnel_port', 'docker_version', 'reboot']}

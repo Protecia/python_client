@@ -128,7 +128,7 @@ def main():
                         logger.warning(f'starting process camera on  : {ready_cam}')
 
             # wait until a camera change
-            total_tasks = [cameras.connect(e_state, scan_state, cameras_state, list_tasks)] + \
+            total_tasks = [cameras.connect(scan_state, list_tasks)] + \
                           [t.run() for t in list_tasks]
             loop.run_until_complete(asyncio.gather(*total_tasks))
 
