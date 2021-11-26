@@ -318,13 +318,18 @@ class ProcessCamera(object):
         """
         self.running_level1 = False
         self.logger.error(f'running false on cam {self.cam["name"]} ')
-        await self.queue_frame.put('stop')
+        await asyncio.sleep(1)
+        if self.queue_frame.empty():
+            await self.queue_frame.put('stop')
         self.logger.error(f'exit 1 ')
-        await self.queue_result.put('stop')
+        if self.queue_result.empty():
+            await self.queue_result.put('stop')
         self.logger.error(f'exit 2 ')
-        await self.queue_img_real.put('stop')
+        if self.queue_img_real.empty():
+            await self.queue_img_real.put('stop')
         self.logger.error(f'exit 3 ')
-        await self.queue_img.put('stop')
+        if self.queue_img.empty():
+            await self.queue_img.put('stop')
         self.logger.error(f'end STOP')
 
     async def base_condition(self, result):
