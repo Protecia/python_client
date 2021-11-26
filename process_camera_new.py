@@ -319,8 +319,11 @@ class ProcessCamera(object):
         self.running_level1 = False
         self.logger.error(f'running false on cam {self.cam["name"]} ')
         await self.queue_frame.put('stop')
+        self.logger.error(f'exit 1 ')
         await self.queue_result.put('stop')
+        self.logger.error(f'exit 2 ')
         await self.queue_img_real.put('stop')
+        self.logger.error(f'exit 3 ')
         await self.queue_img.put('stop')
         self.logger.error(f'end STOP')
 
