@@ -112,6 +112,7 @@ class ProcessCamera(object):
             await asyncio.sleep(1)
             await self.loop.run_in_executor(None, self.vcap.release)
             self.logger.warning(f'VideoCapture close on {self.cam["name"]}')
+        self.logger.error('EXIT task1_rtsp TASKS')
 
     async def task1_rtsp_read(self):
         """
@@ -135,6 +136,7 @@ class ProcessCamera(object):
                 # frame_rgb = await self.loop.run_in_executor(None, partial(cv2.cvtColor, frame, cv2.COLOR_BGR2RGB))
                 await self.queue_frame.put(frame)
                 self.logger.info(f"queue frame is {self.queue_frame.qsize()}")
+        self.logger.error('EXIT task1_rtsp_read TASKS')
 
     async def task1_rtsp_flush(self):
         """
@@ -148,6 +150,7 @@ class ProcessCamera(object):
             except AttributeError:
                 pass
             # await asyncio.sleep(0.001)
+        self.logger.error('EXIT task1_rtsp_flush TASKS')
 
     async def task1_http(self):
         while self.running_level1:
@@ -158,6 +161,7 @@ class ProcessCamera(object):
                              f" en {time.time() - t}s")
             if frame is not False:
                 await self.queue_frame.put(frame)
+        self.logger.error('EXIT task1_http TASKS')
 
     async def task2(self):
         """
@@ -215,6 +219,7 @@ class ProcessCamera(object):
                 result.resolution = 'HD'
                 await self.queue_img_real.put(result)
                 self.logger.info(f'Q_img_real HD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
+        self.logger.error('EXIT task2 TASKS')
 
     async def task3_result(self):
         """
@@ -239,6 +244,7 @@ class ProcessCamera(object):
                 self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
                 await asyncio.sleep(1)
                 continue
+        self.logger.error('EXIT task3_result TASKS')
 
     async def task3_img(self):
         """
@@ -266,6 +272,7 @@ class ProcessCamera(object):
                 self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
                 await asyncio.sleep(1)
                 continue
+        self.logger.error('EXIT task3_img TASKS')
 
     async def task4(self):
         """
@@ -293,6 +300,7 @@ class ProcessCamera(object):
                 self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
                 await asyncio.sleep(1)
                 continue
+        self.logger.error('EXIT task4')
 
     async def task5(self):
         """
@@ -319,6 +327,7 @@ class ProcessCamera(object):
                 self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
                 await asyncio.sleep(1)
                 continue
+        self.logger.error('EXIT task5')
 
     async def stop(self):
         """
