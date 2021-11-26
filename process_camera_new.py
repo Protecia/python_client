@@ -140,6 +140,7 @@ class ProcessCamera(object):
         task to empty the cv2 rtsp queue
         """
         while self.running_level2 and self.running_level1:
+            self.logger.debug(f'level 1 :  self.running_level1 /// level2 : self.running_level2')
             try:
                 t = time.time()
                 r = await self.loop.run_in_executor(None, self.vcap.grab)
