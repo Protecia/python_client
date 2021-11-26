@@ -322,6 +322,7 @@ class ProcessCamera(object):
         await self.queue_result.put('stop')
         await self.queue_img_real.put('stop')
         await self.queue_img.put('stop')
+        self.logger.error(f'end STOP')
 
     async def base_condition(self, result):
         """
