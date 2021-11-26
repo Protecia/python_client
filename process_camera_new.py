@@ -94,6 +94,7 @@ class ProcessCamera(object):
             task.append(self.task1_http())
         await asyncio.gather(*task)
         await asyncio.sleep(3)
+        self.logger.error('EXIT ALL TASKS')
 
     async def task1_rtsp(self):
         """
