@@ -191,8 +191,12 @@ class ProcessCamera(object):
                 result_darknet = []
             for partial_result in result_dict.values():
                 result_darknet += partial_result
-
-            result = Result(self.cam, self.logger, result_darknet)
+            #  first iteration case
+            if 'result' in locals():
+                last_result = result.filtered
+            else:
+                last_result = []
+            result = Result(self.cam, self.logger, result_darknet, last_result)
             result.img = Img(frame_rgb, self.loop)
             await result.process_result()
             self.logger.warning(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
@@ -207,7 +211,6 @@ class ProcessCamera(object):
                     self.logger.debug(f'queue result size : {self.queue_result.qsize()}')
                     self.logger.warning('>>>>>>>>>>>>>>>--------- Result change send to queue '
                                         '-------------<<<<<<<<<<<<<<<<<<<<<\n')
-                    self.last_result = result.filtered
                 self.logger.debug('brut result process in {}s '.format(time.time() - t))
 
             # ---------------- if real time visualization active, queue the image ------------------------------
@@ -358,7 +361,7 @@ class ProcessCamera(object):
         """
         return True if the result has really change or if there is a correction and a time gap from last correction
         """
-        new, lost = await get_list_diff(result.filtered, self.last_result, self.cam['pos_sensivity'])
+        new, lost = await get_list_diff(result.filtered, result.last_objects, self.cam['pos_sensivity']) ### maybe result.filtered_true
         if len(new) == 0 and len(lost) == 0:
             if result.correction and time.time() - self.time_of_last_correction > 60 * 10:
                 self.time_of_last_correction = time.time()

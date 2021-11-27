@@ -56,10 +56,11 @@ class Img(object):
 
 class Result(object):
 
-    def __init__(self, cam, logger, result_darknet):
+    def __init__(self, cam, logger, result_darknet, last_object):
         self.darknet = result_darknet
-        self.filtered = []
-        self.filtered_true = []
+        self.last_objects = last_object
+        self.filtered = []  # this is the real list of object return by darknet
+        self.filtered_true = []  # this is the list corrected with rule : same place = same object
         self.time = time.time()
         self.correction = False
         self.upload = True
@@ -80,8 +81,8 @@ class Result(object):
         self.logger.info('the filtered list of detected objects is {}'.format(rp_last))
         # self.json['result_filtered'] = rp_last
         # self.json['result_filtered_True'] = rp_new
-        self.filtered_true = rp_last
-        self.filtered = rp_new
+        self.filtered_true = rp_new
+        self.filtered = rp_last
         self.token = secrets.token_urlsafe(6)
 
     async def split_result(self):
@@ -129,7 +130,7 @@ class Result(object):
         return [r for r in self.darknet if float(r[1]) >= self.cam['threshold']]
 
     async def result_lost(self):
-        last = self.filtered.copy()
+        last = self.last_object.copy()
         for obj_new in await self.result_above_treshold():
             for obj_last in last:
                 if obj_last[0] == obj_new[0] and (sum([abs(i-j) for i, j in zip(obj_new[2], obj_last[2])])) / \
