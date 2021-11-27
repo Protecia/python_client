@@ -130,7 +130,7 @@ class Result(object):
         return [r for r in self.darknet if float(r[1]) >= self.cam['threshold']]
 
     async def result_lost(self):
-        last = self.last_object.copy()
+        last = self.last_objects.copy()
         for obj_new in await self.result_above_treshold():
             for obj_last in last:
                 if obj_last[0] == obj_new[0] and (sum([abs(i-j) for i, j in zip(obj_new[2], obj_last[2])])) / \
