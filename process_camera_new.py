@@ -202,6 +202,7 @@ class ProcessCamera(object):
             self.logger.warning(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
 
             # --------------- check the base condition for the result to queue --------------------------------
+            self.logger.error(f'rec is {self.rec})
             if self.rec:
                 if await self.base_condition(result):
                     self.logger.debug('>>> Result have changed <<< ')
@@ -361,7 +362,7 @@ class ProcessCamera(object):
         """
         return True if the result has really change or if there is a correction and a time gap from last correction
         """
-        new, lost = await get_list_diff(result.filtered, result.last_objects, self.cam['pos_sensivity']) ### maybe result.filtered_true
+        new, lost = await get_list_diff(result.filtered, result.last_objects, self.cam['pos_sensivity'])  ### maybe result.filtered_true
         self.logger.error(f'BASE CONDITION : {result.filtered} / {result.last_objects} --> {new} / {lost}')
         if len(new) == 0 and len(lost) == 0:
             if result.correction and time.time() - self.time_of_last_correction > 60 * 10:
