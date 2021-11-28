@@ -71,7 +71,7 @@ class Result(object):
         self.cam = cam
         self.img = None
         self.token = None
-        self.resolution = 'rec'
+        self.resolution = 'LD'
 
     async def process_result(self):
         obj_last, obj_new = await self.split_result()
@@ -162,18 +162,19 @@ class Result(object):
                        'correction': self.correction}
         return result_json
 
-    async def img_to_send(self):
+    async def img_to_send_real(self):
         if self.resolution == 'HD':
             frame = await self.img.resize_img(self.cam['max_width_rtime_HD'],
                                               int(self.img.frame.shape[0] * await self.resize_factor()))
         elif self.resolution == 'LD':
             frame = await self.img.resize_img(self.cam['max_width_rtime'],
                                               int(self.img.frame.shape[0] * await self.resize_factor()))
+
+    async def img_to_send(self):
+        if self.cam['reso']:
+            frame = await self.img.resize_img(self.cam['width'], self.cam['height'])
         else:
-            if self.cam['reso']:
-                frame = await self.img.resize_img(self.cam['width'], self.cam['height'])
-            else:
-                frame = self.img.frame
+            frame = self.img.frame
         return await self.img.bytes_img(frame)
 
     async def resize_factor(self):

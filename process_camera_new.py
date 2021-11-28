@@ -294,7 +294,7 @@ class ProcessCamera(object):
                         name = await result.img_name()
                         await ws_cam.send(json.dumps(name))
                         self.logger.error(f'-------------> sending img name in task 4 {name}')
-                        img = await result.img_to_send()
+                        img = await result.img_to_send_real()
                         await ws_cam.send(img)
                         self.logger.error(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
                                           f' {len(img)}')
