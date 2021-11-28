@@ -166,9 +166,10 @@ class Result(object):
         if self.resolution == 'HD':
             frame = await self.img.resize_img(self.cam['max_width_rtime_HD'],
                                               int(self.img.frame.shape[0] * await self.resize_factor()))
-        elif self.resolution == 'LD':
+        else:
             frame = await self.img.resize_img(self.cam['max_width_rtime'],
                                               int(self.img.frame.shape[0] * await self.resize_factor()))
+        return await self.img.bytes_img(frame)
 
     async def img_to_send(self):
         if self.cam['reso']:
