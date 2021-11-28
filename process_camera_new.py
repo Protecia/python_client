@@ -202,7 +202,7 @@ class ProcessCamera(object):
             self.logger.warning(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
 
             # --------------- check the base condition for the result to queue --------------------------------
-            self.logger.error(f'rec is {self.rec})
+            self.logger.error(f'rec is {self.rec}')
             if self.rec:
                 if await self.base_condition(result):
                     self.logger.debug('>>> Result have changed <<< ')
