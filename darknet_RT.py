@@ -75,12 +75,13 @@ class YOLO4RT(object):
     def __init__(self,
                  input_size=416,
                  weight_file='/NNvision/weights/room_detector_fp16.rt',
-                 conf_thres=0.3,):
+                 #conf_thres=0.3
+                 ):
         self.input_size = input_size
         self.metaMain =None
         self.model = load_network(weight_file.encode(), 15, 1)
         self.darknet_image = make_image(input_size, input_size, 3)
-        self.thresh = conf_thres
+         #self.thresh = conf_thres
          # self.resize_fn = ResizePadding(input_size, input_size)
          # self.transf_fn = transforms.ToTensor()
 
