@@ -1,14 +1,9 @@
 import time
-import requests
 import cv2
-import numpy as np
-from threading import Thread, Lock
 import settings
 import os
 import darknet as dn
 from log import Logger
-import secrets
-import concurrent.futures
 import asyncio
 from process_camera_grab import grab_http, grab_rtsp
 from process_camera_utils import Result, Img, get_list_diff
@@ -16,7 +11,6 @@ import websockets
 import json
 from utils import get_conf
 from functools import partial
-import datetime
 
 
 path = settings.DARKNET_PATH
@@ -362,7 +356,7 @@ class ProcessCamera(object):
         """
         return True if the result has really change or if there is a correction and a time gap from last correction
         """
-        new, lost = await get_list_diff(result.filtered, result.last_objects, self.cam['pos_sensivity'])  ### maybe result.filtered_true
+        new, lost = await get_list_diff(result.filtered, result.last_objects, self.cam['pos_sensivity'])
         self.logger.error(f'BASE CONDITION : {result.filtered} / {result.last_objects} --> {new} / {lost}')
         if len(new) == 0 and len(lost) == 0:
             if result.correction and time.time() - self.time_of_last_correction > 60 * 10:
