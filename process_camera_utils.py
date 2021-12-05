@@ -67,7 +67,7 @@ class Result(object):
         obj_last, obj_new, obj_delete = await self.corrected_object_by_position()
         self.logger.info('recovery objects from last detection :{} '.format(obj_last))
         rp_last = await self.result_above_treshold(delete=obj_delete) + obj_last
-        rp_new = await self.result_above_treshold(odelete=obj_delete) + obj_new
+        rp_new = await self.result_above_treshold(delete=obj_delete) + obj_new
         self.logger.info('the filtered list of detected objects is {}'.format(rp_last))
         self.filtered_true = rp_new  # this is the new result, corrected result
         self.filtered = rp_last  # this is the real result to keep trace of the history
