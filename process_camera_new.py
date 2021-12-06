@@ -210,7 +210,6 @@ class ProcessCamera(object):
 
             # ---------------- if real time visualization active, queue the image ------------------------------
             if self.LD:
-                result.resolution = 'LD'
                 await self.queue_img_real.put(result)
                 self.logger.info(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
             elif self.HD:
@@ -232,7 +231,7 @@ class ProcessCamera(object):
                         result = await self.queue_result.get()
                         if result == 'stop':
                             break
-                        result = await result.result_to_send()
+                        result = await result.result_to_send('rec')
                         self.logger.info(f'result is {result}')
                         await ws_cam.send(json.dumps(result))
                         self.logger.error(f'-------------> sending result in task 3 {result}')
@@ -257,7 +256,7 @@ class ProcessCamera(object):
                         result = await self.queue_img.get()
                         if result == 'stop':
                             break
-                        name = await result.img_name()
+                        name = await result.img_name('rec')
                         await ws_cam.send(json.dumps(name))
                         self.logger.error(f'-------------> sending img name in task 3 {name}')
                         img = await result.img_to_send()
@@ -285,7 +284,7 @@ class ProcessCamera(object):
                         result = await self.queue_img_real.get()
                         if result == 'stop':
                             break
-                        name = await result.img_name()
+                        name = await result.img_name('real_time')
                         await ws_cam.send(json.dumps(name))
                         self.logger.error(f'-------------> sending img name in task 4 {name}')
                         img = await result.img_to_send_real()

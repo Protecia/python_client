@@ -132,9 +132,9 @@ class Result(object):
                     break
         return last
 
-    async def img_name(self):
+    async def img_name(self, type_img):
         date = time.strftime("%Y-%m-%d-%H-%M-%S")
-        if self.resolution == 'rec':
+        if type_img == 'rec':
             name = date + '_' + self.token
         else:
             name = 'temp_img_cam_' + str(self.cam['id'])
@@ -148,8 +148,8 @@ class Result(object):
     #     else:
     #         return False
 
-    async def result_to_send(self):
-        img_json = await self.img_name()
+    async def result_to_send(self, type_img):
+        img_json = await self.img_name(type_img)
         result_json = {'img': img_json['name'], 'cam': self.cam['id'],
                        'result_filtered': self.filtered_true, 'result_darknet': self.darknet,
                        'correction': self.correction}
