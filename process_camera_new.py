@@ -196,7 +196,7 @@ class ProcessCamera(object):
             self.logger.warning(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
 
             # --------------- check the base condition for the result to queue --------------------------------
-            self.logger.error(f'rec is {self.rec}')
+            self.logger.debug(f'rec is {self.rec}')
             if self.rec:
                 if await self.base_condition(result):
                     self.logger.debug('>>> Result have changed <<< ')
@@ -234,7 +234,7 @@ class ProcessCamera(object):
                         result = await result.result_to_send('rec')
                         self.logger.info(f'result is {result}')
                         await ws_cam.send(json.dumps(result))
-                        self.logger.error(f'-------------> sending result in task 3 {result}')
+                        self.logger.info(f'-------------> sending result in task 3 {result}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
                     websockets.exceptions.InvalidMessage)as ex:
@@ -258,10 +258,10 @@ class ProcessCamera(object):
                             break
                         name = await result.img_name('rec')
                         await ws_cam.send(json.dumps(name))
-                        self.logger.error(f'-------------> sending img name in task 3 {name}')
+                        self.logger.info(f'-------------> sending img name in task 3 {name}')
                         img = await result.img_to_send()
                         await ws_cam.send(img)
-                        self.logger.error(f'-------------> sending img bytes in task 3 for cam {self.cam["name"]}'
+                        self.logger.info(f'-------------> sending img bytes in task 3 for cam {self.cam["name"]}'
                                          f' {len(img)}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
@@ -286,11 +286,11 @@ class ProcessCamera(object):
                             break
                         name = await result.img_name('real_time')
                         await ws_cam.send(json.dumps(name))
-                        self.logger.error(f'-------------> sending img name in task 4 {name}'
+                        self.logger.info(f'-------------> sending img name in task 4 {name}'
                                           f' with resolution {result.resolution}')
                         img = await result.img_to_send_real()
                         await ws_cam.send(img)
-                        self.logger.error(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
+                        self.logger.info(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
                                           f' {len(img)}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
@@ -315,7 +315,7 @@ class ProcessCamera(object):
                     while self.running_level1:
                         await asyncio.sleep(0.02)
                         state = json.loads(await ws_get_state.recv())
-                        self.logger.info(f'receiving state for camera {self.cam["name"]} -> {state}')
+                        self.logger.error(f'receiving state for camera {self.cam["name"]} -> {state}')
                         if not state.get('ping'):
                             self.rec = state["rec"]
                             self.LD = state["on_camera_LD"]
@@ -357,7 +357,7 @@ class ProcessCamera(object):
         return True if the result has really change or if there is a correction and a time gap from last correction
         """
         new, lost = await get_list_diff(result.filtered, result.last_objects, self.cam['pos_sensivity'])
-        self.logger.error(f'BASE CONDITION : {result.filtered} / {result.last_objects} --> {new} / {lost}')
+        self.logger.info(f'BASE CONDITION : {result.filtered} / {result.last_objects} --> {new} / {lost}')
         if len(new) == 0 and len(lost) == 0:
             if result.correction and time.time() - self.time_of_last_correction > 60 * 10:
                 self.time_of_last_correction = time.time()
