@@ -150,7 +150,7 @@ def http_serve(port):
     def check_token(token):
         for i in range(2):
             try:
-                with open(settings.INSTALL_PATH+'/settings/video.json', 'r') as f:
+                with open(settings.INSTALL_PATH+'/conf/video.json', 'r') as f:
                     data = json.load(f)
                 if token == data['token1'] or token == data['token2']:
                     return True
