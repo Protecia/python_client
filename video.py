@@ -171,8 +171,8 @@ def http_serve(port):
         
         @cherrypy.expose
         def secu(self, name, token):
-            if check_token(token):
-                return cherrypy.lib.static.serve_file(os.path.join(static_dir_secu, name))
+            # if check_token(token):
+            return cherrypy.lib.static.serve_file(os.path.join(static_dir_secu, name))
 
         @cherrypy.expose
         def video(self, v, l, token):
@@ -237,8 +237,8 @@ def http_serve(port):
             """.format(back)
     
     static_dir = settings.INSTALL_PATH # Root static dir is this file's directory.
-    static_dir_live = os.path.join(settings.INSTALL_PATH,'camera/live') # Root static dir is this file's directory.
-    static_dir_secu = os.path.join(settings.INSTALL_PATH,'camera/secu') # Root static dir is this file's directory.
+    static_dir_live = os.path.join(settings.INSTALL_PATH, 'camera/live')  # Root static dir is this file's directory.
+    static_dir_secu = os.path.join(settings.INSTALL_PATH, 'camera/secu')  # Root static dir is this file's directory.
 
     cherrypy.config.update( {  # I prefer configuring the server here, instead of in an external file.
                 'server.socket_host': '0.0.0.0',
