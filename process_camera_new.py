@@ -209,13 +209,14 @@ class ProcessCamera(object):
                 self.logger.debug('brut result process in {}s '.format(time.time() - t))
 
             # ---------------- if real time visualization active, queue the image ------------------------------
-            if self.LD:
-                await self.queue_img_real.put(result)
-                self.logger.info(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
-            elif self.HD:
+            if self.HD:
                 result.resolution = 'HD'
                 await self.queue_img_real.put(result)
                 self.logger.info(f'Q_img_real HD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
+            elif self.LD:
+                await self.queue_img_real.put(result)
+                self.logger.info(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
+
         self.logger.error('EXIT task2 TASKS')
 
     async def task3_result(self):
