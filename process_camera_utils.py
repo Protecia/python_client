@@ -47,7 +47,7 @@ class Img(object):
 
 class Result(object):
 
-    def __init__(self, cam, logger, result_darknet, last_object):
+    def __init__(self, cam, logger, result_darknet, last_object, time_frame):
         self.darknet = result_darknet
         self.last_objects = last_object
         self.filtered = []  # this is the real list of object return by darknet
@@ -62,6 +62,7 @@ class Result(object):
         self.img = None
         self.token = None
         self.resolution = 'LD'
+        self.time_frame = time_frame
 
     async def process_result(self):
         obj_last, obj_new, obj_delete = await self.corrected_object_by_position()
@@ -152,7 +153,7 @@ class Result(object):
         img_json = await self.img_name(type_img)
         result_json = {'img': img_json['name'], 'cam': self.cam['id'],
                        'result_filtered': self.filtered_true, 'result_darknet': self.darknet,
-                       'correction': self.correction}
+                       'correction': self.correction, 'time_frame': self.time_frame.isoformat()}
         return result_json
 
     async def img_to_send_real(self):

@@ -11,6 +11,7 @@ import websockets
 import json
 from utils import get_conf
 from functools import partial
+from datetime import datetime, timezone
 
 
 path = settings.DARKNET_PATH
@@ -165,6 +166,7 @@ class ProcessCamera(object):
         while self.running_level1:
             t = time.time()
             self.logger.debug(f'before get frame queue is {self.queue_frame.qsize()}')
+            time_frame = datetime.now(timezone.utc)
             frame_rgb = await self.queue_frame.get()
             if frame_rgb == 'stop':
                 break
@@ -190,7 +192,7 @@ class ProcessCamera(object):
                 last_result = result.filtered
             else:
                 last_result = []
-            result = Result(self.cam, self.logger, result_darknet, last_result)
+            result = Result(self.cam, self.logger, result_darknet, last_result, time_frame)
             result.img = Img(frame_rgb, self.loop)
             await result.process_result()
             self.logger.warning(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
@@ -235,7 +237,7 @@ class ProcessCamera(object):
                         result = await result.result_to_send('rec')
                         self.logger.info(f'result is {result}')
                         await ws_cam.send(json.dumps(result))
-                        self.logger.info(f'-------------> sending result in task 3 {result}')
+                        self.logger.error(f'-------------> sending result in task 3 {result}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
                     websockets.exceptions.InvalidMessage)as ex:
