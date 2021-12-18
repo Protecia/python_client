@@ -237,7 +237,7 @@ class ProcessCamera(object):
                         result = await result.result_to_send('rec')
                         self.logger.info(f'result is {result}')
                         await ws_cam.send(json.dumps(result))
-                        self.logger.error(f'-------------> sending result in task 3 {result}')
+                        self.logger.info(f'-------------> sending result in task 3 {result}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
                     websockets.exceptions.InvalidMessage)as ex:
@@ -318,7 +318,7 @@ class ProcessCamera(object):
                     while self.running_level1:
                         await asyncio.sleep(0.02)
                         state = json.loads(await ws_get_state.recv())
-                        self.logger.error(f'receiving state for camera {self.cam["name"]} -> {state}')
+                        self.logger.info(f'receiving state for camera {self.cam["name"]} -> {state}')
                         if not state.get('ping'):
                             self.rec = state["rec"]
                             self.LD = state["on_camera_LD"]
