@@ -65,7 +65,7 @@ class ProcessCamera(object):
         self.vcap = None
         self.tlock = tlock
         self.th = cam['threshold'] * (1 - (float(cam['gap']) / 100))
-        self.black_list = [i.encode() for i in settings.DARKNET_CONF['all']['RESTRICT']]
+        self.black_list = [i for i in settings.DARKNET_CONF['all']['RESTRICT']]
         self.rec = False
         self.HD = False
         self.LD = False
