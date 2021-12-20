@@ -51,7 +51,7 @@ class Result(object):
         self.darknet = result_darknet
         self.last_objects = last_object
         self.filtered = []  # this is the real list of object return by darknet
-        self.filtered_true = []  # this is the list corrected with rule : same place = same object
+        self.filtered_corrected = []  # this is the list corrected with rule : same place = same object
         self.time = time.time()
         self.correction = False
         self.upload = True
@@ -70,7 +70,7 @@ class Result(object):
         rp_last = await self.result_above_treshold(delete=obj_delete) + obj_last
         rp_new = await self.result_above_treshold(delete=obj_delete) + obj_new
         self.logger.info('the filtered list of detected objects is {}'.format(rp_last))
-        self.filtered_true = rp_new  # this is the new result, corrected result
+        self.filtered_corrected = rp_new  # this is the new result, corrected result
         self.filtered = rp_last  # this is the real result to keep trace of the history
         self.token = secrets.token_urlsafe(6)
 
@@ -107,8 +107,8 @@ class Result(object):
             if find:
                 result.remove(find)
                 self.logger.info('find an object {} at same position than {}'.format(find, obj_lost))
-                obj_new.append((obj_lost[0],) + find[1:])
-                obj_last.append(obj_lost)
+                obj_new.append((obj_lost[0],) + find[1:] + ('corrected',))
+                obj_last.append(obj_lost + ('corrected',))
         if obj_last:
             self.correction = True
         else:
@@ -139,7 +139,7 @@ class Result(object):
             name = date + '_' + self.token
         else:
             name = 'temp_img_cam_' + str(self.cam['id'])
-        result_json = {'name': name, 'cam': self.cam['id'], 'result': self.filtered_true,
+        result_json = {'name': name, 'cam': self.cam['id'], 'result': self.filtered_corrected,
                        'resize_factor': await self.resize_factor(), }
         return result_json
 
@@ -152,7 +152,7 @@ class Result(object):
     async def result_to_send(self, type_img):
         img_json = await self.img_name(type_img)
         result_json = {'img': img_json['name'], 'cam': self.cam['id'],
-                       'result_filtered': self.filtered_true, 'result_darknet': self.darknet,
+                       'result_filtered': self.filtered_corrected, 'result_darknet': self.darknet,
                        'correction': self.correction, 'time_frame': self.time_frame.isoformat()}
         return result_json
 
