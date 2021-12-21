@@ -63,6 +63,7 @@ class Result(object):
         self.token = None
         self.resolution = 'LD'
         self.time_frame = time_frame
+        self.force_send = False
 
     async def process_result(self):
         obj_last, obj_new, obj_delete = await self.corrected_object_by_position()
@@ -153,7 +154,8 @@ class Result(object):
         img_json = await self.img_name(type_img)
         result_json = {'img': img_json['name'], 'cam': self.cam['id'],
                        'result_filtered': self.filtered_corrected, 'result_darknet': self.darknet,
-                       'correction': self.correction, 'time_frame': self.time_frame.isoformat()}
+                       'correction': self.correction, 'time_frame': self.time_frame.isoformat(),
+                       'force_send': self.force_send}
         return result_json
 
     async def img_to_send_real(self):

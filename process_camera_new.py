@@ -364,6 +364,7 @@ class ProcessCamera(object):
         if len(new) == 0 and len(lost) == 0:
             if result.correction and time.time() - self.time_of_last_correction > 60 * 10:
                 self.time_of_last_correction = time.time()
+                result.force_send = True
                 return True
             return False
         else:
