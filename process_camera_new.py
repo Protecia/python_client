@@ -152,8 +152,8 @@ class ProcessCamera(object):
             t = time.time()
             self.logger.info(f"before grab_http on {self.cam['name']}")
             frame = await grab_http(self.cam, self.logger, self.loop)
-            self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
-                             f" en {time.time() - t}s")
+            self.logger.error(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
+                             f" en {time.time() - t} s")
             if frame is not False:
                 await self.queue_frame.put(frame)
         self.logger.error('EXIT task1_http TASKS')
