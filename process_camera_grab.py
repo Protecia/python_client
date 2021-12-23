@@ -27,7 +27,7 @@ async def grab_http(cam, logger, loop):
             t = time.time()
             r = await client.get(cam['http'], auth=auth)
             logger.info(f'get http image {cam["http"]} in  {time.time() - t}s with status code {r.status_code} and '
-                         f'len {len(r.content)} ')
+                        f'len {len(r.content)} ')
         if r.status_code == 200 and len(r.content) > 3000:
             logger.info(f'content of request is len  {len(r.content)}')
             array_np = await loop.run_in_executor(None, partial(np.asarray, bytearray(r.content), dtype="uint8"))
