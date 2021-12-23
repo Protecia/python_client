@@ -211,13 +211,14 @@ class ProcessCamera(object):
                 self.logger.debug('brut result process in {}s '.format(time.time() - t))
 
             # ---------------- if real time visualization active, queue the image ------------------------------
+            self.logger.error(f'LD state is {self.LD}    HD is {self.HD}')
             if self.HD:
                 result.resolution = 'HD'
                 await self.queue_img_real.put(result)
                 self.logger.info(f'Q_img_real HD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
             elif self.LD:
                 await self.queue_img_real.put(result)
-                self.logger.error(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
+                self.logger.info(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
 
         self.logger.error('EXIT task2 TASKS')
 
@@ -289,7 +290,7 @@ class ProcessCamera(object):
                             break
                         name = await result.img_name('real_time')
                         await ws_cam.send(json.dumps(name))
-                        self.logger.error(f'-------------> sending img name in task 4 {name}'
+                        self.logger.info(f'-------------> sending img name in task 4 {name}'
                                           f' with resolution {result.resolution}')
                         img = await result.img_to_send_real()
                         await ws_cam.send(img)
@@ -323,7 +324,6 @@ class ProcessCamera(object):
                             self.rec = state["rec"]
                             self.LD = state["on_camera_LD"]
                             self.HD = state["on_camera_HD"]
-                            self.logger.error(f'LD state is now {self.LD}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError, websockets.exceptions.InvalidMessage)as ex:
                 self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
