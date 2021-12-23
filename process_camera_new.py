@@ -152,8 +152,8 @@ class ProcessCamera(object):
             t = time.time()
             self.logger.info(f"before grab_http on {self.cam['name']}")
             frame = await grab_http(self.cam, self.logger, self.loop)
-            self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
-                              f" en {time.time() - t} s")
+            self.logger.error(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
+                              f" en {time.time() - t} s frame is {frame}")
             if frame is not False:
                 await self.queue_frame.put(frame)
         self.logger.error('EXIT task1_http TASKS')
@@ -165,7 +165,7 @@ class ProcessCamera(object):
         """
         while self.running_level1:
             t = time.time()
-            self.logger.error(f'before get frame queue is {self.queue_frame.qsize()}')
+            self.logger.info(f'before get frame queue is {self.queue_frame.qsize()}')
             time_frame = datetime.now(timezone.utc)
             frame_rgb = await self.queue_frame.get()
             if frame_rgb == 'stop':
@@ -211,7 +211,7 @@ class ProcessCamera(object):
                 self.logger.debug('brut result process in {}s '.format(time.time() - t))
 
             # ---------------- if real time visualization active, queue the image ------------------------------
-            self.logger.error(f'LD state is {self.LD}    HD is {self.HD}')
+            self.logger.info(f'LD state is {self.LD}    HD is {self.HD}')
             if self.HD:
                 result.resolution = 'HD'
                 await self.queue_img_real.put(result)
