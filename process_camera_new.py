@@ -323,6 +323,7 @@ class ProcessCamera(object):
                             self.rec = state["rec"]
                             self.LD = state["on_camera_LD"]
                             self.HD = state["on_camera_HD"]
+                            self.logger.error(f'LD state is now {self.LD}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError, websockets.exceptions.InvalidMessage)as ex:
                 self.logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
