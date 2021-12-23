@@ -289,7 +289,7 @@ class ProcessCamera(object):
                             break
                         name = await result.img_name('real_time')
                         await ws_cam.send(json.dumps(name))
-                        self.logger.info(f'-------------> sending img name in task 4 {name}'
+                        self.logger.error(f'-------------> sending img name in task 4 {name}'
                                           f' with resolution {result.resolution}')
                         img = await result.img_to_send_real()
                         await ws_cam.send(img)
