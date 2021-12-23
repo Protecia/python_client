@@ -152,7 +152,7 @@ class ProcessCamera(object):
             t = time.time()
             self.logger.info(f"before grab_http on {self.cam['name']}")
             frame = await grab_http(self.cam, self.logger, self.loop)
-            self.logger.error(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
+            self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
                               f" en {time.time() - t} s")
             if frame is not False:
                 await self.queue_frame.put(frame)
@@ -165,7 +165,7 @@ class ProcessCamera(object):
         """
         while self.running_level1:
             t = time.time()
-            self.logger.debug(f'before get frame queue is {self.queue_frame.qsize()}')
+            self.logger.error(f'before get frame queue is {self.queue_frame.qsize()}')
             time_frame = datetime.now(timezone.utc)
             frame_rgb = await self.queue_frame.get()
             if frame_rgb == 'stop':
@@ -319,7 +319,7 @@ class ProcessCamera(object):
                     while self.running_level1:
                         await asyncio.sleep(0.02)
                         state = json.loads(await ws_get_state.recv())
-                        self.logger.error(f'receiving state for camera {self.cam["name"]} -> {state}')
+                        self.logger.info(f'receiving state for camera {self.cam["name"]} -> {state}')
                         if not state.get('ping'):
                             self.rec = state["rec"]
                             self.LD = state["on_camera_LD"]
