@@ -109,7 +109,7 @@ async def get_onvif_uri(ip, port, user, passwd):
     Returns:
         List: List of uri found for the camera.
     """
-    wsdir = '/usr/local/lib/python3.6/site-packages/wsdl/'
+    wsdir = settings.WSDIR
     try:
         cam = await asyncio.wait_for(onvif_cam(ip, port, user, passwd, wsdir), timeout=1.0)
         info = cam.devicemgmt.GetDeviceInformation()
