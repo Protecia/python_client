@@ -36,7 +36,6 @@ class Client(object):
             logger.warning(f'trying to shut down extern task {t}')
             await t.stop()
 
-
     async def send_cam(self):
         t1 = time.time()
         while self.running_level1:
@@ -61,7 +60,7 @@ class Client(object):
                         await asyncio.sleep(5)
             except (websockets.exceptions.ConnectionClosedError, OSError, ConnectionResetError,
                     websockets.exceptions.InvalidMessage)as ex:
-                logger.error(f'socket _send_cam disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
+                logger.error(f'socket _send_cam disconnected !! web camera send / except-->{ex} / name-->{type(ex).__name__}')
                 await asyncio.sleep(1)
                 continue
             except json.decoder.JSONDecodeError:
