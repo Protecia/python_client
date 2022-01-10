@@ -130,7 +130,7 @@ class ProcessCamera(object):
             if bad_read == 0:
                 # frame_rgb = await self.loop.run_in_executor(None, partial(cv2.cvtColor, frame, cv2.COLOR_BGR2RGB))
                 await self.queue_frame.put(frame)
-                self.logger.info(f"queue frame is {self.queue_frame.qsize()}")
+                self.logger.warning(f"rtsp queue frame is {self.queue_frame.qsize()}")
         self.logger.error('EXIT task1_rtsp_read TASKS')
 
     async def task1_rtsp_flush(self):
@@ -195,7 +195,7 @@ class ProcessCamera(object):
             result = Result(self.cam, self.logger, result_darknet, last_result, time_frame)
             result.img = Img(frame_rgb, self.loop)
             await result.process_result()
-            self.logger.warning(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
+            self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
 
             # --------------- check the base condition for the result to queue --------------------------------
             self.logger.debug(f'rec is {self.rec}')
