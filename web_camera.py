@@ -61,7 +61,7 @@ class Client(object):
             except (websockets.exceptions.ConnectionClosedError, OSError, ConnectionResetError,
                     websockets.exceptions.InvalidMessage)as ex:
                 logger.error(f'socket _send_cam disconnected !! web camera send / except-->{ex} / name-->{type(ex).__name__}')
-                await asyncio.sleep(1)
+                await asyncio.sleep(2)
                 continue
             except json.decoder.JSONDecodeError:
                 logger.error(f'bad json maybe writing the file !!')
