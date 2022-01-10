@@ -7,12 +7,10 @@ Created on Sat Jun  1 07:34:04 2019
 import asyncio
 
 import process_camera_new as pc
-from threading import Lock as tLock, Event
-from multiprocessing import Process, Queue, Lock, Event as pEvent
+from multiprocessing import Process, Event as pEvent
 import json
 from log import Logger
 import scan_camera as sc
-import upload as up
 from video import http_serve
 from install_cron import install_rec_backup_cron, install_check_tunnel_cron
 import settings
@@ -28,10 +26,7 @@ from utils import get_conf
 logger = Logger(__name__, level=settings.MAIN_LOG).run()
 
 
-
-E_video = pEvent()
 tlock = asyncio.Lock()
-e_state = Event()
 scan_state = pEvent()
 
 
@@ -105,11 +100,6 @@ def main():
             for p in process2.values():
                 p.start()
 
-            # set the video event
-            E_video.set()
-
-            # initialize the camera state event
-            cameras_state = {}  # to delete
             # launch the camera thread
             list_tasks = []
             for c in cameras.list_cam.values():
@@ -119,12 +109,10 @@ def main():
                         if uri['use']:
                             break
                     if uri:
-                        cameras_state[c['id']] = [Event(), Event()]  # to delete
                         uri.pop('id', None)
                         ready_cam = {**c, **uri}
                         p = pc.ProcessCamera(ready_cam, loop, tlock)
                         list_tasks.append(p)
-                        # p.start()
                         logger.warning(f'starting process camera on  : {ready_cam}')
 
             # wait until a camera change
