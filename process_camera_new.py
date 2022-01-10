@@ -328,7 +328,6 @@ class ProcessCamera(object):
                     OSError, ConnectionResetError, websockets.exceptions.InvalidMessage)as ex:
                 self.logger.error(f'socket _send_cam disconnected task5 !! / except-->{ex} / name-->{type(ex).__name__}')
                 await asyncio.sleep(1)
-                continue
         self.logger.error('EXIT task5')
 
     async def stop(self):

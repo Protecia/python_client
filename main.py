@@ -120,7 +120,6 @@ def main():
                           [t.run() for t in list_tasks]
             loop.run_until_complete(asyncio.gather(*total_tasks))
 
-            logger.warning('connect pass go on')
             logger.warning('tasks stopped')
             # stop the scan
             for p in process2.values():
