@@ -35,6 +35,7 @@ class Client(object):
         for t in extern_tasks:
             logger.warning(f'trying to shut down extern task {t}')
             await t.stop()
+        logger.error(f'EXIT web_camera.py')
 
     async def send_cam(self):
         t1 = time.time()

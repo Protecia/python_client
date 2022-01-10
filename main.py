@@ -94,7 +94,7 @@ def main():
         while True:
             # write the file for backup video
             cameras.write()
-            logger.warning(f'Writing camera in json : {cameras.list_cam}')
+            logger.info(f'Writing camera in json : {cameras.list_cam}')
             # start the scan
             process2 = {'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,)), }
             for p in process2.values():
@@ -113,15 +113,15 @@ def main():
                         ready_cam = {**c, **uri}
                         p = pc.ProcessCamera(ready_cam, loop, tlock)
                         list_tasks.append(p)
-                        logger.warning(f'starting process camera on  : {ready_cam}')
+                        logger.info(f'starting process camera on  : {ready_cam}')
 
             # wait until a camera change
             total_tasks = [cameras.connect(scan_state, list_tasks)] + \
                           [t.run() for t in list_tasks]
             loop.run_until_complete(asyncio.gather(*total_tasks))
 
-            logger.debug('connect pass go on')
-            logger.debug('tasks stopped')
+            logger.warning('connect pass go on')
+            logger.warning('tasks stopped')
             # stop the scan
             for p in process2.values():
                 p.terminate()
