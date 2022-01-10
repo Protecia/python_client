@@ -23,7 +23,7 @@ DARKNET_CONF = {
                 'CFG': 'cfg/yolov3.cfg',
                 'WEIGHTS': '../weights/yolov3.weights',
                 'DATA':'/NNvision/python_client/coco_docker.data',
-                'RESTRICT':('pottedplant', 'oven', 'bowl',)},
+                'RESTRICT': ('pottedplant', 'oven', 'bowl', 'cell phone', 'fire hydrant',)},
         # 'car': {
         #         'CFG': '../weights/protecia.cfg',
         #         'WEIGHTS':  '../weights/car.weights',
