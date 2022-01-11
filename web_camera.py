@@ -7,7 +7,7 @@ import time
 from log import Logger
 from utils import get_conf
 
-logger = Logger(__name__, level=settings.SOCKET_LOG).run()
+logger = Logger(__name__, level=settings.SOCKET_LOG, file=True).run()
 
 
 class Client(object):
