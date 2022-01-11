@@ -134,3 +134,6 @@ dmypy.json
 .idea
 conf/docker.json
 conf/conf.json
+
+# local files
+camera/secu
