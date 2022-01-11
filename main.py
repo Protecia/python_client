@@ -118,7 +118,7 @@ def main():
             # wait until a camera change
             total_tasks = [cameras.connect(scan_state, list_tasks)] + \
                           [t.run() for t in list_tasks]
-            logger.error(f'list of all tasks launched {list_tasks}')
+            logger.error(f'list of all tasks launched {[print(t) for t in list_tasks]}')
             loop.run_until_complete(asyncio.gather(*total_tasks))
 
             logger.warning('tasks stopped')
