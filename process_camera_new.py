@@ -88,7 +88,7 @@ class ProcessCamera(object):
             task.append(self.task1_rtsp())
         else:
             task.append(self.task1_http())
-        self.camera_tasks = [asyncio.create_task(t) for t in task]  # creating task to permit cancellation
+        self.camera_tasks = [asyncio.ensure_future(t) for t in task]  # creating task to permit cancellation
         await asyncio.gather(*self.camera_tasks)
         await asyncio.sleep(3)
         self.logger.error('EXIT ALL TASKS')
