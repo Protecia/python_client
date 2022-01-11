@@ -77,6 +77,9 @@ class ProcessCamera(object):
         self.last_result = []
         self.camera_tasks = []
 
+    def __str__(self):
+        return f"<Instance for {self.cam['name']} / {self.cam['serial_number']} / {self.cam['ip']}>"
+
     async def run(self):
         """
         Top level task to instantiate cv2 and httpx reader
@@ -360,7 +363,7 @@ class ProcessCamera(object):
         await asyncio.sleep(3)
         for t in self.camera_tasks:
             t.cancel()
-        self.logger.error(f'all tasks cancel for {self.cam}')
+        self.logger.error(f'all tasks cancel for {self.cam["name"]}')
 
     async def base_condition(self, result):
         """
