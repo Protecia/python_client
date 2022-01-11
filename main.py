@@ -23,7 +23,7 @@ from urllib3.exceptions import ProtocolError
 from utils import get_conf
 
 # globals var
-logger = Logger(__name__, level=settings.MAIN_LOG).run()
+logger = Logger(__name__, level=settings.MAIN_LOG, file=True).run()
 
 
 tlock = asyncio.Lock()
