@@ -75,19 +75,21 @@ class ProcessCamera(object):
         self.queue_result = asyncio.Queue(maxsize=settings.QUEUE_SIZE)
         self.time_of_last_correction = 0
         self.last_result = []
+        self.camera_tasks = []
 
     async def run(self):
         """
         Top level task to instantiate cv2 and httpx reader
         """
-        self.logger.info('running Thread')
+        self.logger.info(f'running Tasks on {self.cam}')
         self.running_level1 = True
         task = [self.task2(), self.task3_result(), self.task3_img(), self.task4(), self.task5()]
         if self.cam['stream']:
             task.append(self.task1_rtsp())
         else:
             task.append(self.task1_http())
-        await asyncio.gather(*task)
+        self.camera_tasks = [asyncio.create_task(t) for t in task]  # creating task to permit cancellation
+        await asyncio.gather(*self.camera_tasks)
         await asyncio.sleep(3)
         self.logger.error('EXIT ALL TASKS')
 
@@ -354,6 +356,11 @@ class ProcessCamera(object):
         else:
             await self.queue_img.get()
         self.logger.error(f'end STOP')
+        # in case one task not canceled properly we calcel all the tasks
+        await asyncio.sleep(3)
+        for t in self.camera_tasks:
+            t.cancel()
+        self.logger.error(f'all tasks cancel for {self.cam}')
 
     async def base_condition(self, result):
         """
