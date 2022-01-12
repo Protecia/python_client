@@ -51,13 +51,7 @@ def detect_block(my_net, my_class_names, frame, my_width, my_height, thresh):
     return detections
 
 
-def catch_cancel(func):
-    async def inner(*args, **kwargs):
-        try:
-            await func(*args, **kwargs)
-        except asyncio.exceptions.CancelledError:
-            pass
-    return inner
+
 
 
 class ProcessCamera(object):
@@ -88,6 +82,14 @@ class ProcessCamera(object):
 
     def __str__(self):
         return f"Instance for {self.cam['name']} / {self.cam['serial_number']} / {self.cam['ip']}"
+
+    def catch_cancel(func):
+        async def inner(self):
+            try:
+                await func(self)
+            except asyncio.exceptions.CancelledError:
+                self.logger.error(f'catch cancel of task')
+        return inner
 
     async def run(self):
         """
