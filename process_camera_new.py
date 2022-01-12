@@ -87,7 +87,7 @@ class ProcessCamera(object):
         self.camera_tasks = []
 
     def __str__(self):
-        return f"<Instance for {self.cam['name']} / {self.cam['serial_number']} / {self.cam['ip']}>"
+        return f"Instance for {self.cam['name']} / {self.cam['serial_number']} / {self.cam['ip']}"
 
     async def run(self):
         """
