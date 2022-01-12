@@ -51,6 +51,15 @@ def detect_block(my_net, my_class_names, frame, my_width, my_height, thresh):
     return detections
 
 
+def catch_cancel(func):
+    async def inner(*args, **kwargs):
+        try:
+            await func(*args, **kwargs)
+        except asyncio.exceptions.CancelledError:
+            pass
+    return inner
+
+
 class ProcessCamera(object):
 
     def __init__(self, cam, loop, tlock):
@@ -96,6 +105,7 @@ class ProcessCamera(object):
         await asyncio.sleep(3)
         self.logger.error('EXIT ALL TASKS')
 
+    @catch_cancel
     async def task1_rtsp(self):
         """
         Task to open rtsp flux
@@ -114,6 +124,7 @@ class ProcessCamera(object):
             self.logger.warning(f'VideoCapture close on {self.cam["name"]}')
         self.logger.error('EXIT task1_rtsp TASKS')
 
+    @catch_cancel
     async def task1_rtsp_read(self):
         """
         Task to grab image in rtsp
@@ -138,6 +149,7 @@ class ProcessCamera(object):
                 self.logger.warning(f"rtsp queue frame is {self.queue_frame.qsize()}")
         self.logger.error('EXIT task1_rtsp_read TASKS')
 
+    @catch_cancel
     async def task1_rtsp_flush(self):
         """
         task to empty the cv2 rtsp queue
@@ -152,6 +164,7 @@ class ProcessCamera(object):
             # await asyncio.sleep(0.001)
         self.logger.error('EXIT task1_rtsp_flush TASKS')
 
+    @catch_cancel
     async def task1_http(self):
         while self.running_level1:
             t = time.time()
@@ -163,6 +176,7 @@ class ProcessCamera(object):
                 await self.queue_frame.put(frame)
         self.logger.error('EXIT task1_http TASKS')
 
+    @catch_cancel
     async def task2(self):
         """
         Task to analyse image with the neural network
@@ -227,6 +241,7 @@ class ProcessCamera(object):
 
         self.logger.error('EXIT task2 TASKS')
 
+    @catch_cancel
     async def task3_result(self):
         """
         Task to upload results to server using websocket connection
@@ -249,9 +264,9 @@ class ProcessCamera(object):
                     websockets.exceptions.InvalidMessage)as ex:
                 self.logger.error(f'socket _send_cam task3 disconnected !! / except-->{ex} / name-->{type(ex).__name__}')
                 await asyncio.sleep(1)
-                continue
         self.logger.error('EXIT task3_result TASKS')
 
+    @catch_cancel
     async def task3_img(self):
         """
         Task to upload images to server using websocket connection
@@ -277,9 +292,9 @@ class ProcessCamera(object):
                     websockets.exceptions.InvalidMessage)as ex:
                 self.logger.error(f'socket _send_cam disconnected task3 img!! / except-->{ex} / name-->{type(ex).__name__}')
                 await asyncio.sleep(1)
-                continue
         self.logger.error('EXIT task3_img TASKS')
 
+    @catch_cancel
     async def task4(self):
         """
         Task to upload images real time to server using websocket connection
@@ -306,9 +321,9 @@ class ProcessCamera(object):
                     websockets.exceptions.InvalidMessage)as ex:
                 self.logger.error(f'socket _send_cam disconnected task 4!! / except-->{ex} / name-->{type(ex).__name__}')
                 await asyncio.sleep(1)
-                continue
         self.logger.error('EXIT task4')
 
+    @catch_cancel
     async def task5(self):
         """
         Task to retrieve informations from server :
@@ -360,7 +375,7 @@ class ProcessCamera(object):
         await self.empty(self.queue_img_real)
         await self.empty(self.queue_img)
         self.logger.error(f'end STOP')
-        # in case one task not canceled properly we calcel all the tasks
+        # in case one task not canceled properly we cancel all the tasks
         await asyncio.sleep(3)
         for t in self.camera_tasks:
             t.cancel()
