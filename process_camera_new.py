@@ -378,7 +378,10 @@ class ProcessCamera(object):
         # in case one task not canceled properly we cancel all the tasks
         await asyncio.sleep(3)
         for t in self.camera_tasks:
+            self.logger.error(f'cancel for {t}')
             t.cancel()
+            self.logger.error(f'ok for cancel')
+
         self.logger.error(f'all tasks cancel for {self.cam["name"]}')
 
     async def base_condition(self, result):
