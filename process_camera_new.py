@@ -335,6 +335,18 @@ class ProcessCamera(object):
                 await asyncio.sleep(1)
         self.logger.error('EXIT task5')
 
+    async def empty(self, queue):
+        if queue.empty():
+            try:
+                await asyncio.wait_for(queue.put('stop'), timeout=1.0)
+            except asyncio.TimeoutError:
+                self.logger.error(f'Timeout on put {queue}')
+        else:
+            try:
+                await asyncio.wait_for(queue.get(), timeout=1.0)
+            except asyncio.TimeoutError:
+                self.logger.error(f'Timeout on get {queue}')
+
     async def stop(self):
         """
         Function to stop all the loop and exit asyncio.gather
@@ -342,22 +354,11 @@ class ProcessCamera(object):
         self.running_level1 = False
         self.logger.info(f'running false on cam {self.cam["name"]} ')
         await asyncio.sleep(1)
-        if self.queue_frame.empty():
-            await self.queue_frame.put('stop')
-        else:
-            await self.queue_frame.get()
-        if self.queue_result.empty():
-            await self.queue_result.put('stop')
-        else:
-            await self.queue_result.get()
-        if self.queue_img_real.empty():
-            await self.queue_img_real.put('stop')
-        else:
-            await self.queue_img_real.get()
-        if self.queue_img.empty():
-            await self.queue_img.put('stop')
-        else:
-            await self.queue_img.get()
+        # queue have to be
+        await self.empty(self.queue_frame)
+        await self.empty(self.queue_result)
+        await self.empty(self.queue_img_real)
+        await self.empty(self.queue_img)
         self.logger.error(f'end STOP')
         # in case one task not canceled properly we calcel all the tasks
         await asyncio.sleep(3)
