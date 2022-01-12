@@ -51,9 +51,6 @@ def detect_block(my_net, my_class_names, frame, my_width, my_height, thresh):
     return detections
 
 
-
-
-
 class ProcessCamera(object):
 
     def __init__(self, cam, loop, tlock):
