@@ -167,11 +167,12 @@ class ProcessCamera(object):
     async def task1_http(self):
         while self.running_level1:
             t = time.time()
-            self.logger.info(f"before grab_http on {self.cam['name']}")
+            self.logger.error(f"before grab_http on {self.cam['name']}")
             frame = await grab_http(self.cam, self.logger, self.loop)
-            self.logger.debug(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
+            self.logger.error(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
                               f" en {time.time() - t} s frame is {frame}")
             if frame is not False:
+                self.logger.error(f"waiting for frame to queue")
                 await self.queue_frame.put(frame)
         self.logger.error('EXIT task1_http TASKS')
 
