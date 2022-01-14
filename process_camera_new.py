@@ -360,6 +360,7 @@ class ProcessCamera(object):
         else:
             try:
                 await asyncio.wait_for(queue.get(), timeout=1.0)
+                self.logger.error(f"getting the frame to emptied the queue")
             except asyncio.TimeoutError:
                 self.logger.error(f'Timeout on get {queue}')
 
@@ -382,6 +383,7 @@ class ProcessCamera(object):
             self.logger.error(f'cancel for {t}')
             t.cancel()
             self.logger.error(f'ok for cancel')
+        self.logger.error(f"after cancel queue size is {self.queue_frame.qsize()}")
         await self.empty(self.queue_frame)
         self.logger.error(f'all tasks cancel for {self.cam["name"]}')
 
