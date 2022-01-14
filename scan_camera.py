@@ -184,8 +184,7 @@ def check_cam(cam_ip_dict, users_dict):
             # auth = {cam['auth_type']: auth[cam['auth_type']]}
             check_auth(dict_cam[ip], cam["username"], cam["password"], auth)
         else:  # this is a new cam
-            dict_cam[ip] = {'name': 'unknow', 'port_onvif': cam["port_onvif"],
-                            'from_client': True, 'uri': {}}
+            dict_cam[ip] = {'name': 'unknow', 'port_onvif': cam["port_onvif"], 'from_client': True, 'uri': {}}
             port = cam["port_onvif"]
             onvif_answer = False
             for user, passwd in users_dict.items():

@@ -172,8 +172,9 @@ class ProcessCamera(object):
             self.logger.error(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
                               f" en {time.time() - t} s frame is {frame}")
             if frame is not False:
-                self.logger.error(f"waiting for frame to queue")
+                self.logger.error(f"waiting for frame to queue / queue size is {self.queue_frame.qsize()}")
                 await self.queue_frame.put(frame)
+                self.logger.error(f"after queue_frame.put")
         self.logger.error('EXIT task1_http TASKS')
 
     @catch_cancel
@@ -381,7 +382,7 @@ class ProcessCamera(object):
             self.logger.error(f'cancel for {t}')
             t.cancel()
             self.logger.error(f'ok for cancel')
-
+        await self.empty(self.queue_frame)
         self.logger.error(f'all tasks cancel for {self.cam["name"]}')
 
     async def base_condition(self, result):
