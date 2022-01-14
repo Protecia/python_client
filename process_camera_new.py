@@ -360,7 +360,7 @@ class ProcessCamera(object):
         else:
             try:
                 await asyncio.wait_for(queue.get(), timeout=1.0)
-                self.logger.error(f"getting the frame to emptied the queue")
+                self.logger.error(f"getting the frame to emptied the queue size is now {self.queue_frame.qsize()}")
             except asyncio.TimeoutError:
                 self.logger.error(f'Timeout on get {queue}')
 
