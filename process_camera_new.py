@@ -381,7 +381,7 @@ class ProcessCamera(object):
         self.logger.error(f'end STOP')
         # in case one task not canceled properly we cancel all the tasks
         await asyncio.sleep(3)
-        await self.empty(self.queue_frame)
+        # await self.empty(self.queue_frame)
         for t in self.camera_tasks:
             self.logger.error(f'cancel for {t}')
             t.cancel()
