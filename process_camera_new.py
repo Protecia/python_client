@@ -84,6 +84,8 @@ class ProcessCamera(object):
         async def inner(self):
             try:
                 await func(self)
+            except Exception as e:
+                self.logger.error(f'EXCEPTION GENERALE DE LA TASK {e} / name-->{type(e).__name__}')
             except asyncio.exceptions.CancelledError:
                 self.logger.error(f'catch cancel of task')
         return inner
@@ -169,7 +171,7 @@ class ProcessCamera(object):
             t = time.time()
             self.logger.error(f"before grab_http on {self.cam['name']}")
             frame = await grab_http(self.cam, self.logger, self.loop)
-            self.logger.error(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
+            self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
                               f" en {time.time() - t} s frame is {frame}")
             if frame is not False:
                 self.logger.error(f"waiting for frame to queue / queue size is {self.queue_frame.qsize()}")
@@ -371,7 +373,7 @@ class ProcessCamera(object):
         self.running_level1 = False
         self.logger.info(f'running false on cam {self.cam["name"]} ')
         await asyncio.sleep(1)
-        # queue have to be
+        # queue have to be emptied
         await self.empty(self.queue_frame)
         await self.empty(self.queue_result)
         await self.empty(self.queue_img_real)
@@ -379,6 +381,7 @@ class ProcessCamera(object):
         self.logger.error(f'end STOP')
         # in case one task not canceled properly we cancel all the tasks
         await asyncio.sleep(3)
+        await self.empty(self.queue_frame)
         for t in self.camera_tasks:
             self.logger.error(f'cancel for {t}')
             t.cancel()
