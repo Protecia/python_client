@@ -169,14 +169,14 @@ class ProcessCamera(object):
     async def task1_http(self):
         while self.running_level1:
             t = time.time()
-            self.logger.error(f"before grab_http on {self.cam['name']}")
+            self.logger.info(f"before grab_http on {self.cam['name']}")
             frame = await grab_http(self.cam, self.logger, self.loop)
             self.logger.info(f"ecriture de la frame {self.cam['name']} {time.strftime('%Y-%m-%d-%H-%M-%S')}"
                               f" en {time.time() - t} s frame is {frame}")
             if frame is not False:
-                self.logger.error(f"waiting for frame to queue / queue size is {self.queue_frame.qsize()}")
+                self.logger.info(f"waiting for frame to queue / queue size is {self.queue_frame.qsize()}")
                 await self.queue_frame.put(frame)
-                self.logger.error(f"after queue_frame.put")
+                self.logger.info(f"after queue_frame.put")
         self.logger.error('EXIT task1_http TASKS')
 
     @catch_cancel
@@ -381,7 +381,7 @@ class ProcessCamera(object):
         self.logger.error(f'end STOP')
         # in case one task not canceled properly we cancel all the tasks
         await asyncio.sleep(3)
-        # await self.empty(self.queue_frame)
+        await self.empty(self.queue_frame)
         for t in self.camera_tasks:
             self.logger.error(f'cancel for {t}')
             t.cancel()
