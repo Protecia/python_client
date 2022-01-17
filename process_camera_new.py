@@ -147,7 +147,7 @@ class ProcessCamera(object):
             if bad_read == 0:
                 # frame_rgb = await self.loop.run_in_executor(None, partial(cv2.cvtColor, frame, cv2.COLOR_BGR2RGB))
                 await self.queue_frame.put(frame)
-                self.logger.warning(f"rtsp queue frame is {self.queue_frame.qsize()}")
+                self.logger.error(f"rtsp queue frame is {self.queue_frame.qsize()}")
         self.logger.error('EXIT task1_rtsp_read TASKS')
 
     @catch_cancel
@@ -313,11 +313,11 @@ class ProcessCamera(object):
                             break
                         name = await result.img_name('real_time')
                         await ws_cam.send(json.dumps(name))
-                        self.logger.info(f'-------------> sending img name in task 4 {name}'
+                        self.logger.error(f'-------------> sending img name in task 4 {name}'
                                           f' with resolution {result.resolution}')
                         img = await result.img_to_send_real()
                         await ws_cam.send(img)
-                        self.logger.info(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
+                        self.logger.error(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
                                           f' {len(img)}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,
@@ -342,7 +342,7 @@ class ProcessCamera(object):
                     while self.running_level1:
                         await asyncio.sleep(0.02)
                         state = json.loads(await ws_get_state.recv())
-                        self.logger.error(f'receiving state for camera {self.cam["name"]} -> {state}')
+                        self.logger.info(f'receiving state for camera {self.cam["name"]} -> {state}')
                         if not state.get('ping'):
                             self.rec = state["rec"]
                             self.LD = state["on_camera_LD"]

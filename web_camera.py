@@ -6,6 +6,7 @@ import pathlib
 import time
 from log import Logger
 from utils import get_conf
+from datetime import datetime
 
 logger = Logger(__name__, level=settings.SOCKET_LOG, file=True).run()
 
@@ -96,6 +97,8 @@ class Client(object):
                         ping = state.get('ping', False)
                         logger.warning(f'Receive change state -> {state}')
                         if ping:
+                            with open(settings.INSTALL_PATH + '/conf/ping.json', 'w') as ping:
+                                json.dump({'ping': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), }, ping)
                             if state['token1']:
                                 with open(settings.INSTALL_PATH + '/conf/video.json', 'w') as f:
                                     json.dump({'token1': state['token1'], 'token2': state['token2']}, f)
