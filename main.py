@@ -92,42 +92,45 @@ def main():
         logger.error(txt)
 
         while True:
-            # write the file for backup video
-            cameras.write()
-            logger.info(f'Writing camera in json : {cameras.list_cam}')
-            # start the scan
-            process2 = {'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,)), }
-            for p in process2.values():
-                p.start()
+            try:
+                # write the file for backup video
+                cameras.write()
+                logger.info(f'Writing camera in json : {cameras.list_cam}')
+                # start the scan
+                process = {'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,)), }
+                for p in process.values():
+                    p.start()
 
-            # launch the camera thread
-            list_tasks = []
-            for c in cameras.list_cam.values():
-                if c['active'] and c['active_automatic']:
-                    uri = None
-                    for uri in c['uri'].values():  # get the camera uri in use or the last one
-                        if uri['use']:
-                            break
-                    if uri:
-                        uri.pop('id', None)
-                        ready_cam = {**c, **uri}
-                        p = pc.ProcessCamera(ready_cam, loop, tlock)
-                        list_tasks.append(p)
-                        logger.info(f'starting process camera on  : {ready_cam}')
+                # launch the camera thread
+                list_tasks = []
+                for c in cameras.list_cam.values():
+                    if c['active'] and c['active_automatic']:
+                        uri = None
+                        for uri in c['uri'].values():  # get the camera uri in use or the last one
+                            if uri['use']:
+                                break
+                        if uri:
+                            uri.pop('id', None)
+                            ready_cam = {**c, **uri}
+                            p = pc.ProcessCamera(ready_cam, loop, tlock)
+                            list_tasks.append(p)
+                            logger.info(f'starting process camera on  : {ready_cam}')
 
-            # wait until a camera change
-            total_tasks = [cameras.connect(scan_state, list_tasks)] + \
-                          [t.run() for t in list_tasks]
-            logger.error(f'list of all tasks launched {[t.__str__() for t in list_tasks]}')
-            loop.run_until_complete(asyncio.gather(*total_tasks))
+                # wait until a camera change
+                total_tasks = [cameras.connect(scan_state, list_tasks)] + \
+                              [t.run() for t in list_tasks]
+                logger.error(f'list of all tasks launched {[t.__str__() for t in list_tasks]}')
+                loop.run_until_complete(asyncio.gather(*total_tasks))
 
-            logger.warning('tasks stopped')
-            # stop the scan
-            for p in process2.values():
-                p.terminate()
-            logger.error('Camera change restart !')
-            cameras.running_level1 = True
-
+                logger.warning('tasks stopped')
+                # stop the scan
+                for p in process.values():
+                    p.terminate()
+                logger.error('Camera change restart !')
+                cameras.running_level1 = True
+            except Exception as ex:
+                logger.error(f'EXCEPTION IN MAIN  trying to restart in 5 s/ except-->{ex} / name-->{type(ex).__name__}')
+                time.sleep(5)
     except KeyboardInterrupt:
         for p in process.values():
             p.terminate()
