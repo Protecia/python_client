@@ -98,7 +98,7 @@ class Client(object):
                         logger.warning(f'Receive change state -> {state}')
                         if ping:
                             with open(settings.INSTALL_PATH + '/conf/ping.json', 'w') as ping:
-                                json.dump({'ping': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), }, ping)
+                                json.dump({'last': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), }, ping)
                             if state['token1']:
                                 with open(settings.INSTALL_PATH + '/conf/video.json', 'w') as f:
                                     json.dump({'token1': state['token1'], 'token2': state['token2']}, f)

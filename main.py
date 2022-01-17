@@ -43,6 +43,9 @@ def conf():
             with open(settings.INSTALL_PATH + '/conf/docker.json', 'w') as docker_json:
                 json.dump({key: data[key] for key in ['tunnel_port', 'docker_version', 'reboot']}, docker_json)
                 logger.warning(f'Receiving  conf :  {r.text}')
+            with open(settings.INSTALL_PATH + '/conf/force_reboot.json', 'w') as reboot_json:
+                json.dump({'force_reboot': False, }, reboot_json)
+                logger.warning(f'writing reboot  init conf')
             return True
         else:
             logger.warning(f'No client affected.')
