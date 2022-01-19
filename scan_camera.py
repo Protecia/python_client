@@ -22,7 +22,7 @@ import asyncio
 import subprocess
 from utils import get_conf
 
-logger = Logger('scan_camera', level=settings.SCAN_LOG).run()
+logger = Logger('scan_camera', level=settings.SCAN_LOG, file=True).run()
 
 
 def ping_network():
