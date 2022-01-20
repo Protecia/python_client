@@ -192,7 +192,7 @@ class ProcessCamera(object):
             frame_rgb = await self.queue_frame.get()
             if frame_rgb == 'stop':
                 break
-            self.logger.debug(f'frame length is {len(frame_rgb)}')
+            self.logger.error(f'frame length is {len(frame_rgb)}')
             result_dict = {}
             tasks = []
             for nkey, network in net.items():
@@ -217,7 +217,7 @@ class ProcessCamera(object):
             result = Result(self.cam, self.logger, result_darknet, last_result, time_frame)
             result.img = Img(frame_rgb, self.loop)
             await result.process_result()
-            self.logger.info(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
+            self.logger.error(f'{self.cam["name"]} -> brut result darknet {time.time()-t}s : {result_darknet} \n')
 
             # --------------- check the base condition for the result to queue --------------------------------
             self.logger.debug(f'rec is {self.rec}')
