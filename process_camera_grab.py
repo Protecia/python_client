@@ -9,7 +9,7 @@ from functools import partial
 async def grab_rtsp(vcap, loop, logger, cam):
     ret, frame = await loop.run_in_executor(None, vcap.retrieve)
     try:
-        logger.error(f"resultat de la lecture rtsp : {ret}  pour {cam['name']} with len {frame}")
+        logger.error(f"resultat de la lecture rtsp : {ret}  pour {cam['name']} with len {len(frame.tobytes())}")
     except TypeError:
         logger.error(f"resultat de la lecture rtsp : {ret}  pour {cam['name']} with frame None")
     if ret and len(frame) > 100:
