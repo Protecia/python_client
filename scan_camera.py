@@ -22,7 +22,7 @@ import asyncio
 import subprocess
 from utils import get_conf
 
-logger = Logger('scan_camera', level=settings.SCAN_LOG).run()
+logger = Logger('scan_camera', level=settings.SCAN_LOG, file=True).run()
 
 
 def ping_network():
@@ -176,13 +176,21 @@ def check_cam(cam_ip_dict, users_dict):
     dict_cam = {}
     for ip, cam in cam_ip_dict.items():
         dict_cam[ip] = cam
-        http = cam.get('uri', None)
-        if http:  # this is a known cam, so test
-            logger.info(f'testing old cam with http:{http} user:{cam["username"]} pass:{cam["password"]}')
-            auth = {'B': requests.auth.HTTPBasicAuth(cam["username"], cam["password"]),
-                    'D': requests.auth.HTTPDigestAuth(cam["username"], cam["password"])}
-            # auth = {cam['auth_type']: auth[cam['auth_type']]}
-            check_auth(dict_cam[ip], cam["username"], cam["password"], auth)
+        uri = cam.get('uri', None)
+        new = True
+        if uri:
+            if uri['0']['http'].split('//')[1].split(':')[0] == ip:
+                new = False
+        if not new:  # this is a known cam, so test
+            # test if the ip of the uri is the same
+            ip_from_uri = uri['0']['http'].split('//')[1].split(':')[0]
+            if ip == ip_from_uri:
+
+                logger.info(f'testing old cam with http:{uri} user:{cam["username"]} pass:{cam["password"]}')
+                auth = {'B': requests.auth.HTTPBasicAuth(cam["username"], cam["password"]),
+                        'D': requests.auth.HTTPDigestAuth(cam["username"], cam["password"])}
+                # auth = {cam['auth_type']: auth[cam['auth_type']]}
+                check_auth(dict_cam[ip], cam["username"], cam["password"], auth)
         else:  # this is a new cam
             dict_cam[ip] = {'name': 'unknow', 'port_onvif': cam["port_onvif"], 'from_client': True, 'uri': {}}
             port = cam["port_onvif"]
