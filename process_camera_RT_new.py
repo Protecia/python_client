@@ -191,9 +191,9 @@ class ProcessCamera(object):
             async with self.tlock:
                 result_concurrent = await asyncio.gather(*tasks)
             result_dict = dict(zip(result_dict, result_concurrent))
-            if 'all' in result_dict:
-                result_darknet = [r for r in result_dict['all'] if r[0] not in self.black_list]
-                result_dict.pop('all')
+            if 'all_RT' in result_dict:
+                result_darknet = [r for r in result_dict['all_RT'] if r[0] not in self.black_list]
+                result_dict.pop('all_RT')
             else:
                 result_darknet = []
             for partial_result in result_dict.values():
