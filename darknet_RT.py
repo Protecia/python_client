@@ -54,34 +54,34 @@ get_network_boxes.argtypes = [c_void_p, c_float, c_int, POINTER(c_int)]
 get_network_boxes.restype = POINTER(DETECTION)
 
 
-def detect_image(net, darknet_image):
+def detect_image(net, darknet_image, thresh, debug=False):
     num = c_int(0)
-    #if debug: print("Assigned num")
+    if debug: print("Assigned num")
     pnum = pointer(num)
-    #if debug: print("Assigned pnum")
+    if debug: print("Assigned pnum")
     do_inference(net, darknet_image)
-    #if debug: print("did prediction")
-    dets = get_network_boxes(net, 0.5, 0, pnum)
-    #if debug: print("Got dets")
+    if debug: print("did prediction")
+    dets = get_network_boxes(net, thresh, 0, pnum)
+    if debug: print("Got dets")
     res = []
     for i in range(pnum[0]):
         b = dets[i].bbox
         res.append((dets[i].name.decode("ascii"), dets[i].prob, (b.x, b.y, b.w, b.h)))
-    #if debug: print("free detections")
+    if debug: print("free detections")
     return res
 
 
 class YOLO4RT(object):
     def __init__(self,
-                 input_size=416,
-                 weight_file='/NNvision/weights/room_detector_fp16.rt',
-                 #conf_thres=0.3
+                 input_size,
+                 weight_file,
+                 conf_thres,
                  ):
         self.input_size = input_size
         self.metaMain =None
         self.model = load_network(weight_file.encode(), 15, 1)
         self.darknet_image = make_image(input_size, input_size, 3)
-         #self.thresh = conf_thres
+        self.thresh = conf_thres
          # self.resize_fn = ResizePadding(input_size, input_size)
          # self.transf_fn = transforms.ToTensor()
 
@@ -95,7 +95,7 @@ class YOLO4RT(object):
             frame_data = image.ctypes.data_as(c_char_p)
             copy_image_from_bytes(self.darknet_image, frame_data)
 
-            detections = detect_image(self.model, self.darknet_image)
+            detections = detect_image(self.model, self.darknet_image, self.thresh)
 
 #             cvDrawBoxes(detections, image)
 #             cv2.imshow("1", image)
