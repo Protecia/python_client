@@ -16,11 +16,13 @@ import socket
 import psutil
 import netifaces as ni
 import xml.etree.ElementTree as eT
-import re
 from urllib3.exceptions import HeaderParsingError
 import asyncio
 import subprocess
 from utils import get_conf
+from wsdiscovery.discovery import ThreadedWSDiscovery as WSDiscovery
+from wsdiscovery import Scope
+import re
 
 logger = Logger('scan_camera', level=settings.SCAN_LOG, file=True).run()
 
@@ -42,6 +44,27 @@ def ping_network():
                 if ip not in box:
                     std[ip] = {'port_onvif': get_conf('scan_camera')}
     return std
+
+
+#  --- ws discovery V2
+def fetch_devices():
+    dcam = {}
+    wsd = WSDiscovery()
+    scope1 = Scope("onvif://www.onvif.org/Profile")
+    wsd.start()
+    services = wsd.searchServices(scopes=[scope1])
+    for service in services:
+        # filter those devices that dont have ONVIF service
+        ipaddress = re.search('(\d+|\.)+', str(service.getXAddrs()[0])).group(0)
+        try:
+            port = re.search('[0-9]+:([0-9]+)/', str(service.getXAddrs()[0])).group(1)
+        except AttributeError:
+            port = '80'
+        logger.info(f'retrieve onvif {ipaddress} {port}')
+        dcam[ipaddress] = {'port_onvif': port}
+    logger.info(f'number of devices detected: {len(services)}')
+    wsd.stop()
+    return dcam
 
 
 def ws_discovery(repeat, wait):
@@ -227,7 +250,8 @@ def run(wait, scan_state):
             if get_conf('scan_camera') != 0:
                 detected_cam = ping_network()
             else:
-                detected_cam = ws_discovery(2, 20)
+                # detected_cam = ws_discovery(2, 20)
+                detected_cam = fetch_devices()
                 logger.debug(f'ws disvovery cam <-  {detected_cam}')
             detected_cam.update(cam_ip_dict)
             logger.info(f'updated detected_cam <-  {detected_cam}')
