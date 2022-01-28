@@ -8,8 +8,11 @@ from functools import partial
 # retrieve latest frame
 async def grab_rtsp(vcap, loop, logger, cam):
     ret, frame = await loop.run_in_executor(None, vcap.retrieve)
+    # sometimes opencv return exactly the same image all the time. This is a bug in opencv, to avoid this we
+    # check the variability of the image
     try:
-        logger.error(f"resultat de la lecture rtsp : {ret}  pour {cam['name']} with len {len(frame.tobytes())}")
+        logger.error(f"resultat de la lecture rtsp : {ret}  pour {cam['name']} with len "
+                     f"{len(cv2.imencode('.jpg',frame)[1].tobytes())}")
     except (TypeError, AttributeError):
         logger.error(f"resultat de la lecture rtsp : {ret}  pour {cam['name']} with frame {frame}")
     if ret and len(frame) > 100:
