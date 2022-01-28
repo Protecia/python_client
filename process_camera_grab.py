@@ -6,19 +6,21 @@ from functools import partial
 
 
 # retrieve latest frame
-async def grab_rtsp(vcap, loop, logger, cam):
+async def grab_rtsp(vcap, loop, logger, cam, last_frame_id):
     ret, frame = await loop.run_in_executor(None, vcap.retrieve)
     # sometimes opencv return exactly the same image all the time. This is a bug in opencv, to avoid this we
     # check the variability of the image
+    frame_id = len(cv2.imencode('.jpg',frame)[1].tobytes())
+    is_frame_diff = frame_id != last_frame_id
     try:
         logger.error(f"resultat de la lecture rtsp : {ret}  pour {cam['name']} with len "
-                     f"{len(cv2.imencode('.jpg',frame)[1].tobytes())}")
+                     f"{frame_id}")
     except (TypeError, AttributeError, cv2.error):
         logger.error(f"resultat de la lecture rtsp : {ret}  pour {cam['name']} with frame {frame}")
-    if ret and len(frame) > 100:
-        return frame
+    if ret and is_frame_diff and len(frame) > 100:
+        return frame, frame_id
     else:
-        return False
+        return False, 0
 
 
 async def grab_http(cam, logger, loop):

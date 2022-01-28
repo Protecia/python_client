@@ -76,6 +76,7 @@ class ProcessCamera(object):
         self.time_of_last_correction = 0
         self.last_result = []
         self.camera_tasks = []
+        self.frame_id = 0
 
     def __str__(self):
         return f"Instance for {self.cam['name']} / {self.cam['serial_number']} / {self.cam['ip']}"
@@ -134,7 +135,8 @@ class ProcessCamera(object):
         while self.running_level2 and self.running_level1:
             video_live = await self.loop.run_in_executor(None, self.vcap.isOpened)
             self.running_level2 = video_live
-            frame = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam)
+            frame, frame_id = await grab_rtsp(self.vcap, self.loop, self.logger, self.cam, self.frame_id)
+            self.frame_id = frame_id
             if frame is False:
                 self.logger.warning(f"Bad rtsp read on {self.cam['name']} videocapture is {video_live} "
                                     f"bad_read is {bad_read}")
