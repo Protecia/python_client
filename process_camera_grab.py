@@ -10,12 +10,14 @@ async def grab_rtsp(vcap, loop, logger, cam, last_frame_id):
     ret, frame = await loop.run_in_executor(None, vcap.retrieve)
     # sometimes opencv return exactly the same image all the time. This is a bug in opencv, to avoid this we
     # check the variability of the image
-    frame_id = len(cv2.imencode('.jpg',frame)[1].tobytes())
-    is_frame_diff = frame_id != last_frame_id
     try:
+        frame_id = len(cv2.imencode('.jpg', frame)[1].tobytes())
+        is_frame_diff = frame_id != last_frame_id
         logger.error(f"resultat de la lecture rtsp : {ret}  pour {cam['name']} with len "
                      f"{frame_id}")
     except (TypeError, AttributeError, cv2.error):
+        is_frame_diff = False
+        frame_id = 0
         logger.error(f"resultat de la lecture rtsp : {ret}  pour {cam['name']} with frame {frame}")
     if ret and is_frame_diff and len(frame) > 100:
         return frame, frame_id
