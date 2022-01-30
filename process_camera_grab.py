@@ -23,7 +23,7 @@ async def grab_rtsp(vcap, loop, logger, cam, last_frame_id):
     if ret and is_frame_diff and len(frame) > 100:
         return frame, frame_id
     else:
-        return False, 0
+        return False, frame_id
 
 
 async def grab_http(cam, logger, loop):
