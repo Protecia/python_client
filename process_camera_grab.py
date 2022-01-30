@@ -15,6 +15,7 @@ async def grab_rtsp(vcap, loop, logger, cam, last_frame_id):
         is_frame_diff = frame_id != last_frame_id
         logger.error(f"resultat de la lecture rtsp : {ret}  pour {cam['name']} with len "
                      f"{frame_id}")
+        logger.error(f"last_frame_id is {last_frame_id} frame_id is {frame_id} --> frame diff is  {is_frame_diff}")
     except (TypeError, AttributeError, cv2.error):
         is_frame_diff = False
         frame_id = 0
