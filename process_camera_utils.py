@@ -135,7 +135,7 @@ class Result(object):
         return last
 
     async def img_name(self, type_img):
-        date = time.strftime("%Y-%m-%d-%H-%M-%S")
+        date = self.time.strftime("%Y-%m-%d-%H-%M-%S")
         if type_img == 'rec':
             name = date + '_' + self.token
         else:
