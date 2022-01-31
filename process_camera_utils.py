@@ -1,5 +1,5 @@
 import cv2
-import time
+from datetime import datetime
 import secrets
 from functools import partial
 
@@ -52,7 +52,7 @@ class Result(object):
         self.last_objects = last_object
         self.filtered = []  # this is the real list of object return by darknet
         self.filtered_corrected = []  # this is the list corrected with rule : same place = same object
-        self.time = time.time()
+        self.time = datetime.utcnow()
         self.correction = False
         self.upload = True
         self.logger = logger
@@ -135,9 +135,8 @@ class Result(object):
         return last
 
     async def img_name(self, type_img):
-        date = self.time.strftime("%Y-%m-%d-%H-%M-%S")
         if type_img == 'rec':
-            name = date + '_' + self.token
+            name = self.time.strftime("%Y-%m-%d-%H-%M-%S") + '_' + self.token
         else:
             name = 'temp_img_cam_' + str(self.cam['id'])
         result_json = {'name': name, 'cam': self.cam['id'], 'result': self.filtered_corrected,
