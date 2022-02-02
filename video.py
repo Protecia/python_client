@@ -103,6 +103,7 @@ def rec_all_cam():
             with lock:
                 with open('camera/camera_from_server.json', 'r') as json_file:
                     cameras = json.load(json_file)
+                    read = True
             list_rtsp = []
             for cam in [(v['uri'], v['username'], v['password'], v['id']) for v in cameras.values() if v['active']]:
                 # take the first rtsp as default
