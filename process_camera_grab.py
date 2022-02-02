@@ -19,7 +19,7 @@ async def grab_rtsp(vcap, loop, logger, cam, last_frame_id):
     except (TypeError, AttributeError, cv2.error):
         is_frame_diff = False
         frame_id = 0
-        logger.error(f"resultat de la lecture rtsp : {ret}  pour {cam['name']} with frame {frame}")
+        logger.info(f"resultat de la lecture rtsp : {ret}  pour {cam['name']} with frame {frame}")
     if ret and is_frame_diff and len(frame) > 100:
         return frame, frame_id
     else:
