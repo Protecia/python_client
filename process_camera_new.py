@@ -315,11 +315,11 @@ class ProcessCamera(object):
                             break
                         name = await result.img_name('real_time')
                         await ws_cam.send(json.dumps(name))
-                        self.logger.error(f'-------------> sending img name in task 4 {name}'
+                        self.logger.info(f'-------------> sending img name in task 4 {name}'
                                           f' with resolution {result.resolution}')
                         img = await result.img_to_send_real()
                         await ws_cam.send(img)
-                        self.logger.error(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
+                        self.logger.info(f'-------------> sending img bytes in task 4 for cam {self.cam["name"]}'
                                           f' {len(img)}')
             except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK,
                     OSError, ConnectionResetError,

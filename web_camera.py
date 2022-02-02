@@ -7,6 +7,7 @@ import time
 from log import Logger
 from utils import get_conf
 from datetime import datetime
+from filelock import Timeout, FileLock
 
 logger = Logger(__name__, level=settings.SOCKET_LOG, file=True).run()
 
@@ -17,17 +18,29 @@ class Client(object):
         self.key = get_conf('key')
         self.E_state = None
         self.running_level1 = True
+        self.camera_file = settings.INSTALL_PATH + '/camera/camera_from_server.json'
+        self.lock = FileLock(settings.INSTALL_PATH + '/camera/camera_from_server.json.lock', timeout=1)
 
     def write(self):
-        with open(settings.INSTALL_PATH + '/camera/camera_from_server.json', 'w') as cam:
-            json.dump(self.list_cam, cam)
+        write = False
+        while not write:
+            try:
+                with self.lock:
+                    with open(self.camera_file, 'w') as cam:
+                        json.dump(self.list_cam, cam)
+                        logger.error(f' Writing the camera from server in file -> \n'
+                                     f' {json.dumps(self.list_cam, indent=4, sort_keys=True)}')
+                write = True
+            except Timeout:
+                logger.error(f' Error Writing the camera file, file is lock')
+                time.sleep(1)
 
     async def get_cam(self):
         async with websockets.connect(settings.SERVER_WS + 'ws') as ws:
             await ws.send(json.dumps({'key': self.key}))
             cam = await ws.recv()
             self.list_cam = json.loads(cam)
-            logger.warning(f' get cam receive cam from server -> {self.list_cam}')
+            logger.error(f' get cam receive cam from server -> {json.dumps(self.list_cam, indent=4, sort_keys=True)}')
 
     async def connect(self, scan_state, extern_tasks):
         await asyncio.gather(self.send_cam(), self.receive_cam(), self.get_state(scan_state))
@@ -76,8 +89,8 @@ class Client(object):
                 async with websockets.connect(settings.SERVER_WS + 'ws_send_cam') as ws:
                     await ws.send(json.dumps({'key': self.key, }))
                     cam = await ws.recv()
-                    logger.warning(f'Receive cam from server -> {cam}')
                     self.list_cam = json.loads(cam)
+                    logger.error(f'Receive cam from server -> {json.dumps(self.list_cam, indent=4, sort_keys=True)}')
                     await ws.send(json.dumps({'answer': True}))
                     logger.warning(f'Running level 1 is -> {self.running_level1}')
                     self.running_level1 = False

@@ -23,6 +23,7 @@ from utils import get_conf
 from wsdiscovery.discovery import ThreadedWSDiscovery as WSDiscovery
 from wsdiscovery import Scope
 import re
+from filelock import Timeout, FileLock
 
 logger = Logger('scan_camera', level=settings.SCAN_LOG, file=True).run()
 
@@ -242,10 +243,12 @@ def check_cam(cam_ip_dict, users_dict):
 
 
 def run(wait, scan_state):
+    lock = FileLock(settings.INSTALL_PATH + '/camera/camera_from_server.json.lock', timeout=1)
     while True:
         try:
-            with open(settings.INSTALL_PATH+'/camera/camera_from_server.json', 'r') as out:
-                cam_ip_dict = json.load(out)
+            with lock:
+                with open(settings.INSTALL_PATH+'/camera/camera_from_server.json', 'r') as out:
+                    cam_ip_dict = json.load(out)
             users_dict = {cam['username']: cam['password'] for cam in cam_ip_dict.values()}
             if get_conf('scan_camera') != 0:
                 detected_cam = ping_network()
@@ -263,6 +266,9 @@ def run(wait, scan_state):
             logger.warning(f'Writing scan camera in file <-  {dict_cam} / scan_state is {scan_state.is_set()}')
             scan_state.wait()
             time.sleep(wait)
+        except Timeout:
+            logger.error(f'exception in read json, file is lock')
+            time.sleep(1)
         except Exception as ex:
             logger.error(f'exception in scan_camera : except-->{ex} / name-->{type(ex).__name__}')
             time.sleep(1)
