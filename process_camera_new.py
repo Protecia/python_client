@@ -242,7 +242,7 @@ class ProcessCamera(object):
                 self.logger.info(f'Q_img_real HD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
             elif self.LD:
                 await self.queue_img_real.put(result)
-                self.logger.error(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
+                self.logger.info(f'Q_img_real LD on {self.cam["name"]} : size {self.queue_img_real.qsize()}')
 
         self.logger.error('EXIT task2 TASKS')
 
