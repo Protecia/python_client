@@ -149,7 +149,7 @@ class ProcessCamera(object):
             if bad_read == 0:
                 # frame_rgb = await self.loop.run_in_executor(None, partial(cv2.cvtColor, frame, cv2.COLOR_BGR2RGB))
                 await self.queue_frame.put(frame)
-                self.logger.error(f"rtsp queue frame is {self.queue_frame.qsize()}")
+                self.logger.info(f"rtsp queue frame is {self.queue_frame.qsize()}")
         self.logger.error('EXIT task1_rtsp_read TASKS')
 
     @catch_cancel
