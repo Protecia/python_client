@@ -113,8 +113,10 @@ def main():
                             if uri['use']:
                                 break
                         if uri:
-                            uri.pop('id', None)
-                            ready_cam = {**c, **uri}
+                            # need to copy the dict because you can not remove the id from camera.list_cam
+                            uri_copy = uri.copy()
+                            uri_copy.pop('id', None)
+                            ready_cam = {**c, **uri_copy}
                             p = pc.ProcessCamera(ready_cam, loop, tlock)
                             list_tasks.append(p)
                             logger.info(f'starting process camera on  : {ready_cam}')
