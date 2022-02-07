@@ -77,6 +77,7 @@ class ProcessCamera(object):
         self.last_result = []
         self.camera_tasks = []
         self.frame_id = 0
+        self.start_process = True
 
     def __str__(self):
         return f"Instance for {self.cam['name']} / {self.cam['serial_number']} / {self.cam['ip']}"
@@ -396,6 +397,10 @@ class ProcessCamera(object):
         """
         return True if the result has really change or if there is a correction and a time gap from last correction
         """
+        if self.start_process:
+            self.start_process = False
+            return True
+
         new, lost = await get_list_diff(result.filtered, result.last_objects, self.cam['pos_sensivity'])
         self.logger.info(f'BASE CONDITION : {result.filtered} / {result.last_objects} --> {new} / {lost}')
         if len(new) == 0 and len(lost) == 0:
