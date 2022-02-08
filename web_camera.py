@@ -28,7 +28,7 @@ class Client(object):
                 with self.lock:
                     with open(self.camera_file, 'w') as cam:
                         json.dump(self.list_cam, cam)
-                        logger.error(f' Writing the camera from server in file -> \n'
+                        logger.info(f' Writing the camera from server in file -> \n'
                                      f' {json.dumps(self.list_cam, indent=4, sort_keys=True)}')
                 write = True
             except Timeout:
@@ -40,7 +40,7 @@ class Client(object):
             await ws.send(json.dumps({'key': self.key}))
             cam = await ws.recv()
             self.list_cam = json.loads(cam)
-            logger.error(f' get cam receive cam from server -> {json.dumps(self.list_cam, indent=4, sort_keys=True)}')
+            logger.info(f' get cam receive cam from server -> {json.dumps(self.list_cam, indent=4, sort_keys=True)}')
 
     async def connect(self, scan_state, extern_tasks):
         await asyncio.gather(self.send_cam(), self.receive_cam(), self.get_state(scan_state))
@@ -90,7 +90,7 @@ class Client(object):
                     await ws.send(json.dumps({'key': self.key, }))
                     cam = await ws.recv()
                     self.list_cam = json.loads(cam)
-                    logger.error(f'Receive cam from server -> {json.dumps(self.list_cam, indent=4, sort_keys=True)}')
+                    logger.info(f'Receive cam from server -> {json.dumps(self.list_cam, indent=4, sort_keys=True)}')
                     await ws.send(json.dumps({'answer': True}))
                     logger.warning(f'Running level 1 is -> {self.running_level1}')
                     self.running_level1 = False
