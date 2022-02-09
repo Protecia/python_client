@@ -104,6 +104,12 @@ def main():
                 for p in process.values():
                     p.start()
 
+                # log the id of the process
+                txt = f'PID of different processes : '
+                for key, value in process.items():
+                    txt += f'{key}->{value.pid} / '
+                logger.error(txt)
+
                 # launch the camera thread
                 list_tasks = []
                 for c in cameras.list_cam.values():
