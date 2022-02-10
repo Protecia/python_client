@@ -187,6 +187,11 @@ def check_auth(dict_cam_ip, user, passwd, auth):
                         requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema):
                     time.sleep(0.5)
                     pass
+                try:
+                    r.close()
+                    r = None
+                except:
+                    pass
             if check:
                 break
         if check:
