@@ -96,6 +96,7 @@ def main():
         process1 = {
             'serve_http': Process(target=http_serve, args=(2525,))}
         for p in process1.values():
+            p.daemon = True
             p.start()
 
         # log the id of the process
@@ -112,6 +113,7 @@ def main():
                 # start the scan
                 process2 = {'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,)), }
                 for p in process2.values():
+                    p.daemon = True
                     p.start()
 
                 # log the id of the process
@@ -151,14 +153,19 @@ def main():
                 # stop the scan
                 for p in process2.values():
                     p.terminate()
+                    p.join(timeout=1.0)
                 logger.error('Camera change restart !')
                 cameras.running_level1 = True
             except Exception as ex:
                 logger.error(f'EXCEPTION IN MAIN  trying to restart in 5 s/ except-->{ex} / name-->{type(ex).__name__}')
                 time.sleep(5)
     except KeyboardInterrupt:
-        for p in process.values():
+        for p in process1.values():
             p.terminate()
+            p.join(timeout=1.0)
+        for p in process2.values():
+            p.terminate()
+            p.join(timeout=1.0)
         logger.warning('Ctrl-c or SIGTERM')
 
 
