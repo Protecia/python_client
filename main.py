@@ -139,6 +139,7 @@ def main():
                 logger.error(f'Memory allocation {top_stats}')
                 logger.error(f'Memory allocation top {display_top(snapshot)}')
                 loop.run_until_complete(asyncio.gather(*total_tasks))
+                time.sleep(0.1)
 
                 logger.warning('tasks stopped')
 
