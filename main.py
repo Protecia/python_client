@@ -93,15 +93,17 @@ def main():
             scan_state.set()
 
         # launch child processes
-        process1 = {
-            'serve_http': Process(target=http_serve, args=(2525,))}
-        for p in process1.values():
+        process = {
+            'serve_http': Process(target=http_serve, args=(2525,)),
+            'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,))
+        }
+        for p in process.values():
             p.daemon = True
             p.start()
 
         # log the id of the process
         txt = f'PID of different processes : '
-        for key, value in process1.items():
+        for key, value in process.items():
             txt += f'{key}->{value.pid} / '
         logger.error(txt)
 
@@ -110,19 +112,6 @@ def main():
                 # write the file for backup video
                 cameras.write()
                 logger.info(f'Writing camera in json : {cameras.list_cam}')
-
-                process2 = {}
-                # # start the scan
-                # process2 = {'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,)), }
-                # for p in process2.values():
-                #     p.daemon = True
-                #     p.start()
-                #
-                # # log the id of the process
-                # txt = f'PID of different processes : '
-                # for key, value in process2.items():
-                #     txt += f'{key}->{value.pid} / '
-                # logger.error(txt)
 
                 # launch the camera thread
                 list_tasks = []
@@ -152,21 +141,14 @@ def main():
                 loop.run_until_complete(asyncio.gather(*total_tasks))
 
                 logger.warning('tasks stopped')
-                # stop the scan
-                for p in process2.values():
-                    p.terminate()
-                    p.join(timeout=1.0)
-                    del p
+
                 logger.error('Camera change restart !')
                 cameras.running_level1 = True
             except Exception as ex:
                 logger.error(f'EXCEPTION IN MAIN  trying to restart in 5 s/ except-->{ex} / name-->{type(ex).__name__}')
                 time.sleep(5)
     except KeyboardInterrupt:
-        for p in process1.values():
-            p.terminate()
-            p.join(timeout=1.0)
-        for p in process2.values():
+        for p in process.values():
             p.terminate()
             p.join(timeout=1.0)
         logger.warning('Ctrl-c or SIGTERM')
