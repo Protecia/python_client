@@ -110,17 +110,19 @@ def main():
                 # write the file for backup video
                 cameras.write()
                 logger.info(f'Writing camera in json : {cameras.list_cam}')
-                # start the scan
-                process2 = {'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,)), }
-                for p in process2.values():
-                    p.daemon = True
-                    p.start()
 
-                # log the id of the process
-                txt = f'PID of different processes : '
-                for key, value in process.items():
-                    txt += f'{key}->{value.pid} / '
-                logger.error(txt)
+                process2 = {}
+                # # start the scan
+                # process2 = {'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,)), }
+                # for p in process2.values():
+                #     p.daemon = True
+                #     p.start()
+                #
+                # # log the id of the process
+                # txt = f'PID of different processes : '
+                # for key, value in process2.items():
+                #     txt += f'{key}->{value.pid} / '
+                # logger.error(txt)
 
                 # launch the camera thread
                 list_tasks = []
@@ -154,6 +156,7 @@ def main():
                 for p in process2.values():
                     p.terminate()
                     p.join(timeout=1.0)
+                    del p
                 logger.error('Camera change restart !')
                 cameras.running_level1 = True
             except Exception as ex:
