@@ -22,6 +22,16 @@ import time
 from urllib3.exceptions import ProtocolError
 from utils import get_conf
 
+import tracemalloc
+
+tracemalloc.start()
+
+# ... lancez votre application ...
+
+snapshot = tracemalloc.take_snapshot()
+top_stats = snapshot.statistics('lineno')
+
+
 # globals var
 logger = Logger(__name__, level=settings.MAIN_LOG, file=True).run()
 
@@ -99,16 +109,16 @@ def main():
                 # write the file for backup video
                 cameras.write()
                 logger.info(f'Writing camera in json : {cameras.list_cam}')
-                # # start the scan
-                # process = {'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,)), }
-                # for p in process.values():
-                #     p.start()
-                #
-                # # log the id of the process
-                # txt = f'PID of different processes : '
-                # for key, value in process.items():
-                #     txt += f'{key}->{value.pid} / '
-                # logger.error(txt)
+                # start the scan
+                process = {'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,)), }
+                for p in process.values():
+                    p.start()
+
+                # log the id of the process
+                txt = f'PID of different processes : '
+                for key, value in process.items():
+                    txt += f'{key}->{value.pid} / '
+                logger.error(txt)
 
                 # launch the camera thread
                 list_tasks = []
@@ -131,6 +141,9 @@ def main():
                 total_tasks = [cameras.connect(scan_state, list_tasks)] + \
                               [t.run() for t in list_tasks]
                 logger.error(f'list of all tasks launched {[t.__str__() for t in list_tasks]}')
+                snapshot = tracemalloc.take_snapshot()
+                top_stats = snapshot.statistics('lineno')
+                logger.error(f'Memory allocation {top_stats}')
                 loop.run_until_complete(asyncio.gather(*total_tasks))
 
                 logger.warning('tasks stopped')
