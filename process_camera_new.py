@@ -125,7 +125,7 @@ class ProcessCamera(object):
             await asyncio.sleep(1)
             await self.loop.run_in_executor(None, self.vcap.release)
             self.logger.warning(f'VideoCapture close on {self.cam["name"]}')
-        self.logger.error('EXIT task1_rtsp TASKS')
+        self.logger.warning('EXIT task1_rtsp TASKS')
 
     @catch_cancel
     async def task1_rtsp_read(self):
@@ -151,7 +151,7 @@ class ProcessCamera(object):
                 # frame_rgb = await self.loop.run_in_executor(None, partial(cv2.cvtColor, frame, cv2.COLOR_BGR2RGB))
                 await self.queue_frame.put(frame)
                 self.logger.info(f"rtsp queue frame is {self.queue_frame.qsize()}")
-        self.logger.error('EXIT task1_rtsp_read TASKS')
+        self.logger.warning('EXIT task1_rtsp_read TASKS')
 
     @catch_cancel
     async def task1_rtsp_flush(self):
@@ -166,7 +166,7 @@ class ProcessCamera(object):
             except AttributeError:
                 pass
             # await asyncio.sleep(0.001)
-        self.logger.error('EXIT task1_rtsp_flush TASKS')
+        self.logger.warning('EXIT task1_rtsp_flush TASKS')
 
     @catch_cancel
     async def task1_http(self):
