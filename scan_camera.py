@@ -19,11 +19,14 @@ import xml.etree.ElementTree as eT
 from urllib3.exceptions import HeaderParsingError
 import asyncio
 import subprocess
-from utils import get_conf
+from utils import get_conf, display_top
 from wsdiscovery.discovery import ThreadedWSDiscovery as WSDiscovery
 from wsdiscovery import Scope
 import re
 from filelock import Timeout, FileLock
+import tracemalloc
+
+tracemalloc.start()
 
 logger = Logger('scan_camera', level=settings.SCAN_LOG, file=True).run()
 
@@ -264,6 +267,8 @@ def run(wait, scan_state):
             with open(settings.INSTALL_PATH+'/camera/camera_from_scan.json', 'w') as out:
                 json.dump(dict_cam, out)
             logger.warning(f'Writing scan camera in file <-  {dict_cam} / scan_state is {scan_state.is_set()}')
+            snapshot = tracemalloc.take_snapshot()
+            logger.error(f'Memory allocation top {display_top(snapshot)}')
             scan_state.wait()
             time.sleep(wait)
         except Timeout:
