@@ -92,17 +92,17 @@ def main():
         if get_conf('scan'):
             scan_state.set()
 
-        # # launch child processes
-        # process1 = {
-        #     'serve_http': Process(target=http_serve, args=(2525,))}
-        # for p in process1.values():
-        #     p.start()
-        #
-        # # log the id of the process
-        # txt = f'PID of different processes : '
-        # for key, value in process1.items():
-        #     txt += f'{key}->{value.pid} / '
-        # logger.error(txt)
+        # launch child processes
+        process1 = {
+            'serve_http': Process(target=http_serve, args=(2525,))}
+        for p in process1.values():
+            p.start()
+
+        # log the id of the process
+        txt = f'PID of different processes : '
+        for key, value in process1.items():
+            txt += f'{key}->{value.pid} / '
+        logger.error(txt)
 
         while True:
             try:
