@@ -19,19 +19,18 @@ def display_top(snapshot, key_type='lineno', limit=10):
         tracemalloc.Filter(False, "<unknown>"),
     ))
     top_stats = snapshot.statistics(key_type)
-
-    print("Top %s lines" % limit)
+    message = f"Top {limit} lines"
     for index, stat in enumerate(top_stats[:limit], 1):
         frame = stat.traceback[0]
-        print("#%s: %s:%s: %.1f KiB"
-              % (index, frame.filename, frame.lineno, stat.size / 1024))
+        message += f"  {index}: {frame.filename}:{frame.lineno}: {stat.size / 1024} KiB"
         line = linecache.getline(frame.filename, frame.lineno).strip()
         if line:
-            print('    %s' % line)
-
+            message += f'    {line}'
     other = top_stats[limit:]
     if other:
         size = sum(stat.size for stat in other)
-        print("%s other: %.1f KiB" % (len(other), size / 1024))
+        message += f"\n{len(other)} other: {size / 1024} KiB"
     total = sum(stat.size for stat in top_stats)
-    print("Total allocated size: %.1f KiB" % (total / 1024))
+    message += f"\n Total allocated size: {total / 1024} KiB"
+    return message
+
