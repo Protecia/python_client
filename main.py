@@ -20,7 +20,7 @@ import web_camera
 import signal
 import time
 from urllib3.exceptions import ProtocolError
-from utils import get_conf
+from utils import get_conf, display_top
 
 import tracemalloc
 
@@ -144,6 +144,7 @@ def main():
                 snapshot = tracemalloc.take_snapshot()
                 top_stats = snapshot.statistics('lineno')
                 logger.error(f'Memory allocation {top_stats}')
+                logger.error(f'Memory allocation top {display_top(snapshot)}')
                 loop.run_until_complete(asyncio.gather(*total_tasks))
 
                 logger.warning('tasks stopped')
