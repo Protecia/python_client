@@ -261,9 +261,9 @@ def run(wait, scan_state):
             if get_conf('scan_camera') != 0:
                 detected_cam = ping_network()
             else:
-                detected_cam = ws_discovery(2, 20)
-                # detected_cam = fetch_devices()
-                # detected_cam.update(ws_discovery(2, 20))
+                # detected_cam = ws_discovery(2, 20)
+                detected_cam = fetch_devices()
+                detected_cam.update(ws_discovery(2, 20))
                 logger.debug(f'ws disvovery cam <-  {detected_cam}')
             detected_cam.update(cam_ip_dict)
             logger.info(f'updated detected_cam <-  {detected_cam}')
