@@ -21,16 +21,12 @@ import signal
 import time
 from urllib3.exceptions import ProtocolError
 from utils import get_conf, display_top
+import logging
 
 import tracemalloc
 
-tracemalloc.start()
-
-# ... lancez votre application ...
-
-snapshot = tracemalloc.take_snapshot()
-top_stats = snapshot.statistics('lineno')
-
+if settings.MAIN_LOG == logging.DEBUG:
+    tracemalloc.start()
 
 # globals var
 logger = Logger(__name__, level=settings.MAIN_LOG, file=True).run()
@@ -134,10 +130,8 @@ def main():
                 total_tasks = [cameras.connect(scan_state, list_tasks)] + \
                               [t.run() for t in list_tasks]
                 logger.error(f'list of all tasks launched {[t.__str__() for t in list_tasks]}')
-                snapshot = tracemalloc.take_snapshot()
-                top_stats = snapshot.statistics('lineno')
-                logger.error(f'Memory allocation {top_stats}')
-                logger.error(f'Memory allocation top {display_top(snapshot)}')
+                logger.debug(f'Memory allocation {snapshot.statistics("lineno")}')
+                logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
                 loop.run_until_complete(asyncio.gather(*total_tasks))
                 time.sleep(0.1)
 
