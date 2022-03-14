@@ -5,6 +5,7 @@ Created on Tue Dec  3 15:06:16 2019
 @author: julien
 """
 import logging
+from conf.settingslocal import *
 
 LOG = logging.ERROR
 MAIN_LOG = logging.ERROR
@@ -44,8 +45,7 @@ UUID = '/NNvision/uuid/uuid'  # on nano
 # python conf
 PYTHON = 'python3'
 THREATED_REQUESTS = True
-SERVER = 'https://dev.protecia.com/'
-SERVER_WS = 'wss://dev.protecia.com/'
+
 VIDEO_REC_TIME = 10
 VIDEO_SPACE = 30  # Go
 QUEUE_SIZE = 10  # number of images to queue at max
@@ -57,5 +57,7 @@ SSH_SERVER_PORT = 2223
 SSH_USER = 'tunnel'
 WSDIR = '/usr/local/lib/python3.6/site-packages/wsdl/'
 
-# client conf
-INIT_PASS = 'jznsjoa3z54d'
+# client conf  --> now in settingslocal.py
+# INIT_PASS = 'jznsjoa3z54d'
+# SERVER = 'https://dev.protecia.com/'
+# SERVER_WS = 'wss://dev.protecia.com/'
