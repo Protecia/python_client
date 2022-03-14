@@ -274,7 +274,7 @@ def run(wait, scan_state):
             with open(settings.INSTALL_PATH+'/camera/camera_from_scan.json', 'w') as out:
                 json.dump(dict_cam, out)
             logger.warning(f'Writing scan camera in file <-  {dict_cam} / scan_state is {scan_state.is_set()}')
-            logger.error(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
+            logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
             scan_state.wait()
             time.sleep(wait)
         except Timeout:
