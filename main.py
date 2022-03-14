@@ -6,7 +6,7 @@ Created on Sat Jun  1 07:34:04 2019
 """
 import asyncio
 
-import process_camera_new as pc
+import process_camera_RT_new as pc
 from multiprocessing import Process, Event as pEvent
 import json
 from log import Logger
