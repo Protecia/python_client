@@ -19,6 +19,9 @@ SOCKET_LOG = logging.ERROR
 #  Darknet conf
 DARKNET_PATH = '/NNvision/darknet'
 
+# If using tensorRT
+LIB_PATH = '/NNvision/tkDNN/build'
+
 DARKNET_CONF = {
         'all': {
                 'CFG': 'cfg/yolov3.cfg',
