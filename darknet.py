@@ -240,7 +240,7 @@ if os.name == "nt":
                   format(winNoGPUdll))
 else:
     lib = CDLL(settings.DARKNET_PATH+"/libdarknet.so", RTLD_GLOBAL)
-    libRT = CDLL(settings.LIB_PATH + "/libdarknetTR.so", RTLD_GLOBAL)
+    libRT = CDLL(settings.RT_PATH + "/libdarknetTR.so", RTLD_GLOBAL)
 
 lib.network_width.argtypes = [c_void_p]
 lib.network_width.restype = c_int
