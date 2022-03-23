@@ -353,9 +353,9 @@ get_network_boxes_RT.restype = POINTER(DETECTION)
 do_inference = libRT.do_inference
 do_inference.argtypes = [c_void_p, IMAGE]
 
-make_image_RT = lib.make_image
+make_image_RT = libRT.make_image
 make_image_RT.argtypes = [c_int, c_int, c_int]
 make_image_RT.restype = IMAGE
 
-copy_image_from_bytes_RT = lib.copy_image_from_bytes
+copy_image_from_bytes_RT = libRT.copy_image_from_bytes
 copy_image_from_bytes_RT.argtypes = [IMAGE, c_char_p]
