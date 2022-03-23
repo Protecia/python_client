@@ -49,6 +49,14 @@ class DETECTION(Structure):
                 ("track_id", c_int)]
 
 
+class DETECTIONRT(Structure):
+    _fields_ = [("cl", c_int),
+                ("bbox", BOX),
+                ("prob", c_float),
+                ("name", c_char*20),
+                ]
+
+
 class DETNUMPAIR(Structure):
     _fields_ = [("num", c_int),
                 ("dets", POINTER(DETECTION))]
@@ -348,7 +356,7 @@ load_net_RT.restype = c_void_p
 
 get_network_boxes_RT = libRT.get_network_boxes
 get_network_boxes_RT.argtypes = [c_void_p, c_float, c_int, POINTER(c_int)]
-get_network_boxes_RT.restype = POINTER(DETECTION)
+get_network_boxes_RT.restype = POINTER(DETECTIONRT)
 
 do_inference = libRT.do_inference
 do_inference.argtypes = [c_void_p, IMAGE]
