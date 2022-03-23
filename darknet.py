@@ -187,7 +187,7 @@ def detect_image_RT(net, class_name, darknet_image, thresh=.5, debug=False):
     if debug: print("Assigned pnum")
     do_inference(net, darknet_image)
     if debug: print("did prediction")
-    dets = get_network_boxes(net, thresh, 0, pnum)
+    dets = get_network_boxes_RT(net, thresh, 0, pnum)
     if debug: print("Got dets")
     res = []
     for i in range(pnum[0]):
@@ -267,6 +267,10 @@ make_image.restype = IMAGE
 get_network_boxes = lib.get_network_boxes
 get_network_boxes.argtypes = [c_void_p, c_int, c_int, c_float, c_float, POINTER(c_int), c_int, POINTER(c_int), c_int]
 get_network_boxes.restype = POINTER(DETECTION)
+
+get_network_boxes_RT = libRT.get_network_boxes
+get_network_boxes_RT.argtypes = [c_void_p, c_float, c_int, POINTER(c_int)]
+get_network_boxes_RT.restype = POINTER(DETECTION)
 
 make_network_boxes = lib.make_network_boxes
 make_network_boxes.argtypes = [c_void_p]
