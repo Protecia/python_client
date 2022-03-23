@@ -19,6 +19,9 @@ for key, values in settings.DARKNET_CONF.items():
     if 'RT' in key:  # if using Tensor RT
         path = settings.RT_PATH
         detect_func = dn.detect_image_RT
+        make_func = dn.make_image_RT
+        copy_func = dn.copy_image_from_bytes_RT
+        free_func = lambda image: True
         values['net'] = dn.load_net_RT(os.path.join(path, values['TENSOR_PATH']).encode(),
                                        os.path.join(path, values['CFG']).encode(),
                                        os.path.join(path, values['NAMES']).encode(),
@@ -31,6 +34,9 @@ for key, values in settings.DARKNET_CONF.items():
     else:
         path = settings.DARKNET_PATH
         detect_func = dn.detect_image
+        make_func = dn.make_image
+        copy_func = dn.copy_image_from_bytes
+        free_func = dn.free_image
         values['net'] = dn.load_net_custom(os.path.join(path, values['CFG']).encode(),
                                            os.path.join(path, values['WEIGHTS']).encode(), 0, 1)
         values['meta'] = dn.load_meta(os.path.join(path, values['DATA']).encode())

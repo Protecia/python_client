@@ -268,9 +268,7 @@ get_network_boxes = lib.get_network_boxes
 get_network_boxes.argtypes = [c_void_p, c_int, c_int, c_float, c_float, POINTER(c_int), c_int, POINTER(c_int), c_int]
 get_network_boxes.restype = POINTER(DETECTION)
 
-get_network_boxes_RT = libRT.get_network_boxes
-get_network_boxes_RT.argtypes = [c_void_p, c_float, c_int, POINTER(c_int)]
-get_network_boxes_RT.restype = POINTER(DETECTION)
+
 
 make_network_boxes = lib.make_network_boxes
 make_network_boxes.argtypes = [c_void_p]
@@ -291,12 +289,7 @@ network_predict.argtypes = [c_void_p, POINTER(c_float)]
 reset_rnn = lib.reset_rnn
 reset_rnn.argtypes = [c_void_p]
 
-load_net_RT = libRT.load_network
-load_net_RT.argtypes = [c_char_p, c_char_p, c_char_p, c_int, c_int, c_float]
-load_net_RT.restype = c_void_p
 
-do_inference = libRT.do_inference
-do_inference.argtypes = [c_void_p, IMAGE]
 
 load_net = lib.load_network
 load_net.argtypes = [c_char_p, c_char_p, c_int]
@@ -346,3 +339,23 @@ network_predict_batch = lib.network_predict_batch
 network_predict_batch.argtypes = [c_void_p, IMAGE, c_int, c_int, c_int,
                                    c_float, c_float, POINTER(c_int), c_int, c_int]
 network_predict_batch.restype = POINTER(DETNUMPAIR)
+
+# --------------   RT special function -------------------------------------------------
+
+load_net_RT = libRT.load_network
+load_net_RT.argtypes = [c_char_p, c_char_p, c_char_p, c_int, c_int, c_float]
+load_net_RT.restype = c_void_p
+
+get_network_boxes_RT = libRT.get_network_boxes
+get_network_boxes_RT.argtypes = [c_void_p, c_float, c_int, POINTER(c_int)]
+get_network_boxes_RT.restype = POINTER(DETECTION)
+
+do_inference = libRT.do_inference
+do_inference.argtypes = [c_void_p, IMAGE]
+
+make_image_RT = lib.make_image
+make_image_RT.argtypes = [c_int, c_int, c_int]
+make_image_RT.restype = IMAGE
+
+copy_image_from_bytes_RT = lib.copy_image_from_bytes
+copy_image_from_bytes_RT.argtypes = [IMAGE, c_char_p]
