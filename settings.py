@@ -25,7 +25,7 @@ RT_PATH = '/NNvision/tkDNN'
 DARKNET_CONF = {
         'all_RT': {  # add RT in key if you will use tensorRT framework
                 'TENSOR_PATH': 'build/yolo4tiny_fp32.rt',
-                'NB_CLASS': 15,
+                'NB_CLASS': 80,
                 'BATCH': 1,
                 'WIDTH': 416,
                 'HEIGHT': 416,
