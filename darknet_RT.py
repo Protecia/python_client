@@ -34,7 +34,7 @@ class DETECTION(Structure):
                 ]
 
 
-lib = CDLL(settings.RT_PATH + "/libdarknetTR.so", RTLD_GLOBAL)
+lib = CDLL(settings.RT_PATH + "/build/libdarknetTR.so", RTLD_GLOBAL)
 
 load_network = lib.load_network
 load_network.argtypes = [c_char_p, c_char_p, c_char_p, c_int, c_int, c_float]
