@@ -20,9 +20,18 @@ SOCKET_LOG = logging.ERROR
 DARKNET_PATH = '/NNvision/darknet'
 
 # If using tensorRT
-LIB_PATH = '/NNvision/tkDNN/build'
+RT_PATH = '/NNvision/tkDNN'
 
 DARKNET_CONF = {
+        'all_RT': {  # add RT in key if you will use tensorRT framework
+                'TENSOR_PATH': 'build/yolo4tiny_fp32.rt',
+                'NB_CLASS': 15,
+                'BATCH': 1,
+                'WIDTH': 416,
+                'HEIGHT': 416,
+                'CFG': 'tests/darknet/cfg/yolo4tiny.cfg',
+                'NAMES': 'tests/darknet/names/coco.names',
+                'RESTRICT': ('pottedplant', 'oven', 'bowl', 'cell phone', 'fire hydrant',)},
         'all': {
                 'CFG': 'cfg/yolov3.cfg',
                 'WEIGHTS': '../weights/yolov3.weights',

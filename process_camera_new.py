@@ -14,22 +14,28 @@ from functools import partial
 from datetime import datetime, timezone
 
 
-path = settings.DARKNET_PATH
-net = {}
-meta = {}
-width = {}
-height = {}
-class_names = {}
-
 for key, values in settings.DARKNET_CONF.items():
-    cfg = os.path.join(path, values['CFG']).encode()
-    weights = os.path.join(path, values['WEIGHTS']).encode()
-    data = os.path.join(path, values['DATA']).encode()
-    net[key] = dn.load_net_custom(cfg, weights, 0, 1)
-    meta[key] = dn.load_meta(data)
-    class_names[key] = [meta[key].names[i].decode() for i in range(meta[key].classes)]
-    width[key] = dn.network_width(net[key])
-    height[key] = dn.network_height(net[key])
+    if 'RT' in key:  # if using Tensor RT
+        path = settings.RT_PATH
+        detect_func = dn.detect_image_RT
+        values['net'] = dn.load_net_RT(os.path.join(path, values['TENSOR_PATH']).encode(),
+                                       os.path.join(path, values['CFG']).encode(),
+                                       os.path.join(path, values['NAMES']).encode(),
+                                       os.path.join(path, values['NB_CLASS']),
+                                       os.path.join(path, values['BATCH']),
+                                       os.path.join(path, values['CONF_THRESH']))
+        values['class_name'] = None
+        values['width'] = os.path.join(path, values['WIDTH'])
+        values['height'] = os.path.join(path, values['HEIGHT'])
+    else:
+        path = settings.DARKNET_PATH
+        detect_func = dn.detect_image
+        values['net'] = dn.load_net_custom(os.path.join(path, values['CFG']).encode(),
+                                           os.path.join(path, values['WEIGHTS']).encode(), 0, 1)
+        values['meta'] = dn.load_meta(os.path.join(path, values['DATA']).encode())
+        values['width'] = dn.network_width(values['net'])
+        values['height'] = dn.network_height(values['net'])
+        values['class_name'] = [values['meta'].names[i].decode() for i in range(values['meta'].classes)]
 
 
 async def detect_thread(my_net, my_class_names, frame, my_width, my_height, thresh, loop):
@@ -41,7 +47,7 @@ def detect_block(my_net, my_class_names, frame, my_width, my_height, thresh):
     frame_resized = cv2.resize(frame, (my_width, my_height), interpolation=cv2.INTER_LINEAR)
     darknet_image = dn.make_image(my_width, my_height, 3)
     dn.copy_image_from_bytes(darknet_image, frame_resized.tobytes())
-    detections = dn.detect_image(my_net, my_class_names, darknet_image, thresh=thresh)
+    detections = detect_func(my_net, my_class_names, darknet_image, thresh=thresh)
     # make coordinate function of initial size
     height_factor = frame.shape[0] / my_height
     width_factor = frame.shape[1] / my_width
@@ -198,9 +204,9 @@ class ProcessCamera(object):
             self.logger.info(f'frame length is {len(frame_rgb)}')
             result_dict = {}
             tasks = []
-            for nkey, network in net.items():
-                tasks.append(detect_thread(network, class_names[nkey], frame_rgb, width[nkey],
-                                           height[nkey], self.th, self.loop))
+            for nkey, network in settings.DARKNET_CONF.items():
+                tasks.append(detect_thread(network['net'], network['class_name'], frame_rgb, network['width'],
+                                           network['height'], self.th, self.loop))
                 result_dict[nkey] = None
             async with self.tlock:
                 result_concurrent = await asyncio.gather(*tasks)

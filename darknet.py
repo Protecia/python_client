@@ -180,6 +180,22 @@ def detect_image(network, class_names, image, thresh=.5, hier_thresh=.5, nms=.45
     return sorted(predictions, key=lambda x: x[1])
 
 
+def detect_image_RT(net, class_name, darknet_image, thresh=.5, debug=False):
+    num = c_int(0)
+    if debug: print("Assigned num")
+    pnum = pointer(num)
+    if debug: print("Assigned pnum")
+    do_inference(net, darknet_image)
+    if debug: print("did prediction")
+    dets = get_network_boxes(net, thresh, 0, pnum)
+    if debug: print("Got dets")
+    res = []
+    for i in range(pnum[0]):
+        b = dets[i].bbox
+        res.append((dets[i].name.decode("ascii"), dets[i].prob, (b.x, b.y, b.w, b.h)))
+    if debug: print("free detections")
+    return res
+
 #  lib = CDLL("/home/pjreddie/documents/darknet/libdarknet.so", RTLD_GLOBAL)
 #  lib = CDLL("libdarknet.so", RTLD_GLOBAL)
 hasGPU = True
@@ -272,8 +288,11 @@ reset_rnn = lib.reset_rnn
 reset_rnn.argtypes = [c_void_p]
 
 load_net_RT = libRT.load_network
-load_net_RT.argtypes = [c_char_p, c_int, c_int]
+load_net_RT.argtypes = [c_char_p, c_char_p, c_char_p, c_int, c_int, c_float]
 load_net_RT.restype = c_void_p
+
+do_inference = libRT.do_inference
+do_inference.argtypes = [c_void_p, IMAGE]
 
 load_net = lib.load_network
 load_net.argtypes = [c_char_p, c_char_p, c_int]
