@@ -31,6 +31,7 @@ DARKNET_CONF = {
                 'HEIGHT': 416,
                 'CFG': 'tests/darknet/cfg/yolo4tiny.cfg',
                 'NAMES': 'tests/darknet/names/coco.names',
+                'CONF_THRESH': 0.3,
                 'RESTRICT': ('pottedplant', 'oven', 'bowl', 'cell phone', 'fire hydrant',)},
         # 'all': {
         #         'CFG': 'cfg/yolov3.cfg',
