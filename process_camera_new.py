@@ -14,6 +14,7 @@ from functools import partial
 from datetime import datetime, timezone
 
 
+# ------------------------------ Loading the Network defined in settings -------------------------------------------
 for key, values in settings.DARKNET_CONF.items():
     if 'RT' in key:  # if using Tensor RT
         path = settings.RT_PATH
@@ -36,6 +37,7 @@ for key, values in settings.DARKNET_CONF.items():
         values['width'] = dn.network_width(values['net'])
         values['height'] = dn.network_height(values['net'])
         values['class_name'] = [values['meta'].names[i].decode() for i in range(values['meta'].classes)]
+# --------------------------------------------------------------------------------------------------------------------
 
 
 async def detect_thread(my_net, my_class_names, frame, my_width, my_height, thresh, loop):
