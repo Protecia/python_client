@@ -32,11 +32,11 @@ DARKNET_CONF = {
                 'CFG': 'tests/darknet/cfg/yolo4tiny.cfg',
                 'NAMES': 'tests/darknet/names/coco.names',
                 'RESTRICT': ('pottedplant', 'oven', 'bowl', 'cell phone', 'fire hydrant',)},
-        'all': {
-                'CFG': 'cfg/yolov3.cfg',
-                'WEIGHTS': '../weights/yolov3.weights',
-                'DATA': '/NNvision/python_client/coco_docker.data',
-                'RESTRICT': ('pottedplant', 'oven', 'bowl', 'cell phone', 'fire hydrant',)},
+        # 'all': {
+        #         'CFG': 'cfg/yolov3.cfg',
+        #         'WEIGHTS': '../weights/yolov3.weights',
+        #         'DATA': '/NNvision/python_client/coco_docker.data',
+        #         'RESTRICT': ('pottedplant', 'oven', 'bowl', 'cell phone', 'fire hydrant',)},
         # 'car': {
         #         'CFG': '../weights/protecia.cfg',
         #         'WEIGHTS':  '../weights/car.weights',

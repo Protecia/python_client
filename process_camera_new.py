@@ -21,12 +21,12 @@ for key, values in settings.DARKNET_CONF.items():
         values['net'] = dn.load_net_RT(os.path.join(path, values['TENSOR_PATH']).encode(),
                                        os.path.join(path, values['CFG']).encode(),
                                        os.path.join(path, values['NAMES']).encode(),
-                                       os.path.join(path, values['NB_CLASS']),
-                                       os.path.join(path, values['BATCH']),
-                                       os.path.join(path, values['CONF_THRESH']))
+                                       values['NB_CLASS'],
+                                       values['BATCH'],
+                                       values['CONF_THRESH'])
         values['class_name'] = None
-        values['width'] = os.path.join(path, values['WIDTH'])
-        values['height'] = os.path.join(path, values['HEIGHT'])
+        values['width'] = values['WIDTH']
+        values['height'] = values['HEIGHT']
     else:
         path = settings.DARKNET_PATH
         detect_func = dn.detect_image
