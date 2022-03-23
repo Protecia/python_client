@@ -36,11 +36,11 @@ class DETECTION(Structure):
 lib = CDLL(settings.LIB_PATH + "/libdarknetTR.so", RTLD_GLOBAL)
 
 load_network = lib.load_network
-load_network.argtypes = [c_char_p, c_int, c_int]
+load_network.argtypes = [c_char_p, c_char_p, c_char_p, c_int, c_int, c_float]
 load_network.restype = c_void_p
 
 copy_image_from_bytes = lib.copy_image_from_bytes
-copy_image_from_bytes.argtypes = [IMAGE,c_char_p]
+copy_image_from_bytes.argtypes = [IMAGE, c_char_p]
 
 make_image = lib.make_image
 make_image.argtypes = [c_int, c_int, c_int]
