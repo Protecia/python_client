@@ -23,16 +23,26 @@ DARKNET_PATH = '/NNvision/darknet'
 RT_PATH = '/NNvision/tkDNN'
 
 DARKNET_CONF = {
+        #'all_RT': {  # add RT in key if you will use tensorRT framework
+        #        'TENSOR_PATH': 'build/yolo4tiny_fp32.rt',
+        #        'NB_CLASS': 80,
+        #        'BATCH': 1,
+        #        'WIDTH': 416,
+        #        'HEIGHT': 416,
+        #        'CFG': 'tests/darknet/cfg/yolo4tiny.cfg',
+        #        'NAMES': 'tests/darknet/names/coco.names',
+        #        'CONF_THRESH': 0.3,
+        #        'RESTRICT': ('pottedplant', 'oven', 'bowl', 'cell phone', 'fire hydrant',)},
         'all_RT': {  # add RT in key if you will use tensorRT framework
-                'TENSOR_PATH': 'build/yolo4tiny_fp32.rt',
-                'NB_CLASS': 80,
+                'TENSOR_PATH': 'build/room_detector.rt',
+                'NB_CLASS': 15,
                 'BATCH': 1,
                 'WIDTH': 416,
                 'HEIGHT': 416,
-                'CFG': 'tests/darknet/cfg/yolo4tiny.cfg',
-                'NAMES': 'tests/darknet/names/coco.names',
+                'CFG': 'tests/darknet/cfg/room_detector.cfg',
+                'NAMES': 'tests/darknet/names/room_detector.names',
                 'CONF_THRESH': 0.3,
-                'RESTRICT': ('pottedplant', 'oven', 'bowl', 'cell phone', 'fire hydrant',)},
+                'RESTRICT': ('toothbrush',)},
         # 'all': {
         #         'CFG': 'cfg/yolov3.cfg',
         #         'WEIGHTS': '../weights/yolov3.weights',

@@ -79,7 +79,7 @@ class ProcessCamera(object):
         self.vcap = None
         self.tlock = tlock
         self.th = cam['threshold'] * (1 - (float(cam['gap']) / 100))
-        self.black_list = [i for i in settings.DARKNET_CONF['all']['RESTRICT']]
+        self.black_list = [i for i in settings.DARKNET_CONF['all_RT']['RESTRICT']]
         self.rec = False
         self.HD = False
         self.LD = False
@@ -220,8 +220,8 @@ class ProcessCamera(object):
                 result_concurrent = await asyncio.gather(*tasks)
             result_dict = dict(zip(result_dict, result_concurrent))
             if 'all' in result_dict:
-                result_darknet = [r for r in result_dict['all'] if r[0] not in self.black_list]
-                result_dict.pop('all')
+                result_darknet = [r for r in result_dict['all_RT'] if r[0] not in self.black_list]
+                result_dict.pop('all_RT')
             else:
                 result_darknet = []
             for partial_result in result_dict.values():
