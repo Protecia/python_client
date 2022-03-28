@@ -130,8 +130,9 @@ def main():
                 total_tasks = [cameras.connect(scan_state, list_tasks)] + \
                               [t.run() for t in list_tasks]
                 logger.error(f'list of all tasks launched {[t.__str__() for t in list_tasks]}')
-                logger.debug(f'Memory allocation {tracemalloc.take_snapshot().statistics("lineno")}')
-                logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
+                if settings.MAIN_LOG == logging.DEBUG:  # Avoid evaluation of tracemalloc
+                    logger.debug(f'Memory allocation {tracemalloc.take_snapshot().statistics("lineno")}')
+                    logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
                 loop.run_until_complete(asyncio.gather(*total_tasks))
                 time.sleep(0.1)
 
