@@ -31,6 +31,7 @@ for key, values in settings.DARKNET_CONF.items():
         values['class_name'] = None
         values['width'] = values['WIDTH']
         values['height'] = values['HEIGHT']
+        values['black_list'] = values['HEIGHT']
     else:
         path = settings.DARKNET_PATH
         detect_func = dn.detect_image
@@ -43,6 +44,7 @@ for key, values in settings.DARKNET_CONF.items():
         values['width'] = dn.network_width(values['net'])
         values['height'] = dn.network_height(values['net'])
         values['class_name'] = [values['meta'].names[i].decode() for i in range(values['meta'].classes)]
+        values['black_list'] = values['HEIGHT']
 # --------------------------------------------------------------------------------------------------------------------
 
 
@@ -79,7 +81,6 @@ class ProcessCamera(object):
         self.vcap = None
         self.tlock = tlock
         self.th = cam['threshold'] * (1 - (float(cam['gap']) / 100))
-        self.black_list = [i for i in settings.DARKNET_CONF['all_RT']['RESTRICT']]
         self.rec = False
         self.HD = False
         self.LD = False
@@ -219,12 +220,10 @@ class ProcessCamera(object):
             async with self.tlock:
                 result_concurrent = await asyncio.gather(*tasks)
             result_dict = dict(zip(result_dict, result_concurrent))
-            if 'all' in result_dict:
-                result_darknet = [r for r in result_dict['all_RT'] if r[0] not in self.black_list]
-                result_dict.pop('all_RT')
-            else:
-                result_darknet = []
-            for partial_result in result_dict.values():
+            result_darknet = []
+            for result_network, result_values in result_dict.items():
+                partial_result = [r for r in result_dict[result_network] if r[0] not in
+                                  settings.DARKNET_CONF[result_network]['black_list']]
                 result_darknet += partial_result
             #  first iteration case
             if 'result' in locals():
