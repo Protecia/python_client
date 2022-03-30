@@ -367,3 +367,6 @@ make_image_RT.restype = IMAGE
 
 copy_image_from_bytes_RT = libRT.copy_image_from_bytes
 copy_image_from_bytes_RT.argtypes = [IMAGE, c_char_p]
+
+free_image_RT = libRT.free_image
+free_image_RT.argtypes = [IMAGE]
