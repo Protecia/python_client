@@ -21,7 +21,7 @@ for key, values in settings.DARKNET_CONF.items():
         detect_func = dn.detect_image_RT
         make_func = dn.make_image_RT
         copy_func = dn.copy_image_from_bytes_RT
-        free_func = lambda image: True
+        #free_func = lambda image: True
         values['net'] = dn.load_net_RT(os.path.join(path, values['TENSOR_PATH']).encode(),
                                        os.path.join(path, values['CFG']).encode(),
                                        os.path.join(path, values['NAMES']).encode(),
@@ -61,7 +61,8 @@ def detect_block(my_net, my_class_names, frame, my_width, my_height, thresh):
     width_factor = frame.shape[1] / my_width
     detections = [(r[0], float(r[1]), (r[2][0]*width_factor, r[2][1]*height_factor,
                                        r[2][2]*width_factor, r[2][3]*height_factor)) for r in detections]
-    free_func(darknet_image)
+    #free_func(darknet_image)
+    dn.free_image(darknet_image)
     return detections
 
 
