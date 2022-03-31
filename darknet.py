@@ -200,7 +200,7 @@ def detect_image_RT(net, class_name, darknet_image, thresh=.5, debug=False):
     res = []
     for i in range(pnum[0]):
         b = dets[i].bbox
-        res.append((dets[i].name.decode("ascii"), dets[i].prob, (b.x, b.y, b.w, b.h)))
+        res.append((dets[i].name.decode("ascii"), dets[i].prob, (b.x + b.w/2, b.y + b.h/2, b.w, b.h)))
     if debug: print("free detections")
     return res
 
