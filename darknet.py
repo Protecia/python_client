@@ -351,7 +351,7 @@ network_predict_batch.restype = POINTER(DETNUMPAIR)
 # --------------   RT special function -------------------------------------------------
 
 load_net_RT = libRT.load_network
-load_net_RT.argtypes = [c_char_p, c_char_p, c_char_p, c_int, c_int, c_float]
+load_net_RT.argtypes = [c_char_p, c_int, c_int, c_float]
 load_net_RT.restype = c_void_p
 
 get_network_boxes_RT = libRT.get_network_boxes
