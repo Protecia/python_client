@@ -18,12 +18,18 @@ SOCKET_LOG = logging.ERROR
 #  Darknet conf
 DARKNET_PATH = '/NNvision/darknet'
 
+# If using tensorRT
+LIB_PATH = '/NNvision/tkDNN/build'
+
 DARKNET_CONF = {
-        'all': {
-                'CFG': 'cfg/yolov3.cfg',
-                'WEIGHTS': '../weights/yolov3.weights',
-                'DATA':'/NNvision/python_client/coco_docker.data',
-                'RESTRICT':('pottedplant', 'oven', 'bowl',)},
+        #'all': {
+        #        'CFG': 'cfg/yolov3.cfg',
+        #        'WEIGHTS': '../weights/yolov3.weights',
+        #        'DATA':'/NNvision/python_client/coco_docker.data',
+        #        'RESTRICT':('pottedplant', 'oven', 'bowl',)},
+        'all_RT':{
+                'WEIGHTS': '/NNvision/tkDNN/build/room_detector_fp16.rt',
+                'RESTRICT':('toothbrush',)},
         # 'car': {
         #         'CFG': '../weights/protecia.cfg',
         #         'WEIGHTS':  '../weights/car.weights',

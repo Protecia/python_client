@@ -5,7 +5,6 @@ Created on Tue Dec  3 15:06:16 2019
 @author: julien
 """
 import logging
-from conf.settingslocal import *
 
 LOG = logging.ERROR
 MAIN_LOG = logging.ERROR
@@ -18,36 +17,16 @@ SOCKET_LOG = logging.ERROR
 
 #  Darknet conf
 DARKNET_PATH = '/NNvision/darknet'
-
-# If using tensorRT
-RT_PATH = '/NNvision/tkDNN'
-
+LIB_PATH = '/NNvision/tkDNN/build'
 DARKNET_CONF = {
-        #'all_RT': {  # add RT in key if you will use tensorRT framework
-        #        'TENSOR_PATH': 'build/yolo4tiny_fp32.rt',
-        #        'NB_CLASS': 80,
-        #        'BATCH': 1,
-        #        'WIDTH': 416,
-        #        'HEIGHT': 416,
-        #        'CFG': 'tests/darknet/cfg/yolo4tiny.cfg',
-        #        'NAMES': 'tests/darknet/names/coco.names',
-        #        'CONF_THRESH': 0.3,
+        #'all': {
+        #        'CFG': 'cfg/yolov3.cfg',
+        #        'WEIGHTS': '../weights/yolov3.weights',
+        #        'DATA':'/NNvision/python_client/coco_docker.data',
         #        'RESTRICT': ('pottedplant', 'oven', 'bowl', 'cell phone', 'fire hydrant',)},
-        'all_RT': {  # add RT in key if you will use tensorRT framework
-                'TENSOR_PATH': 'build/room_detector.rt',
-                'NB_CLASS': 15,
-                'BATCH': 1,
-                'WIDTH': 416,
-                'HEIGHT': 416,
-                'CFG': 'tests/darknet/cfg/room_detector.cfg',
-                'NAMES': 'tests/darknet/names/room_detector.names',
-                'CONF_THRESH': 0.3,
+        'all_RT': {
+                'WEIGHTS': '/NNvision/tkDNN/build/room_detector_fp16.rt',
                 'RESTRICT': ('toothbrush',)},
-        # 'all': {
-        #         'CFG': 'cfg/yolov3.cfg',
-        #         'WEIGHTS': '../weights/yolov3.weights',
-        #         'DATA': '/NNvision/python_client/coco_docker.data',
-        #         'RESTRICT': ('pottedplant', 'oven', 'bowl', 'cell phone', 'fire hydrant',)},
         # 'car': {
         #         'CFG': '../weights/protecia.cfg',
         #         'WEIGHTS':  '../weights/car.weights',
@@ -68,7 +47,8 @@ UUID = '/NNvision/uuid/uuid'  # on nano
 # python conf
 PYTHON = 'python3'
 THREATED_REQUESTS = True
-
+SERVER = 'https://dev.protecia.com/'
+SERVER_WS = 'wss://dev.protecia.com/'
 VIDEO_REC_TIME = 10
 VIDEO_SPACE = 30  # Go
 QUEUE_SIZE = 10  # number of images to queue at max
@@ -80,7 +60,6 @@ SSH_SERVER_PORT = 2223
 SSH_USER = 'tunnel'
 WSDIR = '/usr/local/lib/python3.6/site-packages/wsdl/'
 
-# client conf  --> now in settingslocal.py
-# INIT_PASS = 'jznsjoa3z54d'
-# SERVER = 'https://dev.protecia.com/'
-# SERVER_WS = 'wss://dev.protecia.com/'
+# client conf
+INIT_PASS = 'jznsjoa3z54d'
+

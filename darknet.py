@@ -49,6 +49,14 @@ class DETECTION(Structure):
                 ("track_id", c_int)]
 
 
+class DETECTIONRT(Structure):
+    _fields_ = [("cl", c_int),
+                ("bbox", BOX),
+                ("prob", c_float),
+                ("name", c_char*20),
+                ]
+
+
 class DETNUMPAIR(Structure):
     _fields_ = [("num", c_int),
                 ("dets", POINTER(DETECTION))]
@@ -180,6 +188,22 @@ def detect_image(network, class_names, image, thresh=.5, hier_thresh=.5, nms=.45
     return sorted(predictions, key=lambda x: x[1])
 
 
+def detect_image_RT(net, class_name, darknet_image, thresh=.5, debug=False):
+    num = c_int(0)
+    if debug: print("Assigned num")
+    pnum = pointer(num)
+    if debug: print("Assigned pnum")
+    do_inference(net, darknet_image)
+    if debug: print("did prediction")
+    dets = get_network_boxes_RT(net, thresh, 0, pnum)
+    if debug: print("Got dets")
+    res = []
+    for i in range(pnum[0]):
+        b = dets[i].bbox
+        res.append((dets[i].name.decode("ascii"), dets[i].prob, (b.x + b.w/2, b.y + b.h/2, b.w, b.h)))
+    if debug: print("free detections")
+    return res
+
 #  lib = CDLL("/home/pjreddie/documents/darknet/libdarknet.so", RTLD_GLOBAL)
 #  lib = CDLL("libdarknet.so", RTLD_GLOBAL)
 hasGPU = True
@@ -224,6 +248,8 @@ if os.name == "nt":
                   format(winNoGPUdll))
 else:
     lib = CDLL(settings.DARKNET_PATH+"/libdarknet.so", RTLD_GLOBAL)
+    libRT = CDLL(settings.RT_PATH + "/build/libdarknetTR.so", RTLD_GLOBAL)
+
 lib.network_width.argtypes = [c_void_p]
 lib.network_width.restype = c_int
 lib.network_height.argtypes = [c_void_p]
@@ -250,6 +276,8 @@ get_network_boxes = lib.get_network_boxes
 get_network_boxes.argtypes = [c_void_p, c_int, c_int, c_float, c_float, POINTER(c_int), c_int, POINTER(c_int), c_int]
 get_network_boxes.restype = POINTER(DETECTION)
 
+
+
 make_network_boxes = lib.make_network_boxes
 make_network_boxes.argtypes = [c_void_p]
 make_network_boxes.restype = POINTER(DETECTION)
@@ -268,6 +296,8 @@ network_predict.argtypes = [c_void_p, POINTER(c_float)]
 
 reset_rnn = lib.reset_rnn
 reset_rnn.argtypes = [c_void_p]
+
+
 
 load_net = lib.load_network
 load_net.argtypes = [c_char_p, c_char_p, c_int]
@@ -317,3 +347,26 @@ network_predict_batch = lib.network_predict_batch
 network_predict_batch.argtypes = [c_void_p, IMAGE, c_int, c_int, c_int,
                                    c_float, c_float, POINTER(c_int), c_int, c_int]
 network_predict_batch.restype = POINTER(DETNUMPAIR)
+
+# --------------   RT special function -------------------------------------------------
+
+load_net_RT = libRT.load_network
+load_net_RT.argtypes = [c_char_p, c_int, c_int, c_float]
+load_net_RT.restype = c_void_p
+
+get_network_boxes_RT = libRT.get_network_boxes
+get_network_boxes_RT.argtypes = [c_void_p, c_float, c_int, POINTER(c_int)]
+get_network_boxes_RT.restype = POINTER(DETECTIONRT)
+
+do_inference = libRT.do_inference
+do_inference.argtypes = [c_void_p, IMAGE]
+
+make_image_RT = libRT.make_image
+make_image_RT.argtypes = [c_int, c_int, c_int]
+make_image_RT.restype = IMAGE
+
+copy_image_from_bytes_RT = libRT.copy_image_from_bytes
+copy_image_from_bytes_RT.argtypes = [IMAGE, c_char_p]
+
+free_image_RT = libRT.free_image
+free_image_RT.argtypes = [IMAGE]

@@ -16,13 +16,21 @@ import socket
 import psutil
 import netifaces as ni
 import xml.etree.ElementTree as eT
-import re
 from urllib3.exceptions import HeaderParsingError
 import asyncio
 import subprocess
-from utils import get_conf
+from utils import get_conf, display_top
+from wsdiscovery.discovery import ThreadedWSDiscovery as WSDiscovery
+from wsdiscovery import Scope
+import re
+from filelock import Timeout, FileLock
+import tracemalloc
+import logging
 
-logger = Logger('scan_camera', level=settings.SCAN_LOG).run()
+if settings.MAIN_LOG == logging.DEBUG:
+    tracemalloc.start()
+
+logger = Logger('scan_camera', level=settings.SCAN_LOG, file=True).run()
 
 
 def ping_network():
@@ -42,6 +50,27 @@ def ping_network():
                 if ip not in box:
                     std[ip] = {'port_onvif': get_conf('scan_camera')}
     return std
+
+
+#  --- ws discovery V2
+def fetch_devices():
+    dcam = {}
+    wsd = WSDiscovery()
+    scope1 = Scope("onvif://www.onvif.org/Profile")
+    wsd.start()
+    services = wsd.searchServices(scopes=[scope1])
+    for service in services:
+        # filter those devices that dont have ONVIF service
+        ipaddress = re.search('(\d+|\.)+', str(service.getXAddrs()[0])).group(0)
+        try:
+            port = re.search('[0-9]+:([0-9]+)/', str(service.getXAddrs()[0])).group(1)
+        except AttributeError:
+            port = '80'
+        logger.info(f'retrieve onvif {ipaddress} {port}')
+        dcam[ipaddress] = {'port_onvif': port}
+    logger.info(f'number of devices detected: {len(services)}')
+    wsd.stop()
+    return dcam
 
 
 def ws_discovery(repeat, wait):
@@ -109,7 +138,7 @@ async def get_onvif_uri(ip, port, user, passwd):
     Returns:
         List: List of uri found for the camera.
     """
-    wsdir = '/usr/local/lib/python3.6/site-packages/wsdl/'
+    wsdir = settings.WSDIR
     try:
         cam = await asyncio.wait_for(onvif_cam(ip, port, user, passwd, wsdir), timeout=1.0)
         info = cam.devicemgmt.GetDeviceInformation()
@@ -160,6 +189,11 @@ def check_auth(dict_cam_ip, user, passwd, auth):
                         requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema):
                     time.sleep(0.5)
                     pass
+                try:
+                    r.close()
+                    r = None
+                except:
+                    pass
             if check:
                 break
         if check:
@@ -176,16 +210,23 @@ def check_cam(cam_ip_dict, users_dict):
     dict_cam = {}
     for ip, cam in cam_ip_dict.items():
         dict_cam[ip] = cam
-        http = cam.get('uri', None)
-        if http:  # this is a known cam, so test
-            logger.info(f'testing old cam with http:{http} user:{cam["username"]} pass:{cam["password"]}')
-            auth = {'B': requests.auth.HTTPBasicAuth(cam["username"], cam["password"]),
-                    'D': requests.auth.HTTPDigestAuth(cam["username"], cam["password"])}
-            # auth = {cam['auth_type']: auth[cam['auth_type']]}
-            check_auth(dict_cam[ip], cam["username"], cam["password"], auth)
+        uri = cam.get('uri', None)
+        new = True
+        if uri:
+            if uri['0']['http'].split('//')[1].split(':')[0] == ip:
+                new = False
+        if not new:  # this is a known cam, so test
+            # test if the ip of the uri is the same
+            ip_from_uri = uri['0']['http'].split('//')[1].split(':')[0]
+            if ip == ip_from_uri:
+
+                logger.info(f'testing old cam with http:{uri} user:{cam["username"]} pass:{cam["password"]}')
+                auth = {'B': requests.auth.HTTPBasicAuth(cam["username"], cam["password"]),
+                        'D': requests.auth.HTTPDigestAuth(cam["username"], cam["password"])}
+                # auth = {cam['auth_type']: auth[cam['auth_type']]}
+                check_auth(dict_cam[ip], cam["username"], cam["password"], auth)
         else:  # this is a new cam
-            dict_cam[ip] = {'name': 'unknow', 'port_onvif': cam["port_onvif"],
-                            'from_client': True, 'uri': {}}
+            dict_cam[ip] = {'name': 'unknow', 'port_onvif': cam["port_onvif"], 'from_client': True, 'uri': {}}
             port = cam["port_onvif"]
             onvif_answer = False
             for user, passwd in users_dict.items():
@@ -212,15 +253,19 @@ def check_cam(cam_ip_dict, users_dict):
 
 
 def run(wait, scan_state):
+    lock = FileLock(settings.INSTALL_PATH + '/camera/camera_from_server.json.lock', timeout=1)
     while True:
         try:
-            with open(settings.INSTALL_PATH+'/camera/camera_from_server.json', 'r') as out:
-                cam_ip_dict = json.load(out)
+            with lock:
+                with open(settings.INSTALL_PATH+'/camera/camera_from_server.json', 'r') as out:
+                    cam_ip_dict = json.load(out)
             users_dict = {cam['username']: cam['password'] for cam in cam_ip_dict.values()}
             if get_conf('scan_camera') != 0:
                 detected_cam = ping_network()
             else:
                 detected_cam = ws_discovery(2, 20)
+                # detected_cam = fetch_devices()
+                # detected_cam.update(ws_discovery(2, 20))
                 logger.debug(f'ws disvovery cam <-  {detected_cam}')
             detected_cam.update(cam_ip_dict)
             logger.info(f'updated detected_cam <-  {detected_cam}')
@@ -229,8 +274,12 @@ def run(wait, scan_state):
             with open(settings.INSTALL_PATH+'/camera/camera_from_scan.json', 'w') as out:
                 json.dump(dict_cam, out)
             logger.warning(f'Writing scan camera in file <-  {dict_cam} / scan_state is {scan_state.is_set()}')
+            logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
             scan_state.wait()
             time.sleep(wait)
+        except Timeout:
+            logger.error(f'exception in read json, file is lock')
+            time.sleep(1)
         except Exception as ex:
             logger.error(f'exception in scan_camera : except-->{ex} / name-->{type(ex).__name__}')
             time.sleep(1)

@@ -202,7 +202,7 @@ class ProcessCamera(Thread):
                     else:
                         self.request_OK = False
                         self.logger.warning('bad camera download on {} \n'.format(self.cam['name']))
-                except (requests.exceptions.Timeout, requests.exceptions.ConnectionError,
+                except (requests.ConnectTimeout, requests.exceptions.ConnectionError,
                         requests.exceptions.ReadTimeout, requests.exceptions.MissingSchema):
                     self.request_OK = False
                     self.logger.warning('network error on {} \n'.format(self.cam['name']))
@@ -219,7 +219,9 @@ class ProcessCamera(Thread):
                             pass
                         self.logger.warning('rtsp not running on cam {}, so launch '.format(self.cam['name']))
                         self.thread_rtsp = Thread(target=self.grab)
+                        self.logger.warning(f'new thread define {self.thread_rtsp}')
                         self.thread_rtsp.start()
+                        self.logger.warning(f'new thread started')
                         self.running_rtsp = True
             # *************************************************************************************
             t = time.time()

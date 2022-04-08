@@ -1,4 +1,4 @@
-#Création d'un script lancant l'interface utilisateur
+#Création d un script lancant l interface utilisateur
 
 touch /home/$1/Documents/runUserInterface.py
 
@@ -12,9 +12,9 @@ with open('/home/nnvision/conf/conf.json') as n:
 
 firefox = '/usr/bin/firefox %s'
 key = keyLoader["'"'"key"'"'"]
+address = f'https://dev.jouvencia.net/app4/auth/{key}/'
 os.system('export DISPLAY=:1')
-subprocess.run(['/usr/bin/chromium-browser', '--no-sandbox', '--kiosk', 'https://mdm.jouvencia.net/profile/', key])
-
+subprocess.run(['/usr/bin/chromium-browser', '--no-sandbox', '--kiosk', address])
 
 " > /home/$1/Documents/runUserInterface.py
 chmod +x /home/$1/Documents/runUserInterface.py
@@ -36,7 +36,7 @@ Exec=/home/$1/Documents/runUserInterface.py
 " > ~/.config/autostart
 
 
-#Creation du script lançant un container dans le cas d'un reboot
+#Creation du script lançant un container dans le cas d un reboot
 
 touch /home/$1/Documents/runOnStartup.py
 echo "#!/usr/bin/env python3
@@ -72,7 +72,7 @@ else
     echo 'aicnevuoj*26' > pass.txt
     cat ~/pass.txt | docker login --username yayab42 --password-stdin
     rm pass.txt
-    docker pull roboticia/nnvision_jetson_nano:1.0
+    docker pull roboticia/nnvision_jetson_nano:0.2
     docker run  -d --restart unless-stopped --entrypoint /NNvision/python_client/start.sh --gpus=all --name nnvision --net=host \
                 -e NVIDIA_VISIBLE_DEVICES=all \
                 -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video  \
@@ -167,7 +167,7 @@ reboot=$(jq -r .reboot /home/nnvision/conf/docker.json )
 if [[ reboot == '"'"'true'"'"' ]]; then
     sleep 200
     reboot
-
+    
 fi' > /home/$1/Documents/rebootScript
 
 echo "*/5 * * * *  root /home/$1/Documents/rebootScript
@@ -180,8 +180,9 @@ systemctl enable cron
 echo $version
 echo $versionUpdate
 
-#Set up de l'UX/UI
+#Set up de l UX/UI
 apt install crudini
 crudini --set /etc/gdm3/custom.conf daemon AutomaticLoginEnable true
 crudini --set /etc/gdm3/custom.conf daemon AutomaticLogin $1
 gsettings set org.gnome.desktop.screensaver lock-enabled false
+chmod -x $(type -p gnome-keyring-daemon)

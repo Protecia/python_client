@@ -35,7 +35,7 @@ def is_open(host_o, port_o):
 
 
 def check_host():
-    host_check = settings.SERVER.split('/')[2]
+    host_check = settings.SERVER.split('/')[2].split(':')[0]
     with open(settings.INSTALL_PATH + '/conf/docker.json', 'r') as conf_json:
         data = json.load(conf_json)
     port_check = int(data['tunnel_port'])

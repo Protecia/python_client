@@ -17,8 +17,9 @@ from log import Logger
 import json
 import os
 import cherrypy
+from filelock import Timeout, FileLock
 
-logger = Logger('video', settings.VIDEO_LOG).run()
+logger = Logger('video', settings.VIDEO_LOG, file=True).run()
 
 
 class RecCamera(object):
@@ -90,32 +91,37 @@ class RecCamera(object):
 
 
 def rec_all_cam():
-    repeat = True
+    lock = FileLock(settings.INSTALL_PATH + '/camera/camera_from_server.json.lock', timeout=1)
     path = os.path.join(settings.INSTALL_PATH, 'camera/secu')
     files = [os.path.join(path, f) for f in os.listdir(path) if
              (time.time()-os.path.getmtime(os.path.join(path, f)))/3600/24 > settings.RECORDED_DELAY]
     for f in files:
         os.remove(f)
-    while repeat:  # Try 3 times to open the rtsp in case the camera_from_server is writting
-        i = 0
+    read = False
+    while not read:  # Try until reading of json is possible
         try:
-            with open('camera/camera_from_server.json', 'r') as json_file:
-                cameras = json.load(json_file)
-                list_rtsp = []
-                for cam in [(v['uri'], v['username'], v['password'], v['id']) for v in cameras.values() if v['active']]:
-                    # take the first rtsp as default
-                    list_rtsp.append((list(cam[0].values())[0]['id'], list(cam[0].values())[0]['rtsp'], cam[1], cam[2],
-                                      cam[3]))
-                    logger.info(f'list_rtsp -> {list_rtsp}')
-                    for uri in cam[0].values():
-                        logger.info(f'uri -> {uri}')
-                        if uri['use']:
-                            list_rtsp[-1] = (uri['id'], uri['rtsp'], cam[1], cam[2], cam[3])
-                            break
-            repeat = False
+            with lock:
+                with open('camera/camera_from_server.json', 'r') as json_file:
+                    cameras = json.load(json_file)
+                    read = True
+            list_rtsp = []
+            for cam in [(v['uri'], v['username'], v['password'], v['id']) for v in cameras.values() if v['active']]:
+                # take the first rtsp as default
+                list_rtsp.append((list(cam[0].values())[0]['id'], list(cam[0].values())[0]['rtsp'], cam[1], cam[2],
+                                  cam[3]))
+                logger.info(f'list_rtsp -> {list_rtsp}')
+                for uri in cam[0].values():
+                    logger.info(f'uri -> {uri}')
+                    if uri['use']:
+                        list_rtsp[-1] = (uri['id'], uri['rtsp'], cam[1], cam[2], cam[3])
+                        break
         except json.decoder.JSONDecodeError:
-            i += 1
-            repeat = False if i > 3 else True
+            logger.error(f'error in decoding json')
+            time.sleep(1)
+        except Timeout:
+            logger.error(f'camera_from_server.json is locked')
+            time.sleep(1)
+
     for rtsp in list_rtsp:
         protocole = rtsp[1].split('//')[0] + "//"
         credential = rtsp[2] + ":" + rtsp[3]
@@ -150,7 +156,7 @@ def http_serve(port):
     def check_token(token):
         for i in range(2):
             try:
-                with open(settings.INSTALL_PATH+'/settings/video.json', 'r') as f:
+                with open(settings.INSTALL_PATH+'/conf/video.json', 'r') as f:
                     data = json.load(f)
                 if token == data['token1'] or token == data['token2']:
                     return True
@@ -171,8 +177,8 @@ def http_serve(port):
         
         @cherrypy.expose
         def secu(self, name, token):
-            if check_token(token):
-                return cherrypy.lib.static.serve_file(os.path.join(static_dir_secu, name))
+            # if check_token(token):
+            return cherrypy.lib.static.serve_file(os.path.join(static_dir_secu, name))
 
         @cherrypy.expose
         def video(self, v, l, token):
@@ -237,8 +243,8 @@ def http_serve(port):
             """.format(back)
     
     static_dir = settings.INSTALL_PATH # Root static dir is this file's directory.
-    static_dir_live = os.path.join(settings.INSTALL_PATH,'camera/live') # Root static dir is this file's directory.
-    static_dir_secu = os.path.join(settings.INSTALL_PATH,'camera/secu') # Root static dir is this file's directory.
+    static_dir_live = os.path.join(settings.INSTALL_PATH, 'camera/live')  # Root static dir is this file's directory.
+    static_dir_secu = os.path.join(settings.INSTALL_PATH, 'camera/secu')  # Root static dir is this file's directory.
 
     cherrypy.config.update( {  # I prefer configuring the server here, instead of in an external file.
                 'server.socket_host': '0.0.0.0',
