@@ -1,2 +1,7 @@
 # python_client
-sub module of NNvision
+
+Module of NNvision.
+
+Process onvif Camera to analyse images.
+Can use TensoRT or native Cuda.
+Based on Darknet yolo framework.
