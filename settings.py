@@ -34,7 +34,7 @@ DARKNET_CONF = {
         #        'CONF_THRESH': 0.3,
         #        'RESTRICT': ('pottedplant', 'oven', 'bowl', 'cell phone', 'fire hydrant',)},
         'all_RT': {  # add RT in key if you will use tensorRT framework
-                'TENSOR_PATH': 'build/room_detector.rt',
+                'TENSOR_PATH': 'build/room_detector_fp16.rt',
                 'NB_CLASS': 15,
                 'BATCH': 1,
                 'WIDTH': 416,
