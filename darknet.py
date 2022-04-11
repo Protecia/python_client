@@ -238,20 +238,15 @@ free_detection_RT = libRT.free_detection
 free_detection_RT.argtypes = [POINTER(DETECTIONRT)]
 
 
-def detect_image_RT(net, class_name, darknet_image, thresh=.5, debug=False):
+def detect_image_RT(net, class_name, darknet_image, thresh=.5):
     num = c_int(0)
-    if debug: print("Assigned num")
     pnum = pointer(num)
-    if debug: print("Assigned pnum")
     do_inference(net, darknet_image)
-    if debug: print("did prediction")
     dets = get_network_boxes_RT(net, thresh, 0, pnum)
-    if debug: print("Got dets")
     res = []
     for i in range(pnum[0]):
         b = dets[i].bbox
         res.append((dets[i].name.decode("ascii"), dets[i].prob, (b.x + b.w / 2, b.y + b.h / 2, b.w, b.h)))
-    if debug: print("free detections")
     free_detection_RT(dets)
     return res
 
@@ -262,7 +257,7 @@ lib.network_height.argtypes = [c_void_p]
 lib.network_height.restype = c_int
 
 copy_image_from_bytes = lib.copy_image_from_bytes
-copy_image_from_bytes.argtypes = [IMAGE,c_char_p]
+copy_image_from_bytes.argtypes = [IMAGE, c_char_p]
 
 predict = lib.network_predict_ptr
 predict.argtypes = [c_void_p, POINTER(c_float)]
@@ -282,8 +277,6 @@ get_network_boxes = lib.get_network_boxes
 get_network_boxes.argtypes = [c_void_p, c_int, c_int, c_float, c_float, POINTER(c_int), c_int, POINTER(c_int), c_int]
 get_network_boxes.restype = POINTER(DETECTION)
 
-
-
 make_network_boxes = lib.make_network_boxes
 make_network_boxes.argtypes = [c_void_p]
 make_network_boxes.restype = POINTER(DETECTION)
@@ -302,8 +295,6 @@ network_predict.argtypes = [c_void_p, POINTER(c_float)]
 
 reset_rnn = lib.reset_rnn
 reset_rnn.argtypes = [c_void_p]
-
-
 
 load_net = lib.load_network
 load_net.argtypes = [c_char_p, c_char_p, c_int]
