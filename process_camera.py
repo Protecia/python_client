@@ -23,8 +23,6 @@ for key, values in settings.DARKNET_CONF.items():
         copy_func = dn.copy_image_from_bytes_RT
         free_func = dn.free_image_RT
         values['net'] = dn.load_net_RT(os.path.join(path, values['TENSOR_PATH']).encode(),
-                                       os.path.join(path, values['CFG']).encode(),
-                                       os.path.join(path, values['NAMES']).encode(),
                                        values['NB_CLASS'],
                                        values['BATCH'],
                                        values['CONF_THRESH'])
