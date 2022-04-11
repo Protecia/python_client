@@ -27,7 +27,7 @@ from filelock import Timeout, FileLock
 import tracemalloc
 import logging
 
-if settings.MAIN_LOG == logging.DEBUG:
+if settings.SCAN_LOG == logging.DEBUG:
     tracemalloc.start()
 
 logger = Logger('scan_camera', level=settings.SCAN_LOG, file=True).run()
@@ -274,7 +274,8 @@ def run(wait, scan_state):
             with open(settings.INSTALL_PATH+'/camera/camera_from_scan.json', 'w') as out:
                 json.dump(dict_cam, out)
             logger.warning(f'Writing scan camera in file <-  {dict_cam} / scan_state is {scan_state.is_set()}')
-            logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
+            if settings.SCAN_LOG == logging.DEBUG:
+                logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
             scan_state.wait()
             time.sleep(wait)
         except Timeout:
