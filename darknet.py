@@ -188,22 +188,6 @@ def detect_image(network, class_names, image, thresh=.5, hier_thresh=.5, nms=.45
     return sorted(predictions, key=lambda x: x[1])
 
 
-def detect_image_RT(net, class_name, darknet_image, thresh=.5, debug=False):
-    num = c_int(0)
-    if debug: print("Assigned num")
-    pnum = pointer(num)
-    if debug: print("Assigned pnum")
-    do_inference(net, darknet_image)
-    if debug: print("did prediction")
-    dets = get_network_boxes_RT(net, thresh, 0, pnum)
-    if debug: print("Got dets")
-    res = []
-    for i in range(pnum[0]):
-        b = dets[i].bbox
-        res.append((dets[i].name.decode("ascii"), dets[i].prob, (b.x + b.w/2, b.y + b.h/2, b.w, b.h)))
-    if debug: print("free detections")
-    return res
-
 #  lib = CDLL("/home/pjreddie/documents/darknet/libdarknet.so", RTLD_GLOBAL)
 #  lib = CDLL("libdarknet.so", RTLD_GLOBAL)
 hasGPU = True
@@ -249,6 +233,28 @@ if os.name == "nt":
 else:
     lib = CDLL(settings.DARKNET_PATH+"/libdarknet.so", RTLD_GLOBAL)
     libRT = CDLL(settings.RT_PATH + "/build/libdarknetTR.so", RTLD_GLOBAL)
+
+free_detection_RT = libRT.free_detection
+free_detection_RT.argtypes = [POINTER(DETECTIONRT)]
+
+
+def detect_image_RT(net, class_name, darknet_image, thresh=.5, debug=False):
+    num = c_int(0)
+    if debug: print("Assigned num")
+    pnum = pointer(num)
+    if debug: print("Assigned pnum")
+    do_inference(net, darknet_image)
+    if debug: print("did prediction")
+    dets = get_network_boxes_RT(net, thresh, 0, pnum)
+    if debug: print("Got dets")
+    res = []
+    for i in range(pnum[0]):
+        b = dets[i].bbox
+        res.append((dets[i].name.decode("ascii"), dets[i].prob, (b.x + b.w / 2, b.y + b.h / 2, b.w, b.h)))
+    if debug: print("free detections")
+    free_detection_RT(dets)
+    return res
+
 
 lib.network_width.argtypes = [c_void_p]
 lib.network_width.restype = c_int
@@ -371,5 +377,4 @@ copy_image_from_bytes_RT.argtypes = [IMAGE, c_char_p]
 free_image_RT = libRT.free_image
 free_image_RT.argtypes = [IMAGE]
 
-free_detection_RT = libRT.free_detection
-free_detections.argtypes = [POINTER(DETECTIONRT)]
+
