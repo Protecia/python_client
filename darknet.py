@@ -234,8 +234,8 @@ else:
     lib = CDLL(settings.DARKNET_PATH+"/libdarknet.so", RTLD_GLOBAL)
     libRT = CDLL(settings.RT_PATH + "/build/libdarknetTR.so", RTLD_GLOBAL)
 
-free_detection_RT = libRT.free_detection
-free_detection_RT.argtypes = [POINTER(DETECTIONRT)]
+free_detection_RT = libRT.free_detections
+free_detection_RT.argtypes = [POINTER(DETECTIONRT), c_int]
 
 
 def detect_image_RT(net, class_name, darknet_image, thresh=.5):
@@ -247,7 +247,7 @@ def detect_image_RT(net, class_name, darknet_image, thresh=.5):
     for i in range(pnum[0]):
         b = dets[i].bbox
         res.append((dets[i].name.decode("ascii"), dets[i].prob, (b.x + b.w / 2, b.y + b.h / 2, b.w, b.h)))
-    free_detection_RT(dets)
+    free_detection_RT(dets, pnum[0])
     return res
 
 
