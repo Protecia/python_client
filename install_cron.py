@@ -51,7 +51,7 @@ def copy_patch():
     patch = [file for file in dir2.iterdir() if file.name.startswith('patch')]
     for f in patch:
         if f.name not in patch_already_copied:
-            new_file = '/NNVision/python_client/conf/'+f.name
+            new_file = '/NNvision/python_client/conf/'+f.name
             shutil.copyfile(str(f), new_file)
             os.chmod(new_file, 0o755)
 
