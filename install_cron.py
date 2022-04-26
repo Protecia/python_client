@@ -10,6 +10,7 @@ import settings
 import shutil
 from pathlib import Path
 
+
 # install cron for backup rec
 # don't forget to cd for the cron cd /home/protecia/NNvision/python_client &&
 def install_rec_backup_cron():
