@@ -7,7 +7,8 @@ Created on Sat Apr 11 17:56:13 2020
 from crontab import CronTab
 import os
 import settings
-
+import shutil
+from pathlib import Path
 
 # install cron for backup rec
 # don't forget to cd for the cron cd /home/protecia/NNvision/python_client &&
@@ -43,7 +44,19 @@ def install_check_tunnel_cron():
 #         job.minute.every(10)
 #         cron.write()
 
+def copy_patch():
+    dir1 = Path('/NNvision/python_client/conf/')
+    patch_already_copied = [file.name.split('.')[0] for file in dir1.iterdir() if file.name.startswith('patch')]
+    dir2 = Path('/NNvision/python_client/patch/')
+    patch = [file for file in dir2.iterdir() if file.name.startswith('patch')]
+    for f in patch:
+        if f.name not in patch_already_copied:
+            new_file = '/NNVision/python_client/conf/'+f.name
+            shutil.copyfile(str(f), new_file)
+            os.chmod(new_file, 0o755)
+
 
 if __name__ == "__main__":
     install_rec_backup_cron()
     install_check_tunnel_cron()
+    copy_patch()
