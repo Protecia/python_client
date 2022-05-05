@@ -58,6 +58,10 @@ DARKNET_CONF = {
         #         'DATA': '/NNvision/weights/person_docker.data'},
         }
 
+# List of objects detected by the neural network
+CLASS_DETECTED = ['face', 'person', 'chair', 'bed', 'bicycle', 'motorcycle', 'vehicle', 'bird', 'cat', 'dog', 'fall',
+                  'masque', 'incorrect mask', 'no mask', 'toothbrush', ]
+
 # hardware conf
 INSTALL_PATH = '/NNvision/python_client'
 FFMPEG = '/usr/local/bin/ffmpeg'

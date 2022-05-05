@@ -44,6 +44,9 @@ def conf():
         logger.warning(f'request :  {r.text}')
         data = json.loads(r.text)
         if data.get('key', False):
+            requests.post(settings.SERVER + "conf", data={'key': data['key'],
+                          'class_detected': settings.CLASS_DETECTED},
+                          timeout=40)
             with open(settings.INSTALL_PATH + '/conf/conf.json', 'w') as conf_json:
                 json.dump({key: data[key] for key in ['cp', 'city', 'key', 'scan_camera', 'scan']}, conf_json)
             with open(settings.INSTALL_PATH + '/conf/docker.json', 'w') as docker_json:
