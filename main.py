@@ -42,15 +42,19 @@ def conf():
         r = requests.post(settings.SERVER + "conf", data={'machine': machine_id, 'pass': settings.INIT_PASS},
                           timeout=40)
         logger.warning(f'request :  {r.text}')
-        data = json.loads(r.text)
-        if data.get('key', False):
-            requests.post(settings.SERVER + "conf", data={'key': data['key'],
-                          'class_detected': json.dumps(settings.CLASS_DETECTED)},
-                          timeout=40)
+        data_dict = json.loads(r.text)
+        if data_dict.get('clients', False):
+            data_client = data_dict['clients']
             with open(settings.INSTALL_PATH + '/conf/conf.json', 'w') as conf_json:
-                json.dump({key: data[key] for key in ['cp', 'city', 'key', 'scan_camera', 'scan']}, conf_json)
+                json.dump(data_client, conf_json)
+            for data in data_client:
+                requests.post(settings.SERVER + "conf", data={'key': data['key'],
+                              'class_detected': json.dumps(settings.CLASS_DETECTED)},
+                              timeout=40)
+            data_machine = data_dict['machine'][0]
             with open(settings.INSTALL_PATH + '/conf/docker.json', 'w') as docker_json:
-                json.dump({key: data[key] for key in ['tunnel_port', 'docker_version', 'reboot']}, docker_json)
+                json.dump({key: data_machine[key] for key in ['tunnel_port', 'docker_version', 'reboot', 'scan_camera',
+                                                              'scan']}, docker_json)
                 logger.warning(f'Receiving  conf :  {r.text}')
             with open(settings.INSTALL_PATH + '/conf/force_reboot.json', 'w') as reboot_json:
                 json.dump({'force_reboot': False, }, reboot_json)
@@ -87,15 +91,16 @@ def main():
         # retrieve cam
         loop.run_until_complete(cameras.get_cam())
 
-        # initial scan state :
-        if get_conf('scan'):
-            scan_state.set()
-
         # launch child processes
         process = {
             'serve_http': Process(target=http_serve, args=(2525,)),
-            'scan_camera': Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,))
         }
+
+        # launch scan if True in scan state
+        if get_conf('scan'):
+            scan_state.set()
+            process['scan_camera'] = Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,))
+
         for p in process.values():
             p.daemon = True
             p.start()
