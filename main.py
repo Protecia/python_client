@@ -7,7 +7,7 @@ Created on Sat Jun  1 07:34:04 2019
 import asyncio
 
 import process_camera as pc
-from multiprocessing import Process, Event as pEvent
+from multiprocessing import Process
 import json
 from log import Logger
 import scan_camera as sc
@@ -33,7 +33,6 @@ logger = Logger(__name__, level=settings.MAIN_LOG, file=True).run()
 
 
 tlock = asyncio.Lock()
-scan_state = pEvent()
 
 
 def conf():
@@ -53,9 +52,8 @@ def conf():
                               timeout=40)
             data_machine = data_dict['machine'][0]
             with open(settings.INSTALL_PATH + '/conf/docker.json', 'w') as docker_json:
-                json.dump({key: data_machine[key] for key in ['tunnel_port', 'docker_version', 'reboot', 'scan_camera',
-                                                              'scan']}, docker_json)
-                logger.warning(f'Receiving  conf :  {r.text}')
+                json.dump({key: data_machine[key] for key in ['tunnel_port', 'docker_version', 'reboot']}, docker_json)
+                logger.warning(f'Receiving  conf :  {data_machine}')
             with open(settings.INSTALL_PATH + '/conf/force_reboot.json', 'w') as reboot_json:
                 json.dump({'force_reboot': False, }, reboot_json)
                 logger.warning(f'writing reboot  init conf')
@@ -86,10 +84,12 @@ def main():
         install_check_tunnel_cron()
 
         # Instanciate get_camera :
-        cameras = web_camera.Client()
+        list_client = get_conf('key')
+        list_client = [web_camera.Client(obj) for obj in list_client]
 
         # retrieve cam
-        loop.run_until_complete(cameras.get_cam())
+        list_camera_client_coroutine = [obj.get_cam() for obj in list_client]
+        loop.run_until_complete(*list_camera_client_coroutine)
 
         # launch child processes
         process = {
@@ -97,9 +97,9 @@ def main():
         }
 
         # launch scan if True in scan state
-        if get_conf('scan'):
-            scan_state.set()
-            process['scan_camera'] = Process(target=sc.run, args=(settings.SCAN_INTERVAL, scan_state,))
+        list_client_scan = [scan[0] for scan in zip(get_conf('key'), get_conf('scan')) if scan[1]]
+        for k in list_client_scan:
+            process[f'scan_camera_{k}'] = Process(target=sc.run, args=(settings.SCAN_INTERVAL, k))
 
         for p in process.values():
             p.daemon = True
@@ -114,29 +114,32 @@ def main():
         while True:
             try:
                 # write the file for backup video
-                cameras.write()
-                logger.info(f'Writing camera in json : {cameras.list_cam}')
+                [obj.write() for obj in list_client]
+                logger.info(f'Writing camera in json : {[obj.list_cam for obj in list_client]}')
 
-                # launch the camera thread
-                list_tasks = []
-                for c in cameras.list_cam.values():
-                    if c['active'] and c['active_automatic']:
-                        uri = None
-                        for uri in c['uri'].values():  # get the camera uri in use or the last one
-                            if uri['use']:
-                                break
-                        if uri:
-                            # need to copy the dict because you can not remove the id from camera.list_cam
-                            uri_copy = uri.copy()
-                            uri_copy.pop('id', None)
-                            ready_cam = {**c, **uri_copy}
-                            p = pc.ProcessCamera(ready_cam, loop, tlock)
-                            list_tasks.append(p)
-                            logger.info(f'starting process camera on  : {ready_cam}')
+                total_tasks = []
+                for client in list_client:
+                    # launch the camera thread
+                    list_tasks = []
+                    for camera in client.list_cam.values():
+                        if camera['active'] and camera['active_automatic']:
+                            uri = None
+                            for uri in camera['uri'].values():  # get the camera uri in use or the last one
+                                if uri['use']:
+                                    break
+                            if uri:
+                                # need to copy the dict because you can not remove the id from camera.list_cam
+                                uri_copy = uri.copy()
+                                uri_copy.pop('id', None)
+                                ready_cam = {**camera, **uri_copy}
+                                p = pc.ProcessCamera(ready_cam, loop, tlock)
+                                list_tasks.append(p)
+                                logger.info(f'starting process camera on  : {ready_cam}')
 
-                # wait until a camera change
-                total_tasks = [cameras.connect(scan_state, list_tasks)] + \
-                              [t.run() for t in list_tasks]
+                    # wait until a camera change
+                    regroup_tasks = [client.connect(list_tasks)] + [t.run() for t in list_tasks]
+                    total_tasks.append(regroup_tasks)
+
                 logger.error(f'list of all tasks launched {[t.__str__() for t in list_tasks]}')
                 if settings.MAIN_LOG == logging.DEBUG:  # Avoid evaluation of tracemalloc
                     logger.debug(f'Memory allocation {tracemalloc.take_snapshot().statistics("lineno")}')
@@ -147,7 +150,8 @@ def main():
                 logger.warning('tasks stopped')
 
                 logger.error('Camera change restart !')
-                cameras.running_level1 = True
+                for cam in list_client:
+                    cam.running_level1 = True
             except Exception as ex:
                 logger.error(f'EXCEPTION IN MAIN  trying to restart in 5 s/ except-->{ex} / name-->{type(ex).__name__}')
                 time.sleep(5)

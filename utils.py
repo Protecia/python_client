@@ -8,9 +8,16 @@ def get_conf(value):
     try:
         with open(settings.INSTALL_PATH + '/conf/conf.json', 'r') as conf_json:
             data = json.load(conf_json)
+            return [c[value] for c in data]
     except (KeyError, FileNotFoundError):
         pass
-    return data[value]
+    try:
+        with open(settings.INSTALL_PATH + '/conf/docker.json', 'r') as docker_json:
+            data = json.load(docker_json)
+            return data[value]
+    except (KeyError, FileNotFoundError):
+        pass
+    return False
 
 
 def display_top(snapshot, key_type='lineno', limit=10):

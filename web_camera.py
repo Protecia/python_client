@@ -5,21 +5,21 @@ import asyncio
 import pathlib
 import time
 from log import Logger
-from utils import get_conf
 from datetime import datetime
 from filelock import Timeout, FileLock
+import hashlib
 
 logger = Logger(__name__, level=settings.SOCKET_LOG, file=True).run()
 
 
 class Client(object):
-    def __init__(self):
+    def __init__(self, key):
         self.list_cam = None
-        self.key = get_conf('key')
-        self.E_state = None
+        self.key = key
+        self.key_sha = hashlib.sha256(key.encode()).hexdigest()
         self.running_level1 = True
-        self.camera_file = settings.INSTALL_PATH + '/camera/camera_from_server.json'
-        self.lock = FileLock(settings.INSTALL_PATH + '/camera/camera_from_server.json.lock', timeout=1)
+        self.camera_file = settings.INSTALL_PATH + f'/camera/camera_from_server_{key}.json'
+        self.lock = FileLock(settings.INSTALL_PATH + f'/camera/camera_from_server_{key}.json.lock', timeout=1)
 
     def write(self):
         write = False
@@ -29,7 +29,7 @@ class Client(object):
                     with open(self.camera_file, 'w') as cam:
                         json.dump(self.list_cam, cam)
                         logger.info(f' Writing the camera from server in file -> \n'
-                                     f' {json.dumps(self.list_cam, indent=4, sort_keys=True)}')
+                                    f' {json.dumps(self.list_cam, indent=4, sort_keys=True)}')
                 write = True
             except Timeout:
                 logger.error(f' Error Writing the camera file, file is lock')
@@ -42,8 +42,8 @@ class Client(object):
             self.list_cam = json.loads(cam)
             logger.info(f' get cam receive cam from server -> {json.dumps(self.list_cam, indent=4, sort_keys=True)}')
 
-    async def connect(self, scan_state, extern_tasks):
-        await asyncio.gather(self.send_cam(), self.receive_cam(), self.get_state(scan_state))
+    async def connect(self, extern_tasks):
+        await asyncio.gather(self.send_cam(), self.receive_cam(), self.get_state())
         # except Exception as ex:
         #     logger.warning(f' exception in CONNECT**************** / except-->{ex} / name-->{type(ex).__name__}')
         for t in extern_tasks:
@@ -58,13 +58,13 @@ class Client(object):
                 async with websockets.connect(settings.SERVER_WS + 'ws_receive_cam') as ws:
                     await ws.send(json.dumps({'key': self.key, }))
                     while self.running_level1:
-                        fname = pathlib.Path(settings.INSTALL_PATH + '/camera/camera_from_scan.json')
+                        fname = pathlib.Path(settings.INSTALL_PATH + f'/camera/camera_from_scan_{self.key}.json')
                         logger.debug(f'loop for sending new cam')
                         try:
                             t2 = fname.stat().st_ctime
                             logger.debug(f't2 is {t2} / t1 is {t1}')
                             if t2 > t1:
-                                with open(settings.INSTALL_PATH + '/camera/camera_from_scan.json', 'r') as cam:
+                                with open(settings.INSTALL_PATH + f'/camera/camera_from_scan_{self.key}.json', 'r') as cam:
                                     cameras = json.load(cam)
                                 logger.warning(f'Reading camera in file -> {cameras}')
                                 await ws.send(json.dumps(cameras))
@@ -100,7 +100,7 @@ class Client(object):
                 await asyncio.sleep(1)
                 continue
 
-    async def get_state(self, scan_state):
+    async def get_state(self):
         while self.running_level1:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_get_state') as ws:
@@ -110,19 +110,17 @@ class Client(object):
                         ping = state.get('ping', False)
                         logger.warning(f'Receive change state -> {state}')
                         if ping:
-                            with open(settings.INSTALL_PATH + '/conf/ping.json', 'w') as ping:
+                            with open(settings.INSTALL_PATH + f'/conf/ping_{self.key}.json', 'w') as ping:
                                 json.dump({'last': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), }, ping)
                             if state['token1']:
-                                with open(settings.INSTALL_PATH + '/conf/video.json', 'w') as f:
+                                with open(settings.INSTALL_PATH + f'/conf/video_{self.key_sha}.json', 'w') as f:
                                     json.dump({'token1': state['token1'], 'token2': state['token2']}, f)
                                     logger.warning(f"video.json has been written :"
                                                    f"token1: {state['token1']}, token2: {state['token2']}")
                         else:
-                            scan_state.set() if state['scan'] else scan_state.clear()
-                            logger.debug(f'scan state from server is -> {state["scan"]}')
                             # write the change for reboot and docker version
                             with open(settings.INSTALL_PATH + '/conf/docker.json', 'w') as conf_json:
-                                docker_json = {key: state[key] for key in ['tunnel_port', 'docker_version', 'reboot']}
+                                docker_json = {key: state[key] for key in ['tunnel_port', 'docker_version', 'reboot', ]}
                                 json.dump(docker_json, conf_json)
                                 logger.warning(f'Receiving  json docker :  {docker_json}')
 

@@ -252,12 +252,12 @@ def check_cam(cam_ip_dict, users_dict):
     return dict_cam
 
 
-def run(wait, scan_state):
-    lock = FileLock(settings.INSTALL_PATH + '/camera/camera_from_server.json.lock', timeout=1)
+def run(wait, key):
+    lock = FileLock(settings.INSTALL_PATH + f'/camera/camera_from_server_{key}.json.lock', timeout=1)
     while True:
         try:
             with lock:
-                with open(settings.INSTALL_PATH+'/camera/camera_from_server.json', 'r') as out:
+                with open(settings.INSTALL_PATH+f'/camera/camera_from_server_{key}.json', 'r') as out:
                     cam_ip_dict = json.load(out)
             users_dict = {cam['username']: cam['password'] for cam in cam_ip_dict.values()}
             if get_conf('scan_camera') != 0:
@@ -271,12 +271,11 @@ def run(wait, scan_state):
             logger.info(f'updated detected_cam <-  {detected_cam}')
             cam_ip_dict.update(detected_cam)
             dict_cam = check_cam(cam_ip_dict, users_dict)
-            with open(settings.INSTALL_PATH+'/camera/camera_from_scan.json', 'w') as out:
+            with open(settings.INSTALL_PATH+f'/camera/camera_from_scan_{key}.json', 'w') as out:
                 json.dump(dict_cam, out)
-            logger.warning(f'Writing scan camera in file <-  {dict_cam} / scan_state is {scan_state.is_set()}')
+            logger.warning(f'Writing scan camera in file <-  {dict_cam}')
             if settings.SCAN_LOG == logging.DEBUG:
                 logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
-            scan_state.wait()
             time.sleep(wait)
         except Timeout:
             logger.error(f'exception in read json, file is lock')
@@ -289,9 +288,8 @@ def run(wait, scan_state):
 
 # only for testing and launching independant scan_camera
 if __name__ == '__main__':
-    from multiprocessing import Event as pEvent
-    scan = pEvent()
-    # initial scan state :
-    if get_conf('scan'):
-        scan.set()
-    run(20, scan)
+    # independant manual scan :
+    # launch scan if True in scan state
+    list_client_scan = [scan[0] for scan in zip(get_conf('key'), get_conf('scan')) if scan[1]]
+    for key in list_client_scan:
+        run(20, key)

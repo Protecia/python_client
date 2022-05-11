@@ -18,6 +18,7 @@ import json
 import os
 import cherrypy
 from filelock import Timeout, FileLock
+from utils import get_conf
 
 logger = Logger('video', settings.VIDEO_LOG, file=True).run()
 
@@ -91,36 +92,39 @@ class RecCamera(object):
 
 
 def rec_all_cam():
-    lock = FileLock(settings.INSTALL_PATH + '/camera/camera_from_server.json.lock', timeout=1)
+    list_key = get_conf('key')
     path = os.path.join(settings.INSTALL_PATH, 'camera/secu')
     files = [os.path.join(path, f) for f in os.listdir(path) if
-             (time.time()-os.path.getmtime(os.path.join(path, f)))/3600/24 > settings.RECORDED_DELAY]
+             (time.time() - os.path.getmtime(os.path.join(path, f))) / 3600 / 24 > settings.RECORDED_DELAY]
     for f in files:
         os.remove(f)
-    read = False
-    while not read:  # Try until reading of json is possible
-        try:
-            with lock:
-                with open('camera/camera_from_server.json', 'r') as json_file:
-                    cameras = json.load(json_file)
-                    read = True
-            list_rtsp = []
-            for cam in [(v['uri'], v['username'], v['password'], v['id']) for v in cameras.values() if v['active']]:
-                # take the first rtsp as default
-                list_rtsp.append((list(cam[0].values())[0]['id'], list(cam[0].values())[0]['rtsp'], cam[1], cam[2],
-                                  cam[3]))
-                logger.info(f'list_rtsp -> {list_rtsp}')
-                for uri in cam[0].values():
-                    logger.info(f'uri -> {uri}')
-                    if uri['use']:
-                        list_rtsp[-1] = (uri['id'], uri['rtsp'], cam[1], cam[2], cam[3])
-                        break
-        except json.decoder.JSONDecodeError:
-            logger.error(f'error in decoding json')
-            time.sleep(1)
-        except Timeout:
-            logger.error(f'camera_from_server.json is locked')
-            time.sleep(1)
+    list_rtsp = []
+    for key in list_key:
+        lock = FileLock(settings.INSTALL_PATH + f'/camera/camera_from_server_{key}.json.lock', timeout=1)
+        read = False
+        while not read:  # Try until reading of json is possible
+            try:
+                with lock:
+                    with open(f'camera/camera_from_server_{key}.json', 'r') as json_file:
+                        cameras = json.load(json_file)
+                        read = True
+
+                for cam in [(v['uri'], v['username'], v['password'], v['id']) for v in cameras.values() if v['active']]:
+                    # take the first rtsp as default
+                    list_rtsp.append((list(cam[0].values())[0]['id'], list(cam[0].values())[0]['rtsp'], cam[1], cam[2],
+                                      cam[3]))
+                    logger.info(f'list_rtsp -> {list_rtsp}')
+                    for uri in cam[0].values():
+                        logger.info(f'uri -> {uri}')
+                        if uri['use']:
+                            list_rtsp[-1] = (uri['id'], uri['rtsp'], cam[1], cam[2], cam[3])
+                            break
+            except json.decoder.JSONDecodeError:
+                logger.error(f'error in decoding json')
+                time.sleep(1)
+            except Timeout:
+                logger.error(f'camera_from_server.json is locked')
+                time.sleep(1)
 
     for rtsp in list_rtsp:
         protocole = rtsp[1].split('//')[0] + "//"
@@ -153,10 +157,10 @@ def http_serve(port):
     """Static file server, using Python's CherryPy. Used to serve video."""
     logger.warning('starting cherrypy')
     
-    def check_token(token):
+    def check_token(token, key):
         for i in range(2):
             try:
-                with open(settings.INSTALL_PATH+'/conf/video.json', 'r') as f:
+                with open(settings.INSTALL_PATH+f'/conf/video_{key}.json', 'r') as f:
                     data = json.load(f)
                 if token == data['token1'] or token == data['token2']:
                     return True
@@ -171,8 +175,8 @@ def http_serve(port):
     class Root:
 
         @cherrypy.expose
-        def live(self, name, token):
-            if check_token(token):
+        def live(self, name, token, key):
+            if check_token(token, key):
                 return cherrypy.lib.static.serve_file(os.path.join(static_dir_live, name))
         
         @cherrypy.expose
@@ -181,9 +185,9 @@ def http_serve(port):
             return cherrypy.lib.static.serve_file(os.path.join(static_dir_secu, name))
 
         @cherrypy.expose
-        def video(self, v, l, token):
+        def video(self, v, l, token, key):
             page = v.split('.')
-            video_link = page[0]+'?name='+page[1]+'.mp4&token='+token
+            video_link = page[0]+'?name='+page[1]+'.mp4&token='+token+'&key='+key
             back = 'http://'+'/'.join(l.split('_'))
             back += '/'
             file = os.path.join(static_dir, 'camera', page[0], page[1]+'.mp4')
