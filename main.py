@@ -39,8 +39,8 @@ scan_state = pEvent()
 def conf():
     try:
         machine_id = subprocess.check_output(['cat', settings.UUID]).decode().strip('\x00')
-        r = requests.post(settings.SERVER + "conf", data={'machine': machine_id, 'pass': settings.INIT_PASS},
-                          timeout=40)
+        r = requests.post(settings.SERVER + "conf", data={'machine': machine_id, 'pass': settings.INIT_PASS,
+                                                          'version': 2}, timeout=40)
         logger.warning(f'request :  {r.text}')
         data_dict = json.loads(r.text)
         if data_dict.get('clients', False):

@@ -4,5 +4,5 @@ echo "deb https://repo.download.nvidia.com/jetson/t210 r32.7 main"  >> /etc/apt/
 sudo apt -y update
 yes | sudo DEBIAN_FRONTEND=noninteractive apt  -y dist-upgrade
 # maybe yes | apt install foo
-sudo apt install nvidia-jetpack
+sudo apt install -y nvidia-jetpack
 echo date > /home/nnvision/patch1.ok
