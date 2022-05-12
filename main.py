@@ -89,7 +89,7 @@ def main():
 
         # retrieve cam
         list_camera_client_coroutine = [obj.get_cam() for obj in list_client]
-        loop.run_until_complete(*list_camera_client_coroutine)
+        loop.run_until_complete(asyncio.gather(*list_camera_client_coroutine))
 
         # launch child processes
         process = {
@@ -138,17 +138,16 @@ def main():
 
                     # wait until a camera change
                     regroup_tasks = [client.connect(list_tasks)] + [t.run() for t in list_tasks]
-                    total_tasks.append(regroup_tasks)
+                    total_tasks += regroup_tasks
 
                 logger.error(f'list of all tasks launched {[t.__str__() for t in list_tasks]}')
                 if settings.MAIN_LOG == logging.DEBUG:  # Avoid evaluation of tracemalloc
                     logger.debug(f'Memory allocation {tracemalloc.take_snapshot().statistics("lineno")}')
                     logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
-                loop.run_until_complete(asyncio.gather(*total_tasks))
+
+                loop.run_until_complete(asyncio.gather(*total_tasks))  # wait until a camera change
                 time.sleep(0.1)
-
                 logger.warning('tasks stopped')
-
                 logger.error('Camera change restart !')
                 for cam in list_client:
                     cam.running_level1 = True
