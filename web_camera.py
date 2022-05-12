@@ -13,9 +13,10 @@ logger = Logger(__name__, level=settings.SOCKET_LOG, file=True).run()
 
 
 class Client(object):
-    def __init__(self, key):
+    def __init__(self, key, scan):
         self.list_cam = None
         self.key = key
+        self.scan = scan
         self.key_sha = hashlib.sha256(key.encode()).hexdigest()
         self.running_level1 = True
         self.camera_file = settings.INSTALL_PATH + f'/camera/camera_from_server_{key}.json'
@@ -43,7 +44,10 @@ class Client(object):
             logger.info(f' get cam receive cam from server -> {json.dumps(self.list_cam, indent=4, sort_keys=True)}')
 
     async def connect(self, extern_tasks):
-        await asyncio.gather(self.send_cam(), self.receive_cam(), self.get_state())
+        tasks = [self.receive_cam(), self.get_state(), ]
+        if self.scan:
+            tasks.append(self.send_cam())
+        await asyncio.gather(*tasks)
         # except Exception as ex:
         #     logger.warning(f' exception in CONNECT**************** / except-->{ex} / name-->{type(ex).__name__}')
         for t in extern_tasks:

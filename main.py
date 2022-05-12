@@ -83,9 +83,12 @@ def main():
         install_rec_backup_cron()
         install_check_tunnel_cron()
 
+        # Get the client with scan True
+        list_client_scan = [scan[0] for scan in zip(get_conf('key'), get_conf('scan')) if scan[1]]
+
         # Instanciate get_camera :
         list_client = get_conf('key')
-        list_client = [web_camera.Client(obj) for obj in list_client]
+        list_client = [web_camera.Client(obj, True if obj in list_client_scan else False) for obj in list_client]
 
         # retrieve cam
         list_camera_client_coroutine = [obj.get_cam() for obj in list_client]
@@ -97,7 +100,7 @@ def main():
         }
 
         # launch scan if True in scan state
-        list_client_scan = [scan[0] for scan in zip(get_conf('key'), get_conf('scan')) if scan[1]]
+
         for k in list_client_scan:
             process[f'scan_camera_{k}'] = Process(target=sc.run, args=(settings.SCAN_INTERVAL, k))
 
