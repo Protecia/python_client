@@ -66,9 +66,9 @@ def detect_block(my_net, my_class_names, frame, my_width, my_height, thresh):
 
 class ProcessCamera(object):
 
-    def __init__(self, cam, loop, tlock):
+    def __init__(self, cam, loop, tlock, key):
         self.cam = cam
-        self.key = get_conf('key')
+        self.key = key
         self.running_level2 = False
         self.running_level1 = False
         self.loop = loop

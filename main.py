@@ -135,7 +135,7 @@ def main():
                                 uri_copy = uri.copy()
                                 uri_copy.pop('id', None)
                                 ready_cam = {**camera, **uri_copy}
-                                p = pc.ProcessCamera(ready_cam, loop, tlock)
+                                p = pc.ProcessCamera(ready_cam, loop, tlock, client.key)
                                 list_tasks.append(p)
                                 logger.info(f'starting process camera on  : {ready_cam}')
 
