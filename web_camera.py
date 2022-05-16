@@ -108,7 +108,7 @@ class Client(object):
         while self.running_level1:
             try:
                 async with websockets.connect(settings.SERVER_WS + 'ws_get_state') as ws:
-                    await ws.send(json.dumps({'key': self.key, }))
+                    await ws.send(json.dumps({'key': self.key, 'version': 2, }))
                     while self.running_level1:
                         state = json.loads(await ws.recv())
                         ping = state.get('ping', False)
