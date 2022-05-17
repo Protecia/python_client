@@ -58,9 +58,6 @@ def conf():
                 json.dump({'force_reboot': False, }, reboot_json)
                 logger.warning(f'writing reboot  init conf')
             return True
-        elif data_dict.get('key', False):
-            pass
-
         else:
             logger.warning(f'No client affected.')
             return False
