@@ -70,11 +70,21 @@ def conf():
 # def end(signum, frame):
 #     raise KeyboardInterrupt('Extern interrupt')
 
+async def task_by_client(key, scan):
+    list_tasks = []
+    process = {}
+    try:
+        # Get the client with scan True
+        scan = [scan[1] for scan in zip(get_conf('key'), get_conf('scan')) if scan[0]==key ][0]
+        client = web_camera.Client(key, scan)
+        # retrieve cam
+        await client.get_cam()
+
 
 def main():
     # signal.signal(signal.SIGTERM, end)
-    list_tasks = []
-    process = {}
+
+
     loop = asyncio.get_event_loop()
     try:
         while not conf():
@@ -83,16 +93,13 @@ def main():
         install_rec_backup_cron()
         install_check_tunnel_cron()
 
-        # Get the client with scan True
-        list_client_scan = [scan[0] for scan in zip(get_conf('key'), get_conf('scan')) if scan[1]]
+
 
         # Instanciate get_camera :
         list_client = get_conf('key')
-        list_client = [web_camera.Client(obj, True if obj in list_client_scan else False) for obj in list_client]
 
-        # retrieve cam
-        list_camera_client_coroutine = [obj.get_cam() for obj in list_client]
-        loop.run_until_complete(asyncio.gather(*list_camera_client_coroutine))
+
+
 
         # launch child processes
         process = {
