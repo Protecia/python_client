@@ -260,7 +260,7 @@ def run(wait, key):
                 with open(settings.INSTALL_PATH+f'/camera/camera_from_server_{key}.json', 'r') as out:
                     cam_ip_dict = json.load(out)
             users_dict = {cam['username']: cam['password'] for cam in cam_ip_dict.values()}
-            if get_conf('scan_camera') != 0:
+            if get_conf('scan_camera', key) != 0:
                 detected_cam = ping_network()
             else:
                 # detected_cam = ws_discovery(2, 20)
