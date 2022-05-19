@@ -180,8 +180,8 @@ def http_serve(port):
                 return cherrypy.lib.static.serve_file(os.path.join(static_dir_live, name))
         
         @cherrypy.expose
-        def secu(self, name, token):
-            # if check_token(token):
+        def secu(self, name, token, key):
+            # if check_token(token, key):
             return cherrypy.lib.static.serve_file(os.path.join(static_dir_secu, name))
 
         @cherrypy.expose

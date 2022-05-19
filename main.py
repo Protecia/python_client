@@ -5,7 +5,6 @@ Created on Sat Jun  1 07:34:04 2019
 @author: julien
 """
 import asyncio
-
 import process_camera as pc
 from multiprocessing import Process
 import json
@@ -22,7 +21,6 @@ import time
 from urllib3.exceptions import ProtocolError
 from utils import get_conf, display_top
 import logging
-
 import tracemalloc
 
 if settings.MAIN_LOG == logging.DEBUG:
@@ -70,21 +68,43 @@ def conf():
 # def end(signum, frame):
 #     raise KeyboardInterrupt('Extern interrupt')
 
-async def task_by_client(key, scan):
-    list_tasks = []
-    process = {}
-    try:
-        # Get the client with scan True
-        scan = [scan[1] for scan in zip(get_conf('key'), get_conf('scan')) if scan[0]==key ][0]
-        client = web_camera.Client(key, scan)
-        # retrieve cam
-        await client.get_cam()
+async def tasks_by_client(key, scan, loop):
+    client = web_camera.Client(key, scan)
+    # retrieve cam
+    await client.get_cam()
+    while True:
+        try:
+            client.write()
+            logger.info(f'Writing camera in json : {client.list_cam}')
+            # launch the camera coroutine
+            list_tasks = []
+            for camera in client.list_cam.values():
+                if camera['active'] and camera['active_automatic']:
+                    uri = None
+                    for uri in camera['uri'].values():  # get the camera uri in use or the last one
+                        if uri['use']:
+                            break
+                    if uri:
+                        # need to copy the dict because you can not remove the id from camera.list_cam
+                        uri_copy = uri.copy()
+                        uri_copy.pop('id', None)
+                        ready_cam = {**camera, **uri_copy}
+                        p = pc.ProcessCamera(ready_cam, loop, tlock, client.key)
+                        list_tasks.append(p)
+                        logger.info(f'starting process camera on  : {ready_cam}')
+            regroup_tasks = [client.connect(list_tasks)] + [t.run() for t in list_tasks]
+            logger.error(f'list of all tasks launched for client {client.key} -->'
+                         f' {[t.__str__() for t in regroup_tasks]}')
+            await asyncio.gather(*regroup_tasks)  # wait until a camera for the client change
+            client.running_level1 = True
+        except Exception as ex:
+            logger.error(f'EXCEPTION IN CLIENT TASK  trying to restart in 5 s/'
+                         f' except-->{ex} / name-->{type(ex).__name__}')
+            time.sleep(5)
 
 
 def main():
     # signal.signal(signal.SIGTERM, end)
-
-
     loop = asyncio.get_event_loop()
     try:
         while not conf():
@@ -93,13 +113,8 @@ def main():
         install_rec_backup_cron()
         install_check_tunnel_cron()
 
-
-
-        # Instanciate get_camera :
-        list_client = get_conf('key')
-
-
-
+        # Get the client with scan True
+        list_client_scan = [scan[0] for scan in zip(get_conf('key'), get_conf('scan')) if scan[1]]
 
         # launch child processes
         process = {
@@ -107,7 +122,6 @@ def main():
         }
 
         # launch scan if True in scan state
-
         for k in list_client_scan:
             process[f'scan_camera_{k}'] = Process(target=sc.run, args=(settings.SCAN_INTERVAL, k))
 
@@ -121,49 +135,22 @@ def main():
             txt += f'{key}->{value.pid} / '
         logger.error(txt)
 
-        while True:
-            try:
-                # write the file for backup video
-                [obj.write() for obj in list_client]
-                logger.info(f'Writing camera in json : {[obj.list_cam for obj in list_client]}')
+        # Launch client tasks :
+        list_client = get_conf('key')
 
-                total_tasks = []
-                for client in list_client:
-                    # launch the camera thread
-                    list_tasks = []
-                    for camera in client.list_cam.values():
-                        if camera['active'] and camera['active_automatic']:
-                            uri = None
-                            for uri in camera['uri'].values():  # get the camera uri in use or the last one
-                                if uri['use']:
-                                    break
-                            if uri:
-                                # need to copy the dict because you can not remove the id from camera.list_cam
-                                uri_copy = uri.copy()
-                                uri_copy.pop('id', None)
-                                ready_cam = {**camera, **uri_copy}
-                                p = pc.ProcessCamera(ready_cam, loop, tlock, client.key)
-                                list_tasks.append(p)
-                                logger.info(f'starting process camera on  : {ready_cam}')
+        list_client_tasks = []
+        for key in list_client:
+            scan = True if key in list_client_scan else False
+            list_client_tasks.append(tasks_by_client(key, scan, loop))
 
-                    # wait until a camera change
-                    regroup_tasks = [client.connect(list_tasks)] + [t.run() for t in list_tasks]
-                    total_tasks += regroup_tasks
+        logger.error(f'list of tasks clienbts {[t.__str__() for t in list_client_tasks]}')
 
-                logger.error(f'list of all tasks launched {[t.__str__() for t in list_tasks]}')
-                if settings.MAIN_LOG == logging.DEBUG:  # Avoid evaluation of tracemalloc
-                    logger.debug(f'Memory allocation {tracemalloc.take_snapshot().statistics("lineno")}')
-                    logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
+        if settings.MAIN_LOG == logging.DEBUG:  # Avoid evaluation of tracemalloc
+            logger.debug(f'Memory allocation {tracemalloc.take_snapshot().statistics("lineno")}')
+            logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
 
-                loop.run_until_complete(asyncio.gather(*total_tasks))  # wait until a camera change
-                time.sleep(0.1)
-                logger.warning('tasks stopped')
-                logger.error('Camera change restart !')
-                for cam in list_client:
-                    cam.running_level1 = True
-            except Exception as ex:
-                logger.error(f'EXCEPTION IN MAIN  trying to restart in 5 s/ except-->{ex} / name-->{type(ex).__name__}')
-                time.sleep(5)
+        loop.run_until_complete(asyncio.gather(*list_client_tasks))  # wait until a camera change
+
     except KeyboardInterrupt:
         for p in process.values():
             p.terminate()
