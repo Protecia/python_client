@@ -33,7 +33,7 @@ if settings.SCAN_LOG == logging.DEBUG:
 logger = Logger('scan_camera', level=settings.SCAN_LOG, file=True).run()
 
 
-def ping_network():
+def ping_network(key):
     addrs = psutil.net_if_addrs()
     box = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
     network = ['.'.join(i.split('.')[:-1]) for i in box]
@@ -48,7 +48,7 @@ def ping_network():
             if outs:
                 ip = outs.decode().rstrip()
                 if ip not in box:
-                    std[ip] = {'port_onvif': get_conf('scan_camera')}
+                    std[ip] = {'port_onvif': get_conf('scan_camera', key)}
     return std
 
 
@@ -261,7 +261,7 @@ def run(wait, key):
                     cam_ip_dict = json.load(out)
             users_dict = {cam['username']: cam['password'] for cam in cam_ip_dict.values()}
             if get_conf('scan_camera', key) != 0:
-                detected_cam = ping_network()
+                detected_cam = ping_network(key)
             else:
                 # detected_cam = ws_discovery(2, 20)
                 detected_cam = fetch_devices()
