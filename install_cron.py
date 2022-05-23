@@ -45,6 +45,7 @@ def install_check_connection_cron():
         job.minute.every(10)
         cron.write()
 
+
 def copy_patch():
     dir1 = Path('/NNvision/python_client/conf/')
     patch_already_copied = [file.name.split('.')[0] for file in dir1.iterdir() if file.name.startswith('patch')]
