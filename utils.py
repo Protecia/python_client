@@ -4,12 +4,15 @@ import tracemalloc
 import linecache
 
 
-def get_conf(value, key=None):
+def get_conf(value, key=None, with_filter=None):
     try:
         with open(settings.INSTALL_PATH + '/conf/conf.json', 'r') as conf_json:
             data = json.load(conf_json)
             if not key:
-                return [c[value] for c in data]
+                if not with_filter:
+                    return [c[value] for c in data]
+                else:
+                    return [c[value] for c in data if c[with_filter]]
             else:
                 value_for_key = [c[value] for c in data if c['key'] == key]
                 if value_for_key:

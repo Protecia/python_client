@@ -92,7 +92,7 @@ class RecCamera(object):
 
 
 def rec_all_cam():
-    list_key = get_conf('key')
+    list_key = get_conf('key', with_filter='video_authorize')
     path = os.path.join(settings.INSTALL_PATH, 'camera/secu')
     files = [os.path.join(path, f) for f in os.listdir(path) if
              (time.time() - os.path.getmtime(os.path.join(path, f))) / 3600 / 24 > settings.RECORDED_DELAY]
