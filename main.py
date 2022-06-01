@@ -19,7 +19,7 @@ import web_camera
 import signal
 import time
 from urllib3.exceptions import ProtocolError
-from utils import get_conf, display_top
+from utils import get_conf, display_top, get_client
 import logging
 import tracemalloc
 
@@ -68,7 +68,7 @@ def conf():
 # def end(signum, frame):
 #     raise KeyboardInterrupt('Extern interrupt')
 
-async def tasks_by_client(key, scan, loop):
+async def tasks_by_client(key, scan, loop, auto_launch):
     client = web_camera.Client(key, scan)
     # retrieve cam
     await client.get_cam()
@@ -78,20 +78,21 @@ async def tasks_by_client(key, scan, loop):
             logger.info(f'Writing camera in json : {client.list_cam}')
             # launch the camera coroutine
             list_tasks = []
-            for camera in client.list_cam.values():
-                if camera['active'] and camera['active_automatic']:
-                    uri = None
-                    for uri in camera['uri'].values():  # get the camera uri in use or the last one
-                        if uri['use']:
-                            break
-                    if uri:
-                        # need to copy the dict because you can not remove the id from camera.list_cam
-                        uri_copy = uri.copy()
-                        uri_copy.pop('id', None)
-                        ready_cam = {**camera, **uri_copy}
-                        p = pc.ProcessCamera(ready_cam, loop, tlock, client.key)
-                        list_tasks.append(p)
-                        logger.info(f'starting process camera on  : {ready_cam}')
+            if auto_launch:
+                for camera in client.list_cam.values():
+                    if camera['active'] and camera['active_automatic']:
+                        uri = None
+                        for uri in camera['uri'].values():  # get the camera uri in use or the last one
+                            if uri['use']:
+                                break
+                        if uri:
+                            # need to copy the dict because you can not remove the id from camera.list_cam
+                            uri_copy = uri.copy()
+                            uri_copy.pop('id', None)
+                            ready_cam = {**camera, **uri_copy}
+                            p = pc.ProcessCamera(ready_cam, loop, tlock, client.key)
+                            list_tasks.append(p)
+                            logger.info(f'starting process camera on  : {ready_cam}')
             regroup_tasks = [client.connect(list_tasks)] + [t.run() for t in list_tasks]
             logger.error(f'list of all tasks launched for client {client.key} -->'
                          f' {[t.__str__() for t in regroup_tasks]}')
@@ -136,13 +137,11 @@ def main():
         logger.error(txt)
 
         # Launch client tasks :
-        list_client = get_conf('key')
+        list_client = get_client('scan', 'automatic_launch_from_scan')
 
         list_client_tasks = []
-        for key in list_client:
-            scan = True if key in list_client_scan else False
-            list_client_tasks.append(tasks_by_client(key, scan, loop))
-
+        for key, value in list_client:
+            list_client_tasks.append(tasks_by_client(key, value['scan'], loop, value('automatic_launch_from_scan')))
         logger.error(f'list of tasks clienbts {[t.__str__() for t in list_client_tasks]}')
 
         if settings.MAIN_LOG == logging.DEBUG:  # Avoid evaluation of tracemalloc

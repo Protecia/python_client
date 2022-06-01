@@ -83,6 +83,7 @@ RECORDED_DELAY = 2  # nb of days to store on backup video
 SSH_SERVER_PORT = 2223
 SSH_USER = 'tunnel'
 WSDIR = '/usr/local/lib/python3.6/site-packages/wsdl/'
+# WSDIR = '/opt/conda/lib/python3.8/site-packages/wsdl/'
 
 # client conf  --> now in settingslocal.py
 # INIT_PASS = 'jznsjoa3z54d'

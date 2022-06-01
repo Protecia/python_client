@@ -30,6 +30,20 @@ def get_conf(value, key=None, with_filter=None):
     return False
 
 
+def get_client(*fields):
+    try:
+        with open(settings.INSTALL_PATH + '/conf/conf.json', 'r') as conf_json:
+            data = json.load(conf_json)
+            dict_client = {}
+            for client in data:
+                dict_client[client['key']] = {}
+                for f in fields:
+                    dict_client[client['key']][f] = client[f]
+        return dict_client
+    except (KeyError, FileNotFoundError):
+        return False
+
+
 def display_top(snapshot, key_type='lineno', limit=10):
     snapshot = snapshot.filter_traces((
         tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
