@@ -140,7 +140,7 @@ def main():
         list_client = get_client('scan', 'automatic_launch_from_scan')
 
         list_client_tasks = []
-        for key, value in list_client:
+        for key, value in list_client.items():
             list_client_tasks.append(tasks_by_client(key, value['scan'], loop, value('automatic_launch_from_scan')))
         logger.error(f'list of tasks clienbts {[t.__str__() for t in list_client_tasks]}')
 
