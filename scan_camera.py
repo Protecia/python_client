@@ -6,6 +6,7 @@ Created on Sat Dec  7 11:48:41 2019
 """
 
 import json
+import os
 import settings
 import requests
 from onvif import ONVIFCamera
@@ -23,6 +24,7 @@ from utils import get_conf, display_top
 from wsdiscovery.discovery import ThreadedWSDiscovery as WSDiscovery
 from wsdiscovery import Scope
 import re
+import pathlib
 from filelock import Timeout, FileLock
 import tracemalloc
 import logging
@@ -257,6 +259,8 @@ def run(wait, key):
     while True:
         try:
             with lock:
+                fname = pathlib.Path(settings.INSTALL_PATH + f'/camera/camera_from_server_{key}.json')
+                time_of_file_start = fname.stat().st_ctime
                 with open(settings.INSTALL_PATH+f'/camera/camera_from_server_{key}.json', 'r') as out:
                     cam_ip_dict = json.load(out)
             users_dict = {cam['username']: cam['password'] for cam in cam_ip_dict.values()}
@@ -268,14 +272,25 @@ def run(wait, key):
                 detected_cam.update(ws_discovery(2, 20))
                 logger.debug(f'ws disvovery cam <-  {detected_cam}')
             detected_cam.update(cam_ip_dict)
-            logger.info(f'updated detected_cam <-  {detected_cam}')
+            logger.info(f'updated detected_cam <-  {json.dumps(detected_cam, indent=4, sort_keys=True)}')
             cam_ip_dict.update(detected_cam)
             dict_cam = check_cam(cam_ip_dict, users_dict)
-            with open(settings.INSTALL_PATH+f'/camera/camera_from_scan_{key}.json', 'w') as out:
-                json.dump(dict_cam, out)
-            logger.warning(f'Writing scan camera in file <-  {dict_cam}')
+            # Before to write scan file it is important to check that the server camera file have not changed to
+            # avoid sending deleted camera for example. We just drop the scan if there has been a change.
+            time_of_file_end = fname.stat().st_ctime
+            is_scan_valid = True if time_of_file_end == time_of_file_start else False
+            if is_scan_valid:
+                with open(settings.INSTALL_PATH+f'/camera/camera_from_scan_{key}.json', 'w') as out:
+                    json.dump(dict_cam, out)
+                os.utime(settings.INSTALL_PATH+f'/camera/camera_from_scan_{key}.json',
+                         (time_of_file_start, time_of_file_end))
+                logger.warning(f'Writing scan camera in file <-  {dict_cam}')
             if settings.SCAN_LOG == logging.DEBUG:
                 logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
+
+
+
+
             time.sleep(wait)
         except Timeout:
             logger.error(f'exception in read json, file is lock')

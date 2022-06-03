@@ -71,7 +71,13 @@ class Client(object):
                                 with open(settings.INSTALL_PATH + f'/camera/camera_from_scan_{self.key}.json', 'r') as cam:
                                     cameras = json.load(cam)
                                 logger.warning(f'Reading camera in file -> {cameras}')
-                                await ws.send(json.dumps(cameras))
+                                fname_server = pathlib.Path(settings.INSTALL_PATH +
+                                                            f'/camera/camera_from_server_{self.key}.json')
+                                time_from_scan = fname.stat().st_mtime
+                                time_from_server = fname_server.stat().st_ctime
+                                if time_from_scan == time_from_server:
+                                    await ws.send(json.dumps(cameras))
+                                    logger.info(f'Sending scan camera to server->{time_from_scan} / {time_from_server}')
                                 t1 = time.time()
                         except FileNotFoundError:
                             logger.error(f'scan file error NOT FOUND')
