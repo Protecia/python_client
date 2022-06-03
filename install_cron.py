@@ -21,6 +21,7 @@ def install_rec_backup_cron():
         cmd += " > "+settings.INSTALL_PATH+"/camera/cron_video.log 2>&1&"
         job = cron.new(command=cmd)
         job.minute.every(1)
+        cron.env['PATH'] = '/opt/conda/bin/:usr/bin:/bin'
         cron.write()
 
 
