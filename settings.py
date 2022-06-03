@@ -65,6 +65,7 @@ CLASS_DETECTED = ['face', 'person', 'chair', 'bed', 'bicycle', 'motorcycle', 've
 # hardware conf
 INSTALL_PATH = '/NNvision/python_client'
 FFMPEG = '/usr/local/bin/ffmpeg'
+# FFMPEG = '/usr/bin/ffmpeg'
 HARDWARE = 'nano'
 UUID = '/NNvision/uuid/uuid'  # on nano
 # UUID = '/proc/device-tree/chosen/ecid' on xavier
