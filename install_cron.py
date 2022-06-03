@@ -15,13 +15,14 @@ from pathlib import Path
 # don't forget to cd for the cron cd /home/protecia/NNvision/python_client &&
 def install_rec_backup_cron():
     cron = CronTab(user=True)
+    cron.env['PATH'] = '/opt/conda/bin/:usr/bin:/bin'
+    cron.write()
     if not any(cron.find_command('video.py')):
         cmd = "cd "+settings.INSTALL_PATH+" && "
         cmd += settings.PYTHON+' '+os.path.join(settings.INSTALL_PATH, 'video.py')
         cmd += " > "+settings.INSTALL_PATH+"/camera/cron_video.log 2>&1&"
         job = cron.new(command=cmd)
         job.minute.every(1)
-        cron.env['PATH'] = '/opt/conda/bin/:usr/bin:/bin'
         cron.write()
 
 
