@@ -284,7 +284,7 @@ def run(wait, key):
                     json.dump(dict_cam, out)
                 os.utime(settings.INSTALL_PATH+f'/camera/camera_from_scan_{key}.json',
                          (time_of_file_start, time_of_file_end))
-                logger.warning(f'Writing scan camera in file <-  {dict_cam}')
+                logger.warning(f'Writing scan camera in file <- {json.dumps(dict_cam, indent=4, sort_keys=True)}')
             if settings.SCAN_LOG == logging.DEBUG:
                 logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
 
