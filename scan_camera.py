@@ -231,7 +231,7 @@ def check_cam(cam_ip_dict, users_dict):
             dict_cam[ip] = {'name': 'unknow', 'port_onvif': cam["port_onvif"], 'from_client': True, 'uri': {}}
             port = cam["port_onvif"]
             onvif_answer = False
-            for user, passwd in users_dict.items():
+            for user, passwd in users_dict:
                 logger.info(f'testing onvif cam with ip:{ip} port:{port} user:{user} pass:{passwd}')
                 loop = asyncio.get_event_loop()
                 onvif = loop.run_until_complete(get_onvif_uri(ip, port, user, passwd))
@@ -263,7 +263,7 @@ def run(wait, key):
                 time_of_file_start = fname.stat().st_ctime
                 with open(settings.INSTALL_PATH+f'/camera/camera_from_server_{key}.json', 'r') as out:
                     cam_ip_dict = json.load(out)
-            users_dict = {cam['username']: cam['password'] for cam in cam_ip_dict.values()}
+            users_dict = set([(cam['username'], cam['password']) for cam in cam_ip_dict.values() if cam['username']])
             if get_conf('scan_camera', key) != 0:
                 detected_cam = ping_network(key)
             else:
