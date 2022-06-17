@@ -141,7 +141,8 @@ def main():
 
         list_client_tasks = []
         for key, value in list_client.items():
-            list_client_tasks.append(tasks_by_client(key, value['scan'], loop, value['automatic_launch_from_scan']))
+            # list_client_tasks.append(tasks_by_client(key, value['scan'], loop, value['automatic_launch_from_scan']))
+            list_client_tasks.append(tasks_by_client(key, True, loop, value['automatic_launch_from_scan']))  # always launch the send cam socket in case of manual scan
         logger.error(print("list of tasks clients : \n"+"\n".join([t.__str__() for t in list_client_tasks])))
 
         if settings.MAIN_LOG == logging.DEBUG:  # Avoid evaluation of tracemalloc

@@ -79,6 +79,8 @@ class Client(object):
                                     await ws.send(json.dumps(cameras))
                                     logger.info(f'Sending scan camera to server->{time_from_scan} / {time_from_server}')
                                 t1 = time.time()
+                            else:
+                                asyncio.sleep(1)
                         except FileNotFoundError:
                             logger.error(f'scan file error NOT FOUND')
                             await asyncio.sleep(30)

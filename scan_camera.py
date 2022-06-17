@@ -210,6 +210,7 @@ def check_cam(cam_ip_dict, users_dict):
         Returns:
             List: List of camera dict that are active.
         """
+    logger.info(f'users dict is  <-  {users_dict}')
     dict_cam = {}
     for ip, cam in cam_ip_dict.items():
         dict_cam[ip] = cam
@@ -265,6 +266,7 @@ def run(wait, key):
                 with open(settings.INSTALL_PATH+f'/camera/camera_from_server_{key}.json', 'r') as out:
                     cam_ip_dict = json.load(out)
             users_dict = set([(cam['username'], cam['password']) for cam in cam_ip_dict.values() if cam['username']])
+            logger.info(f'users dict is  <-  {users_dict}')
             if get_conf('scan_camera', key) != 0:
                 detected_cam = ping_network(key)
             else:
