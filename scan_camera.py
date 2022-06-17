@@ -28,6 +28,7 @@ import pathlib
 from filelock import Timeout, FileLock
 import tracemalloc
 import logging
+import sys
 
 if settings.SCAN_LOG == logging.DEBUG:
     tracemalloc.start()
@@ -304,7 +305,5 @@ def run(wait, key):
 # only for testing and launching independant scan_camera
 if __name__ == '__main__':
     # independant manual scan :
-    # launch scan if True in scan state
-    list_client_scan = [scan[0] for scan in zip(get_conf('key'), get_conf('scan')) if scan[1]]
-    for key in list_client_scan:
-        run(20, key)
+    # launch scan with the key of the client
+    run(20, sys.argv[1])
