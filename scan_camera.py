@@ -288,10 +288,6 @@ def run(wait, key):
                 logger.warning(f'Writing scan camera in file <- {json.dumps(dict_cam, indent=4, sort_keys=True)}')
             if settings.SCAN_LOG == logging.DEBUG:
                 logger.debug(f'Memory allocation top {display_top(tracemalloc.take_snapshot())}')
-
-
-
-
             time.sleep(wait)
         except Timeout:
             logger.error(f'exception in read json, file is lock')
