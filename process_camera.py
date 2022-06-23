@@ -73,7 +73,7 @@ class ProcessCamera(object):
         self.running_level1 = False
         self.loop = loop
 
-        self.logger = Logger('process_camera_thread__' + str(self.cam["id"]) + '--' + self.cam["name"],
+        self.logger = Logger('process_camera__' + str(self.cam["id"]) + '--' + self.cam["name"],
                              level=settings.PROCESS_CAMERA_LOG, file=True).run()
         self.vcap = None
         self.tlock = tlock
@@ -173,7 +173,7 @@ class ProcessCamera(object):
         while self.running_level2 and self.running_level1:
             try:
                 t = time.time()
-                r = await self.loop.run_in_executor(None, self.vcap.grab)
+                r = self.vcap.grab()
                 self.logger.debug(f'grabbing rtsp {r} {time.time() - t}')
             except AttributeError:
                 pass

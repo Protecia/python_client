@@ -70,7 +70,8 @@ class Client(object):
                             if t2 > t1:
                                 with open(settings.INSTALL_PATH + f'/camera/camera_from_scan_{self.key}.json', 'r') as cam:
                                     cameras = json.load(cam)
-                                logger.warning(f'Reading camera in file -> {cameras}')
+                                logger.warning(f'Reading camera ({self.key}) ->'
+                                               f' {json.dumps(cameras, indent=4, sort_keys=True)}')
                                 fname_server = pathlib.Path(settings.INSTALL_PATH +
                                                             f'/camera/camera_from_server_{self.key}.json')
                                 time_from_scan = fname.stat().st_mtime
@@ -80,9 +81,9 @@ class Client(object):
                                     logger.info(f'Sending scan camera to server->{time_from_scan} / {time_from_server}')
                                 t1 = time.time()
                             else:
-                                asyncio.sleep(1)
+                                await asyncio.sleep(1)
                         except FileNotFoundError:
-                            logger.error(f'scan file error NOT FOUND')
+                            logger.warning(f'scan file error NOT FOUND')
                             await asyncio.sleep(30)
                         await asyncio.sleep(5)
             except (websockets.exceptions.ConnectionClosedError, OSError, ConnectionResetError,

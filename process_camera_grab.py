@@ -5,9 +5,13 @@ import httpx
 from functools import partial
 
 
+async def get_frame(vcap):
+    return vcap.read()
+
+
 # retrieve latest frame
 async def grab_rtsp(vcap, loop, logger, cam, last_frame_id):
-    ret, frame = await loop.run_in_executor(None, vcap.retrieve)
+    ret, frame = await get_frame(vcap)
     # sometimes opencv return exactly the same image all the time. This is a bug in opencv, to avoid this we
     # check the variability of the image
     try:
