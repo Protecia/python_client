@@ -177,7 +177,7 @@ class ProcessCamera(object):
                 self.logger.debug(f'grabbing rtsp {r} {time.time() - t}')
             except AttributeError:
                 pass
-            # await asyncio.sleep(0.001)
+            await asyncio.sleep(0.001)
         self.logger.warning('EXIT task1_rtsp_flush TASKS')
 
     @catch_cancel
