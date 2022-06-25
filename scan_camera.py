@@ -110,6 +110,7 @@ def ws_discovery(repeat, wait):
                         # time.sleep(1)
                         # print(address)
                         ret.append(data)
+                        logger.debug(f'Here is ret : {ret}')
                     except BlockingIOError:
                         pass
                         break
@@ -120,8 +121,13 @@ def ws_discovery(repeat, wait):
                 url = [i.text for i in xml.iter('{http://schemas.xmlsoap.org/ws/2005/04/discovery}XAddrs')]
                 if url:
                     url = url[0]
-                    ip = re.search('http://(.*):', url).group(1)
-                    port = re.search('[0-9]+:([0-9]+)/', url).group(1)
+                    port = re.search('[0-9]+:([0-9]+)/', url)
+                    if port:
+                        port = port.group(1)
+                        ip = re.search('http://(.*):', url).group(1)
+                    else:
+                        port = '80'
+                        ip = re.search('http://(\d+\.\d+\.\d+\.\d+)', url).group(1)
                     dcam[ip] = {'port_onvif': port}
             if not i+1 == repeat:
                 time.sleep(wait)
