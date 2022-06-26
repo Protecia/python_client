@@ -94,8 +94,10 @@ async def tasks_by_client(key, scan, loop, auto_launch):
                             list_tasks.append(p)
                             logger.info(f'starting process camera on  : {ready_cam}')
             regroup_tasks = [client.connect(list_tasks)] + [t.run() for t in list_tasks]
-            logger.error(f'list of all tasks launched for client {client.key} -->'
-                         f' {[t.__str__() for t in regroup_tasks]}')
+            camera_launched = [t.cam.name for t in list_tasks]
+            logger.error(f'list of all tasks launched for client {client.key} : \n ' + '\n'.join(
+                [t.__str__() for t in regroup_tasks]))
+            logger.error(f'Process Camera launched : {camera_launched}')
             await asyncio.gather(*regroup_tasks)  # wait until a camera for the client change
             client.running_level1 = True
         except Exception as ex:
@@ -143,7 +145,7 @@ def main():
         for key, value in list_client.items():
             # list_client_tasks.append(tasks_by_client(key, value['scan'], loop, value['automatic_launch_from_scan']))
             list_client_tasks.append(tasks_by_client(key, True, loop, value['automatic_launch_from_scan']))  # always launch the send cam socket in case of manual scan
-        logger.error(print("list of tasks clients : \n"+"\n".join([t.__str__() for t in list_client_tasks])))
+        logger.error("list of tasks clients : \n"+"\n".join([t.__str__() for t in list_client_tasks]))
 
         if settings.MAIN_LOG == logging.DEBUG:  # Avoid evaluation of tracemalloc
             logger.debug(f'Memory allocation {tracemalloc.take_snapshot().statistics("lineno")}')
