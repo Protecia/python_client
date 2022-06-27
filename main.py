@@ -94,7 +94,7 @@ async def tasks_by_client(key, scan, loop, auto_launch):
                             list_tasks.append(p)
                             logger.info(f'starting process camera on  : {ready_cam}')
             regroup_tasks = [client.connect(list_tasks)] + [t.run() for t in list_tasks]
-            camera_launched = [t.cam.name for t in list_tasks]
+            camera_launched = [t.cam["name"] for t in list_tasks]
             logger.error(f'list of all tasks launched for client {client.key} : \n ' + '\n'.join(
                 [t.__str__() for t in regroup_tasks]))
             logger.error(f'Process Camera launched : {camera_launched}')
