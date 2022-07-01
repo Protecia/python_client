@@ -5,4 +5,4 @@ sudo apt -y update
 yes | sudo DEBIAN_FRONTEND=noninteractive apt  -y dist-upgrade
 # maybe yes | apt install foo
 sudo apt install -y nvidia-jetpack
-echo date > /home/nnvision/patch1.ok
+date > /home/nnvision/patch1.ok
