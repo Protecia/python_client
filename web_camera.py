@@ -138,6 +138,6 @@ class Client(object):
                                 logger.warning(f'Receiving  json docker :  {docker_json}')
 
             except (websockets.exceptions.ConnectionClosedError, OSError):
-                logger.error(f'socket _get_state disconnected !!')
+                logger.error(f'socket _get_state disconnected for client {self.key} !!')
                 await asyncio.sleep(1)
                 continue
