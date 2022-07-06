@@ -225,11 +225,14 @@ def check_cam(cam_ip_dict, users_dict):
         if uri:
             if uri['0']['http'].split('//')[1].split(':')[0] == ip:
                 new = False
+                ip_from_uri = ip
+            elif uri['0']['rtsp'].split('//')[1].split(':')[0] == ip:
+                # case with no http
+                new = False
+                ip_from_uri = ip
         if not new:  # this is a known cam, so test
             # test if the ip of the uri is the same
-            ip_from_uri = uri['0']['http'].split('//')[1].split(':')[0]
             if ip == ip_from_uri:
-
                 logger.info(f'testing old cam with http:{uri} user:{cam["username"]} pass:{cam["password"]}')
                 auth = {'B': requests.auth.HTTPBasicAuth(cam["username"], cam["password"]),
                         'D': requests.auth.HTTPDigestAuth(cam["username"], cam["password"])}
