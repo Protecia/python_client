@@ -29,6 +29,7 @@ from filelock import Timeout, FileLock
 import tracemalloc
 import logging
 import sys
+import cv2
 
 if settings.SCAN_LOG == logging.DEBUG:
     tracemalloc.start()
@@ -176,33 +177,50 @@ async def get_onvif_uri(ip, port, user, passwd):
     return info, uri
 
 
+async def open_rtsp_stream(login):
+    vcap = False
+    return vcap
+
+
 def check_auth(dict_cam_ip, user, passwd, auth):
     check = False
     for t, a in auth.items():
         for i in range(4):
             for url in dict_cam_ip['uri'].values():
                 http = url['http']
-                try:
-                    logger.info(f'before request on {http}')
-                    r = requests.get(http, auth=a, stream=True, timeout=10)
-                    logger.info(f'after request on {http}')
-                    logger.info(f'request  on camera is {r.ok} for {http} / {user} / {passwd} / {t}')
-                    if r.ok:
-                        dict_cam_ip['auth_type'] = t
+                if http != 'http://0.0.0.0':
+                    try:
+                        logger.info(f'before request on {http}')
+                        r = requests.get(http, auth=a, stream=True, timeout=10)
+                        logger.info(f'after request on {http}')
+                        logger.info(f'request  on camera is {r.ok} for {http} / {user} / {passwd} / {t}')
+                        if r.ok:
+                            dict_cam_ip['auth_type'] = t
+                            dict_cam_ip['wait_for_set'] = False
+                            dict_cam_ip['username'] = user
+                            dict_cam_ip['password'] = passwd
+                            check = True
+                            break
+                    except (requests.exceptions.ConnectionError, requests.Timeout,
+                            requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema):
+                        time.sleep(0.5)
+                        pass
+                    try:
+                        r.close()
+                        r = None
+                    except:
+                        pass
+                else:  # case there is no http access:
+                    rtsp_login = 'rtsp://' + dict_cam_ip['username'] + ':' + dict_cam_ip['password'] + '@' +\
+                                 url['rtsp'].split('//')[1]
+                    vcap = asyncio.get_event_loop().run_until_complete(asyncio.wait_for(open_rtsp_stream(rtsp_login), 5))
+                    logger.info(f'request rtsp on camera is {vcap.isOpened} for {rtsp_login}')
+                    if vcap.isOpened():
                         dict_cam_ip['wait_for_set'] = False
                         dict_cam_ip['username'] = user
                         dict_cam_ip['password'] = passwd
                         check = True
                         break
-                except (requests.exceptions.ConnectionError, requests.Timeout,
-                        requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema):
-                    time.sleep(0.5)
-                    pass
-                try:
-                    r.close()
-                    r = None
-                except:
-                    pass
             if check:
                 break
         if check:
