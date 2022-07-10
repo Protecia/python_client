@@ -211,7 +211,7 @@ def check_auth(dict_cam_ip, user, passwd, auth):
                     except:
                         pass
                 else:  # case there is no http access:
-                    rtsp_login = 'rtsp://' + dict_cam_ip['username'] + ':' + dict_cam_ip['password'] + '@' +\
+                    rtsp_login = 'rtsp://' + user + ':' + passwd + '@' +\
                                  url['rtsp'].split('//')[1]
                     vcap = asyncio.get_event_loop().run_until_complete(asyncio.wait_for(open_rtsp_stream(rtsp_login), 5))
                     logger.info(f'request rtsp on camera is {vcap.isOpened} for {rtsp_login}')
