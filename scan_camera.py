@@ -179,6 +179,7 @@ async def get_onvif_uri(ip, port, user, passwd):
 
 async def open_rtsp_stream(login):
     vcap = False
+    vcap = cv2.VideoCapture(login)
     return vcap
 
 
@@ -214,13 +215,15 @@ def check_auth(dict_cam_ip, user, passwd, auth):
                     rtsp_login = 'rtsp://' + user + ':' + passwd + '@' +\
                                  url['rtsp'].split('//')[1]
                     vcap = asyncio.get_event_loop().run_until_complete(asyncio.wait_for(open_rtsp_stream(rtsp_login), 5))
-                    logger.info(f'request rtsp on camera is {vcap.isOpened} for {rtsp_login}')
-                    if vcap.isOpened():
-                        dict_cam_ip['wait_for_set'] = False
-                        dict_cam_ip['username'] = user
-                        dict_cam_ip['password'] = passwd
-                        check = True
-                        break
+                    logger.info(f'request rtsp on camera is {vcap} for {rtsp_login}')
+                    if vcap:
+                        logger.info(f'vcap opened : {vcap.isOpened()}')
+                        if vcap.isOpened():
+                            dict_cam_ip['wait_for_set'] = False
+                            dict_cam_ip['username'] = user
+                            dict_cam_ip['password'] = passwd
+                            check = True
+                            break
             if check:
                 break
         if check:
