@@ -8,3 +8,10 @@ def change_ip(on_vif_camera):
 def get_ip(onvif_camera):
     return onvif_camera.devicemgmt.GetNetworkInterfaces()
 
+
+# time_params = mycam.devicemgmt.create_type('SetSystemDateAndTime')
+# time_params.DateTimeType = 'NTP'
+# time_params.DaylightSavings = True
+# time_params.TimeZone = 'GMT+02:00'
+# mycam.devicemgmt.SetSystemDateAndTime(time_params)
+
