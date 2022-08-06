@@ -9,7 +9,7 @@ from logging.handlers import RotatingFileHandler
 import os
 import settings
 import sys
-from django.utils.text import slugify
+from utils import slugify
 # ------------------------------------------------------------------------------
 # a simple config to create a file log - change the level to warning in
 # production
