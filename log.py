@@ -9,6 +9,7 @@ from logging.handlers import RotatingFileHandler
 import os
 import settings
 import sys
+from django.utils.text import slugify
 # ------------------------------------------------------------------------------
 # a simple config to create a file log - change the level to warning in
 # production
@@ -22,7 +23,7 @@ class Logger(object):
             self.logger.setLevel(level)
             formatter = logging.Formatter('%(name)s :: %(asctime)s :: %(levelname)s :: %(message)s')
             if file:
-                file_handler = RotatingFileHandler(os.path.join(settings.INSTALL_PATH+'/camera', name+'.log'),
+                file_handler = RotatingFileHandler(os.path.join(settings.INSTALL_PATH+'/camera', slugify(name)+'.log'),
                                                    'a', 10000000, 1)
                 file_handler.setLevel(level)
                 file_handler.setFormatter(formatter)
